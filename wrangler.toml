@@ -1,6 +1,12 @@
 name = "nuqto"
 compatibility_date = "2026-08-01"
+main = "worker.js"
 
 [assets]
 directory = "."
+binding = "ASSETS"
 not_found_handling = "404-page"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "nuqto-photos"
