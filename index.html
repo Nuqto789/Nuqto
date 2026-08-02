@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
@@ -202,8 +203,7 @@
   .leaflet-popup-content{margin:12px 14px; font-family:'Plus Jakarta Sans',sans-serif;}
   .popup-title{font-weight:700; font-size:14px; margin-bottom:2px;}
   .popup-note{font-size:12.5px; color:#555; margin-bottom:8px; white-space:pre-wrap;}
-  .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888; margin-bottom:8px;}
-  .popup-del{font-size:12px; font-weight:700; color:var(--rust); background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; gap:4px;}
+  .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888;}
 
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
@@ -287,6 +287,16 @@
   <label class="field-label" id="label-note">Catatan</label>
   <textarea id="input-note" class="field-input mb-5" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
 
+  <label class="field-label">Foto (opsional)</label>
+  <div class="mb-5">
+    <input id="input-photo" type="file" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(event)">
+    <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('input-photo').click()">Pilih Foto</button>
+    <div id="photo-preview-wrap" class="hidden" style="margin-top:10px; position:relative;">
+      <img id="photo-preview" style="width:100%; max-height:160px; object-fit:cover; border-radius:12px;" />
+      <button type="button" onclick="removePhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">✕</button>
+    </div>
+  </div>
+
   <button id="btn-save" class="btn-primary maqom" onclick="savePin()">Simpan Titik</button>
   <button class="btn-ghost" onclick="closeSheet()">Batal</button>
 </div>
@@ -294,14 +304,20 @@
 <div id="toast" class="toast">Tersimpan</div>
 
 <script>
+/* ---------- supabase ---------- */
+const SUPA_URL = 'https://xiszpsqmroynihbfijwa.supabase.co';
+const SUPA_KEY = 'sb_publishable_9fU3WGwHWoqS9J9Q2gUGjw_x9BuZ-n8';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const TABLE = { maqom: 'maqom_pins', blacklist: 'blacklist_pins' };
+
 /* ---------- state ---------- */
 const store = {
   maqom: [],
   blacklist: []
 };
-let idCounter = 1;
 let currentPage = 'maqom';
 let pendingLatLng = null;
+let pendingPhotoFile = null;
 let maps = {};
 let markerLayers = { maqom: null, blacklist: null };
 let userMarkers = { maqom: null, blacklist: null };
@@ -396,6 +412,7 @@ function openSheet(cat, latlng){
   document.getElementById('input-address').value = '';
   document.getElementById('input-note').value = '';
   document.getElementById('label-note').textContent = isMaqom ? 'Catatan' : 'Alasan / Catatan Kejadian';
+  removePhoto();
 
   const btn = document.getElementById('btn-save');
   btn.className = 'btn-primary ' + cat;
@@ -412,7 +429,39 @@ function closeSheet(){
   pendingLatLng = null;
 }
 
-function savePin(){
+function handlePhotoSelect(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    showToast('File harus berupa gambar');
+    e.target.value = '';
+    return;
+  }
+  pendingPhotoFile = file;
+  const preview = document.getElementById('photo-preview');
+  preview.src = URL.createObjectURL(file);
+  document.getElementById('photo-preview-wrap').classList.remove('hidden');
+}
+
+function removePhoto(){
+  pendingPhotoFile = null;
+  document.getElementById('input-photo').value = '';
+  document.getElementById('photo-preview-wrap').classList.add('hidden');
+  document.getElementById('photo-preview').src = '';
+}
+
+async function uploadPhoto(file){
+  const fd = new FormData();
+  fd.append('photo', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+  const result = await res.json();
+  if(!res.ok || !result.url){
+    throw new Error(result.error || 'Upload foto gagal');
+  }
+  return result.url;
+}
+
+async function savePin(){
   if(!pendingLatLng) return;
   const cat = document.getElementById('btn-save').dataset.cat;
   const name = document.getElementById('input-name').value.trim();
@@ -425,12 +474,42 @@ function savePin(){
     return;
   }
 
-  const pin = {
-    id: idCounter++,
-    name, address, note,
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+
+  let photo_url = null;
+  if(pendingPhotoFile){
+    btn.textContent = 'Mengunggah foto…';
+    try{
+      photo_url = await uploadPhoto(pendingPhotoFile);
+    } catch(err){
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      showToast('Gagal upload foto — coba lagi');
+      return;
+    }
+  }
+
+  btn.textContent = 'Menyimpan…';
+
+  const { data, error } = await sb.from(TABLE[cat]).insert({
+    name, address, note, photo_url,
     lat: pendingLatLng.lat,
     lng: pendingLatLng.lng
-  };
+  }).select().single();
+
+  btn.disabled = false;
+  btn.textContent = originalLabel;
+
+  if(error){
+    console.error(error);
+    showToast('Gagal simpan — cek koneksi internet');
+    return;
+  }
+
+  const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng };
   store[cat].push(pin);
   renderMarker(cat, pin, true);
   updateCounts();
@@ -440,26 +519,26 @@ function savePin(){
 
 function renderMarker(cat, pin, justAdded){
   const marker = L.marker([pin.lat, pin.lng], { icon: makeIcon(cat, justAdded) });
-  const label = cat === 'maqom' ? 'Maqom' : 'Rumah Blacklist';
   marker.bindPopup(`
+    ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
     <div class="popup-title">${escapeHtml(pin.name)}</div>
     ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
     ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
     <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
-    <button class="popup-del" onclick="deletePin('${cat}', ${pin.id})">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-      Hapus titik ini
-    </button>
   `);
   marker._pinId = pin.id;
   markerLayers[cat].addLayer(marker);
 }
 
-function deletePin(cat, id){
-  store[cat] = store[cat].filter(p => p.id !== id);
-  markerLayers[cat].eachLayer(m => { if(m._pinId === id){ markerLayers[cat].removeLayer(m); } });
+async function loadPins(cat){
+  const { data, error } = await sb.from(TABLE[cat]).select('*').order('created_at', { ascending: true });
+  if(error){ console.error(error); showToast('Gagal ambil data titik'); return; }
+  data.forEach(row => {
+    const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng };
+    store[cat].push(pin);
+    renderMarker(cat, pin, false);
+  });
   updateCounts();
-  showToast('Titik dihapus');
 }
 
 function updateCounts(){
@@ -504,6 +583,8 @@ function escapeHtml(s){
 /* ---------- boot ---------- */
 window.addEventListener('load', () => {
   initMaps();
+  loadPins('maqom');
+  loadPins('blacklist');
   updateCounts();
   ['input-name'].forEach(id => {
     document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
