@@ -25,6 +25,8 @@
     --slate:#2B2E33;
     --rust:#9C3B32;
     --rust-deep:#742A24;
+    --amber:#B8721E;
+    --amber-deep:#8C5716;
   }
   *{-webkit-tap-highlight-color:transparent;}
   body{
@@ -46,6 +48,11 @@
 
   #map-maqom, #map-blacklist{
     flex:1; width:100%; z-index:0;
+  }
+
+  .scroll-page{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:calc(18px + env(safe-area-inset-top, 0px)) 18px calc(100px + env(safe-area-inset-bottom, 0px)) 18px;
   }
 
   /* header pill */
@@ -79,38 +86,44 @@
   }
   .search-row input::placeholder{color:var(--muted);}
 
-  /* bottom nav — arch / gate motif */
+  /* bottom nav — arch / gate motif, 5 menu */
   .bottom-nav{
     position:fixed; left:0; right:0; bottom:0; z-index:600;
     background:var(--paper);
     border-top:1px solid var(--line);
-    padding:10px 18px calc(10px + env(safe-area-inset-bottom, 0px)) 18px;
-    display:flex; justify-content:space-around; align-items:flex-end;
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom, 0px)) 4px;
+    display:flex; justify-content:space-between; align-items:flex-end;
     box-shadow:0 -6px 24px rgba(28,27,23,0.06);
   }
   .nav-btn{
     position:relative;
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    width:132px; padding-top:14px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    flex:1; min-width:0; padding-top:12px;
     background:none; border:none; cursor:pointer;
     color:var(--muted);
     transition:color .2s ease, transform .2s ease;
   }
   .nav-btn .arch{
     position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:56px; height:30px;
-    border-radius:28px 28px 0 0;
+    width:46px; height:26px;
+    border-radius:24px 24px 0 0;
     background:transparent;
     transition:background .25s ease, box-shadow .25s ease;
   }
   .nav-btn.active{transform:translateY(-2px);}
+  .nav-btn.active[data-cat="home"]{color:var(--gold);}
   .nav-btn.active[data-cat="maqom"]{color:var(--maqom);}
   .nav-btn.active[data-cat="blacklist"]{color:var(--rust);}
+  .nav-btn.active[data-cat="razia"]{color:var(--amber);}
+  .nav-btn.active[data-cat="akun"]{color:var(--slate);}
+  .nav-btn.active[data-cat="home"] .arch{background:rgba(190,154,70,0.14);}
   .nav-btn.active[data-cat="maqom"] .arch{background:rgba(23,80,56,0.1);}
   .nav-btn.active[data-cat="blacklist"] .arch{background:rgba(156,59,50,0.1);}
+  .nav-btn.active[data-cat="razia"] .arch{background:rgba(184,114,30,0.12);}
+  .nav-btn.active[data-cat="akun"] .arch{background:rgba(43,46,51,0.1);}
   .nav-btn .icon-wrap{position:relative; z-index:2;}
-  .nav-btn .label{position:relative; z-index:2; font-size:11.5px; font-weight:600; letter-spacing:.02em;}
-  .nav-btn .count{position:relative; z-index:2; font-size:10px; font-family:'JetBrains Mono',monospace; opacity:.7;}
+  .nav-btn .label{position:relative; z-index:2; font-size:10px; font-weight:600; letter-spacing:.01em; white-space:nowrap;}
+  .nav-btn .count{position:relative; z-index:2; font-size:9.5px; font-family:'JetBrains Mono',monospace; opacity:.7;}
 
   /* custom pin markers */
   .pin{
@@ -184,6 +197,7 @@
   .btn-primary:active{opacity:.85;}
   .btn-primary.maqom{background:var(--maqom);}
   .btn-primary.blacklist{background:var(--rust);}
+  .btn-primary.razia{background:var(--amber);}
 
   .btn-ghost{
     width:100%; border-radius:14px; padding:11px; font-weight:600; font-size:14px;
@@ -211,12 +225,134 @@
     padding:10px 18px; border-radius:99px; z-index:800; opacity:0; transition:all .25s ease; pointer-events:none;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---- home: stat cards & activity ---- */
+  .stat-card{
+    border-radius:16px; padding:14px 12px;
+    border:1px solid var(--line); background:#fff;
+  }
+  .stat-num{font-family:'Amiri',serif; font-size:26px; font-weight:700; line-height:1;}
+  .stat-label{font-size:11px; font-weight:600; color:var(--muted); margin-top:4px;}
+
+  .activity-item{
+    display:flex; gap:12px; align-items:flex-start;
+    padding:12px 0; border-bottom:1px solid var(--line);
+  }
+  .activity-item:last-child{border-bottom:none;}
+  .activity-icon{
+    width:34px; height:34px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .activity-title{font-size:13.5px; font-weight:700;}
+  .activity-sub{font-size:12px; color:var(--muted); margin-top:1px;}
+  .activity-time{font-size:10.5px; color:var(--muted); font-family:'JetBrains Mono',monospace; flex-shrink:0;}
+
+  .empty-state{
+    text-align:center; padding:32px 16px; color:var(--muted); font-size:13px;
+  }
+
+  /* ---- razia feed ---- */
+  .razia-card{
+    border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; background:#fff;
+  }
+  .razia-tag{
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(184,114,30,0.1); color:var(--amber-deep);
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px; margin-bottom:8px;
+  }
+  .fab{
+    position:fixed; right:18px; bottom:calc(96px + env(safe-area-inset-bottom, 0px)); z-index:450;
+    width:54px; height:54px; border-radius:50%;
+    background:var(--amber); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 18px rgba(184,114,30,0.4);
+    border:none; cursor:pointer; transition:transform .15s ease;
+  }
+  .fab:active{transform:scale(0.92);}
+
+  /* ---- akun ---- */
+  .profile-card{
+    display:flex; align-items:center; gap:14px;
+    padding:18px; border-radius:18px;
+    background:var(--slate); color:#fff; margin-bottom:22px;
+  }
+  .profile-avatar{
+    width:54px; height:54px; border-radius:50%;
+    background:rgba(255,255,255,0.12);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .menu-row{
+    display:flex; align-items:center; gap:13px;
+    width:100%; padding:14px 4px; border-bottom:1px solid var(--line);
+    background:none; border-left:none; border-right:none; border-top:none;
+    text-align:left; cursor:pointer; color:var(--ink);
+  }
+  .menu-row:last-child{border-bottom:none;}
+  .menu-icon{
+    width:36px; height:36px; border-radius:10px; flex-shrink:0;
+    background:rgba(28,27,23,0.05);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-label{font-size:14px; font-weight:600; flex:1;}
+  .section-title{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:18px 2px 8px 2px;}
+
+  /* ---- overlay page (lowongan) ---- */
+  .overlay-page{
+    position:fixed; inset:0; z-index:900;
+    background:var(--paper);
+    display:flex; flex-direction:column;
+    transform:translateX(100%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);
+  }
+  .overlay-page.open{transform:translateX(0);}
+  .overlay-header{
+    display:flex; align-items:center; gap:12px;
+    padding:calc(16px + env(safe-area-inset-top, 0px)) 18px 14px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .back-btn{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; background:none; cursor:pointer; flex-shrink:0;
+  }
+  .job-card{
+    border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px;
+  }
+  .job-tag{
+    display:inline-block; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px;
+    background:rgba(23,80,56,0.1); color:var(--maqom-deep); margin-bottom:8px;
+  }
 </style>
 </head>
 <body>
 
+<!-- ===================== PAGE 0 : BERANDA ===================== -->
+<div id="page-home" class="page active">
+  <div class="scroll-page">
+    <div class="mb-1" style="font-size:13px; color:var(--muted); font-weight:600;">Assalamualaikum,</div>
+    <div class="font-display mb-5" style="font-size:26px; font-weight:700;">Selamat datang di Nuqto</div>
+
+    <div class="grid grid-cols-3 gap-2 mb-6">
+      <div class="stat-card" style="border-color:rgba(23,80,56,0.2);">
+        <div class="stat-num" style="color:var(--maqom);" id="stat-maqom">0</div>
+        <div class="stat-label">Titik Maqom</div>
+      </div>
+      <div class="stat-card" style="border-color:rgba(156,59,50,0.2);">
+        <div class="stat-num" style="color:var(--rust);" id="stat-blacklist">0</div>
+        <div class="stat-label">Rumah Blacklist</div>
+      </div>
+      <div class="stat-card" style="border-color:rgba(184,114,30,0.2);">
+        <div class="stat-num" style="color:var(--amber);" id="stat-razia">0</div>
+        <div class="stat-label">Laporan Razia</div>
+      </div>
+    </div>
+
+    <div class="section-title">Aktivitas Terbaru</div>
+    <div id="activity-list"></div>
+  </div>
+</div>
+
 <!-- ===================== PAGE 1 : MAQOM ULAMA ===================== -->
-<div id="page-maqom" class="page active">
+<div id="page-maqom" class="page">
   <div id="map-maqom"></div>
   <div class="top-bar">
     <div class="search-row">
@@ -251,12 +387,84 @@
   </button>
 </div>
 
+<!-- ===================== PAGE 4 : RAZIA IQOMAH ===================== -->
+<div id="page-razia" class="page">
+  <div class="scroll-page">
+    <div class="font-display mb-1" style="font-size:22px; font-weight:700; color:var(--amber-deep);">Razia Iqomah</div>
+    <div class="hint-banner mb-5" style="color:var(--amber-deep); box-shadow:none; border-color:rgba(184,114,30,0.25);">Laporkan lokasi & waktu razia untuk saling mengingatkan sesama Masisir</div>
+    <div id="razia-list"></div>
+  </div>
+  <button class="fab" onclick="openRaziaSheet()" aria-label="Lapor razia">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+  </button>
+</div>
+
+<!-- ===================== PAGE 5 : AKUN ===================== -->
+<div id="page-akun" class="page">
+  <div class="scroll-page">
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div class="font-display" style="font-size:17px; font-weight:700;">Sahabat Masisir</div>
+        <div style="font-size:12.5px; opacity:.7;">Komunitas Nuqto — Kairo</div>
+      </div>
+    </div>
+
+    <div class="section-title">Layanan</div>
+    <button class="menu-row" onclick="openLowongan()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </span>
+      <span class="menu-label">Lowongan Kerja</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="menu-row" onclick="shareApp()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="10.51" y2="6.49"/><line x1="8.59" x2="15.42" y1="13.49" y2="17.51"/></svg>
+      </span>
+      <span class="menu-label">Bagikan Aplikasi</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
+    <div class="section-title">Lainnya</div>
+    <button class="menu-row" onclick="showToast('Nuqto — peta komunitas Masisir Kairo')">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      </span>
+      <span class="menu-label">Tentang Nuqto</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : LOWONGAN KERJA ===================== -->
+<div id="page-lowongan" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeLowongan()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700;">Lowongan Kerja</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <div id="job-list"></div>
+  </div>
+</div>
+
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" data-cat="maqom" onclick="switchPage('maqom')">
+  <button class="nav-btn active" data-cat="home" onclick="switchPage('home')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </span>
+    <span class="label">Beranda</span>
+  </button>
+  <button class="nav-btn" data-cat="maqom" onclick="switchPage('maqom')">
+    <span class="arch"></span>
+    <span class="icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
     </span>
     <span class="label">Map Maqom</span>
     <span class="count" id="nav-count-maqom">0 titik</span>
@@ -264,10 +472,25 @@
   <button class="nav-btn" data-cat="blacklist" onclick="switchPage('blacklist')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
     </span>
-    <span class="label">Rumah Blacklist</span>
+    <span class="label">Blacklist</span>
     <span class="count" id="nav-count-blacklist">0 titik</span>
+  </button>
+  <button class="nav-btn" data-cat="razia" onclick="switchPage('razia')">
+    <span class="arch"></span>
+    <span class="icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </span>
+    <span class="label">Razia</span>
+    <span class="count" id="nav-count-razia">0 lapor</span>
+  </button>
+  <button class="nav-btn" data-cat="akun" onclick="switchPage('akun')">
+    <span class="arch"></span>
+    <span class="icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+    </span>
+    <span class="label">Akun</span>
   </button>
 </nav>
 
@@ -301,6 +524,35 @@
   <button class="btn-ghost" onclick="closeSheet()">Batal</button>
 </div>
 
+<!-- ===================== LAPOR RAZIA BOTTOM SHEET ===================== -->
+<div id="sheet-razia-backdrop" class="sheet-backdrop" onclick="closeRaziaSheet()"></div>
+<div id="sheet-razia" class="sheet">
+  <div class="sheet-handle"></div>
+  <div class="font-display text-xl mb-4">Lapor Razia Iqomah</div>
+
+  <label class="field-label">Judul Laporan</label>
+  <input id="razia-title" class="field-input mb-4" type="text" placeholder="cth. Razia di area Hay Asher" />
+
+  <label class="field-label">Lokasi</label>
+  <input id="razia-location" class="field-input mb-4" type="text" placeholder="cth. Depan Masjid ..., dekat ..." />
+
+  <label class="field-label">Catatan</label>
+  <textarea id="razia-note" class="field-input mb-5" rows="2" placeholder="Waktu kejadian, ciri-ciri petugas, dll (opsional)"></textarea>
+
+  <label class="field-label">Foto (opsional)</label>
+  <div class="mb-5">
+    <input id="razia-photo" type="file" accept="image/*" capture="environment" style="display:none;" onchange="handleRaziaPhotoSelect(event)">
+    <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('razia-photo').click()">Pilih Foto</button>
+    <div id="razia-photo-preview-wrap" class="hidden" style="margin-top:10px; position:relative;">
+      <img id="razia-photo-preview" style="width:100%; max-height:160px; object-fit:cover; border-radius:12px;" />
+      <button type="button" onclick="removeRaziaPhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">✕</button>
+    </div>
+  </div>
+
+  <button id="btn-save-razia" class="btn-primary razia" onclick="saveRazia()">Kirim Laporan</button>
+  <button class="btn-ghost" onclick="closeRaziaSheet()">Batal</button>
+</div>
+
 <div id="toast" class="toast">Tersimpan</div>
 
 <script>
@@ -308,23 +560,32 @@
 const SUPA_URL = 'https://xiszpsqmroynihbfijwa.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpc3pwc3Ftcm95bmloYmZpandhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NjM1MjIsImV4cCI6MjEwMTIzOTUyMn0.Z9Qz5GWG8UWY47JhLvD7_4ym7rnpl5lyPWrQJCvPXR0';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-const TABLE = { maqom: 'maqom_pins', blacklist: 'blacklist_pins' };
+const TABLE = { maqom: 'maqom_pins', blacklist: 'blacklist_pins', razia: 'razia_reports' };
 
 /* ---------- state ---------- */
 const store = {
   maqom: [],
-  blacklist: []
+  blacklist: [],
+  razia: []
 };
-let currentPage = 'maqom';
+let currentPage = 'home';
 let pendingLatLng = null;
 let pendingPhotoFile = null;
+let pendingRaziaPhotoFile = null;
 let maps = {};
 let markerLayers = { maqom: null, blacklist: null };
 let userMarkers = { maqom: null, blacklist: null };
 
 const ICON_SVG = {
   landmark: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
-  'triangle-alert': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+  'triangle-alert': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+  shield: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+};
+
+const ICON_SVG_OUTLINE = {
+  landmark: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+  'triangle-alert': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+  shield: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
 };
 
 const meta = {
@@ -386,7 +647,7 @@ function switchPage(cat){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + cat).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
-  setTimeout(() => maps[cat].invalidateSize(), 220);
+  if(maps[cat]) setTimeout(() => maps[cat].invalidateSize(), 220);
 }
 
 /* ---------- custom marker icon ---------- */
@@ -544,6 +805,8 @@ async function loadPins(cat){
 function updateCounts(){
   document.getElementById('nav-count-maqom').textContent = store.maqom.length + ' titik';
   document.getElementById('nav-count-blacklist').textContent = store.blacklist.length + ' titik';
+  document.getElementById('nav-count-razia').textContent = store.razia.length + ' lapor';
+  updateHomeStats();
 }
 
 /* ---------- address search (geocoding via Nominatim) ---------- */
@@ -566,6 +829,204 @@ async function doSearch(cat){
   }
 }
 
+/* ---------- home: stats & recent activity ---------- */
+function updateHomeStats(){
+  const elMaqom = document.getElementById('stat-maqom');
+  const elBlacklist = document.getElementById('stat-blacklist');
+  const elRazia = document.getElementById('stat-razia');
+  if(elMaqom) elMaqom.textContent = store.maqom.length;
+  if(elBlacklist) elBlacklist.textContent = store.blacklist.length;
+  if(elRazia) elRazia.textContent = store.razia.length;
+  renderActivity();
+}
+
+function timeAgo(iso){
+  if(!iso) return '';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diffMs / 60000);
+  if(min < 1) return 'baru saja';
+  if(min < 60) return min + ' menit lalu';
+  const hr = Math.floor(min / 60);
+  if(hr < 24) return hr + ' jam lalu';
+  const day = Math.floor(hr / 24);
+  return day + ' hari lalu';
+}
+
+function renderActivity(){
+  const list = document.getElementById('activity-list');
+  if(!list) return;
+
+  const items = [
+    ...store.maqom.map(p => ({ ...p, _cat: 'maqom', _label: 'Maqom baru ditandai', _color: 'var(--maqom)', _bg: 'rgba(23,80,56,0.1)' })),
+    ...store.blacklist.map(p => ({ ...p, _cat: 'blacklist', _label: 'Rumah blacklist ditandai', _color: 'var(--rust)', _bg: 'rgba(156,59,50,0.1)' })),
+    ...store.razia.map(p => ({ ...p, _cat: 'razia', _label: 'Laporan razia baru', _color: 'var(--amber)', _bg: 'rgba(184,114,30,0.1)' }))
+  ].filter(i => i.created_at).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+
+  if(!items.length){
+    list.innerHTML = '<div class="empty-state">Belum ada aktivitas. Yuk mulai tandai titik atau lapor razia.</div>';
+    return;
+  }
+
+  list.innerHTML = items.map(i => `
+    <div class="activity-item">
+      <div class="activity-icon" style="background:${i._bg}; color:${i._color};">${ICON_SVG_OUTLINE[i._cat === 'maqom' ? 'landmark' : i._cat === 'blacklist' ? 'triangle-alert' : 'shield']}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="activity-title">${escapeHtml(i.name || i.title || '(tanpa nama)')}</div>
+        <div class="activity-sub">${escapeHtml(i._label)}</div>
+      </div>
+      <div class="activity-time">${timeAgo(i.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+/* ---------- razia iqomah ---------- */
+function openRaziaSheet(){
+  document.getElementById('razia-title').value = '';
+  document.getElementById('razia-location').value = '';
+  document.getElementById('razia-note').value = '';
+  removeRaziaPhoto();
+  document.getElementById('sheet-razia-backdrop').classList.add('open');
+  document.getElementById('sheet-razia').classList.add('open');
+  setTimeout(() => document.getElementById('razia-title').focus(), 250);
+}
+
+function closeRaziaSheet(){
+  document.getElementById('sheet-razia-backdrop').classList.remove('open');
+  document.getElementById('sheet-razia').classList.remove('open');
+}
+
+function handleRaziaPhotoSelect(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    showToast('File harus berupa gambar');
+    e.target.value = '';
+    return;
+  }
+  pendingRaziaPhotoFile = file;
+  const preview = document.getElementById('razia-photo-preview');
+  preview.src = URL.createObjectURL(file);
+  document.getElementById('razia-photo-preview-wrap').classList.remove('hidden');
+}
+
+function removeRaziaPhoto(){
+  pendingRaziaPhotoFile = null;
+  document.getElementById('razia-photo').value = '';
+  document.getElementById('razia-photo-preview-wrap').classList.add('hidden');
+  document.getElementById('razia-photo-preview').src = '';
+}
+
+async function saveRazia(){
+  const title = document.getElementById('razia-title').value.trim();
+  const location = document.getElementById('razia-location').value.trim();
+  const note = document.getElementById('razia-note').value.trim();
+
+  if(!title){
+    document.getElementById('razia-title').style.borderColor = 'var(--rust)';
+    document.getElementById('razia-title').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-razia');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+
+  let photo_url = null;
+  if(pendingRaziaPhotoFile){
+    btn.textContent = 'Mengunggah foto…';
+    try{
+      photo_url = await uploadPhoto(pendingRaziaPhotoFile);
+    } catch(err){
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      showToast('Gagal upload foto — coba lagi');
+      return;
+    }
+  }
+
+  btn.textContent = 'Mengirim…';
+
+  const { data, error } = await sb.from(TABLE.razia).insert({ title, location, note, photo_url }).select().single();
+
+  btn.disabled = false;
+  btn.textContent = originalLabel;
+
+  if(error){
+    console.error(error);
+    showToast('Gagal kirim laporan — cek koneksi internet');
+    return;
+  }
+
+  store.razia.unshift(data);
+  renderRaziaList();
+  updateCounts();
+  closeRaziaSheet();
+  showToast('Laporan razia terkirim');
+}
+
+function renderRaziaList(){
+  const list = document.getElementById('razia-list');
+  if(!list) return;
+
+  if(!store.razia.length){
+    list.innerHTML = '<div class="empty-state">Belum ada laporan razia. Jadilah yang pertama melapor.</div>';
+    return;
+  }
+
+  list.innerHTML = store.razia.map(r => `
+    <div class="razia-card">
+      ${r.photo_url ? `<img src="${escapeHtml(r.photo_url)}" style="width:100%; max-height:150px; object-fit:cover; border-radius:10px; margin-bottom:10px;" />` : ''}
+      <div class="razia-tag">${ICON_SVG_OUTLINE.shield} Razia Iqomah</div>
+      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(r.title)}</div>
+      ${r.location ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(r.location)}</div>` : ''}
+      ${r.note ? `<div class="popup-note" style="margin-bottom:6px;">${escapeHtml(r.note)}</div>` : ''}
+      <div class="activity-time">${timeAgo(r.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+async function loadRazia(){
+  const { data, error } = await sb.from(TABLE.razia).select('*').order('created_at', { ascending: false });
+  if(error){ console.error(error); showToast('Gagal ambil data razia'); return; }
+  store.razia = data;
+  renderRaziaList();
+  updateCounts();
+}
+
+/* ---------- akun / lowongan ---------- */
+const DUMMY_JOBS = [
+  { title: 'Admin Toko Online', location: 'Kairo — kerja dari rumah', tag: 'Part-time', desc: 'Balas chat pembeli & input pesanan, fleksibel sekitar jam kuliah.' },
+  { title: 'Guru Les Privat Bahasa Indonesia', location: 'Nasr City', tag: 'Freelance', desc: 'Mengajar anak ekspat, 2-3x seminggu, jadwal fleksibel.' },
+  { title: 'Kurir Titip Barang Mahasiswa', location: 'Hay Asher — Madinat Nasr', tag: 'Sampingan', desc: 'Bantu antar titipan sesama mahasiswa Indonesia di Kairo.' }
+];
+
+function openLowongan(){
+  const list = document.getElementById('job-list');
+  list.innerHTML = DUMMY_JOBS.map(j => `
+    <div class="job-card">
+      <div class="job-tag">${escapeHtml(j.tag)}</div>
+      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(j.title)}</div>
+      <div class="popup-note" style="margin-bottom:4px;">${escapeHtml(j.location)}</div>
+      <div style="font-size:12.5px; color:#555;">${escapeHtml(j.desc)}</div>
+    </div>
+  `).join('') + '<div class="empty-state">Lowongan contoh — hubungi admin Nuqto untuk memasang lowongan.</div>';
+  document.getElementById('page-lowongan').classList.add('open');
+}
+
+function closeLowongan(){
+  document.getElementById('page-lowongan').classList.remove('open');
+}
+
+function shareApp(){
+  const shareData = { title: 'Nuqto', text: 'Peta komunitas Masisir Kairo — Maqom Ulama, info rumah, & razia iqomah.', url: location.href };
+  if(navigator.share){
+    navigator.share(shareData).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(shareData.url).then(() => showToast('Tautan disalin ke clipboard'));
+  }
+}
+
 /* ---------- toast ---------- */
 let toastTimer;
 function showToast(msg){
@@ -585,10 +1046,12 @@ window.addEventListener('load', () => {
   initMaps();
   loadPins('maqom');
   loadPins('blacklist');
+  loadRazia();
   updateCounts();
   ['input-name'].forEach(id => {
     document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
   });
+  document.getElementById('razia-title').addEventListener('input', function(){ this.style.borderColor = ''; });
 });
 </script>
 </body>
