@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nuqto — Peta Titik</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --ink:#1C1B17;
+    --muted:#8B8A85;
+    --line:#ECEAE4;
+    --maqom:#175038;
+    --maqom-deep:#0E3626;
+    --gold:#BE9A46;
+    --black:#20221F;
+    --slate:#2B2E33;
+    --rust:#9C3B32;
+    --rust-deep:#742A24;
+  }
+  *{-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:'Plus Jakarta Sans', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    overscroll-behavior:none;
+  }
+  .font-display{font-family:'Amiri', serif;}
+  .font-mono{font-family:'JetBrains Mono', monospace;}
+
+  .page{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .page.active{opacity:1; pointer-events:auto;}
+
+  #map-maqom, #map-blacklist{
+    flex:1; width:100%; z-index:0;
+  }
+
+  /* header pill */
+  .top-bar{
+    position:absolute; top:0; left:0; right:0; z-index:500;
+    padding:14px 14px 0 14px;
+    display:flex; flex-direction:column; gap:8px;
+    pointer-events:none;
+  }
+  .top-bar > *{pointer-events:auto;}
+  .pill{
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(6px);
+    border-radius:999px;
+    color:var(--ink);
+    box-shadow:0 4px 18px rgba(28,27,23,0.1);
+    border:1px solid var(--line);
+  }
+  .search-row{
+    display:flex; gap:8px; align-items:center;
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(6px);
+    border-radius:16px;
+    padding:8px 10px;
+    box-shadow:0 4px 18px rgba(28,27,23,0.1);
+    border:1px solid var(--line);
+  }
+  .search-row input{
+    background:transparent; border:none; outline:none;
+    color:var(--ink); font-size:14px; flex:1; min-width:0;
+  }
+  .search-row input::placeholder{color:var(--muted);}
+
+  /* bottom nav — arch / gate motif */
+  .bottom-nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:600;
+    background:var(--paper);
+    border-top:1px solid var(--line);
+    padding:10px 18px calc(10px + env(safe-area-inset-bottom, 0px)) 18px;
+    display:flex; justify-content:space-around; align-items:flex-end;
+    box-shadow:0 -6px 24px rgba(28,27,23,0.06);
+  }
+  .nav-btn{
+    position:relative;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    width:132px; padding-top:14px;
+    background:none; border:none; cursor:pointer;
+    color:var(--muted);
+    transition:color .2s ease, transform .2s ease;
+  }
+  .nav-btn .arch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:56px; height:30px;
+    border-radius:28px 28px 0 0;
+    background:transparent;
+    transition:background .25s ease, box-shadow .25s ease;
+  }
+  .nav-btn.active{transform:translateY(-2px);}
+  .nav-btn.active[data-cat="maqom"]{color:var(--maqom);}
+  .nav-btn.active[data-cat="blacklist"]{color:var(--rust);}
+  .nav-btn.active[data-cat="maqom"] .arch{background:rgba(23,80,56,0.1);}
+  .nav-btn.active[data-cat="blacklist"] .arch{background:rgba(156,59,50,0.1);}
+  .nav-btn .icon-wrap{position:relative; z-index:2;}
+  .nav-btn .label{position:relative; z-index:2; font-size:11.5px; font-weight:600; letter-spacing:.02em;}
+  .nav-btn .count{position:relative; z-index:2; font-size:10px; font-family:'JetBrains Mono',monospace; opacity:.7;}
+
+  /* custom pin markers */
+  .pin{
+    width:30px; height:30px;
+    border-radius:50% 50% 50% 0;
+    transform:rotate(-45deg);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 8px rgba(0,0,0,0.35);
+    border:2px solid rgba(255,255,255,0.85);
+  }
+  .pin.maqom{background:var(--maqom);}
+  .pin.blacklist{background:var(--rust);}
+  .pin span{transform:rotate(45deg); font-size:14px;}
+
+  .pin-drop{animation:dropIn .45s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes dropIn{
+    0%{transform:translateY(-26px) rotate(-45deg) scale(.4); opacity:0;}
+    100%{transform:translateY(0) rotate(-45deg) scale(1); opacity:1;}
+  }
+
+  .locate-btn{
+    position:absolute; left:14px; bottom:96px; z-index:450;
+    width:46px; height:46px; border-radius:50%;
+    background:var(--paper); border:1px solid var(--line);
+    box-shadow:0 4px 14px rgba(28,27,23,0.14);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform .15s ease;
+  }
+  .locate-btn:active{transform:scale(0.92);}
+  .locate-btn.loading svg{animation:spin .9s linear infinite;}
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .user-dot{
+    width:16px; height:16px; border-radius:50%;
+    background:#3B82F6; border:3px solid #fff;
+    box-shadow:0 0 0 4px rgba(59,130,246,0.28), 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  /* bottom sheet modal */
+  .sheet-backdrop{
+    position:fixed; inset:0; z-index:700;
+    background:rgba(20,19,16,0.55);
+    opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .sheet-backdrop.open{opacity:1; pointer-events:auto;}
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:701;
+    background:var(--paper);
+    border-radius:24px 24px 0 0;
+    padding:20px 22px calc(22px + env(safe-area-inset-bottom, 0px)) 22px;
+    transform:translateY(100%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);
+    max-height:78vh; overflow-y:auto;
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet-handle{width:40px; height:4px; border-radius:99px; background:rgba(28,27,23,0.2); margin:0 auto 16px auto;}
+
+  .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
+  .field-input{
+    width:100%; border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
+    padding:11px 13px; font-size:15px; background:#fff; outline:none;
+    transition:border-color .15s ease;
+  }
+  .field-input:focus{border-color:var(--gold);}
+
+  .btn-primary{
+    width:100%; border-radius:14px; padding:13px; font-weight:700; font-size:15px;
+    color:var(--paper); border:none; cursor:pointer; transition:opacity .15s ease;
+  }
+  .btn-primary:active{opacity:.85;}
+  .btn-primary.maqom{background:var(--maqom);}
+  .btn-primary.blacklist{background:var(--rust);}
+
+  .btn-ghost{
+    width:100%; border-radius:14px; padding:11px; font-weight:600; font-size:14px;
+    background:transparent; border:1.5px solid rgba(28,27,23,0.15); color:var(--ink);
+    cursor:pointer; margin-top:8px;
+  }
+
+  .hint-banner{
+    font-size:12.5px; font-weight:600; text-align:center; padding:9px 14px;
+    background:rgba(255,255,255,0.96);
+    border-radius:12px; opacity:.97;
+    box-shadow:0 4px 14px rgba(28,27,23,0.1);
+    border:1px solid var(--line);
+  }
+
+  .leaflet-popup-content-wrapper{border-radius:14px;}
+  .leaflet-popup-content{margin:12px 14px; font-family:'Plus Jakarta Sans',sans-serif;}
+  .popup-title{font-weight:700; font-size:14px; margin-bottom:2px;}
+  .popup-note{font-size:12.5px; color:#555; margin-bottom:8px; white-space:pre-wrap;}
+  .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888; margin-bottom:8px;}
+  .popup-del{font-size:12px; font-weight:700; color:var(--rust); background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; gap:4px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
+    background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
+    padding:10px 18px; border-radius:99px; z-index:800; opacity:0; transition:all .25s ease; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ===================== PAGE 1 : MAQOM ULAMA ===================== -->
+<div id="page-maqom" class="page active">
+  <div id="map-maqom"></div>
+  <div class="top-bar">
+    <div class="search-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--maqom); flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search-maqom" type="text" placeholder="Cari alamat maqom…" />
+      <button onclick="doSearch('maqom')" class="text-xs font-bold px-2" style="color:var(--maqom);">CARI</button>
+    </div>
+  </div>
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
+    <div class="hint-banner" style="color:var(--maqom);">Tap di peta untuk menandai lokasi maqom baru</div>
+  </div>
+  <button id="locate-maqom" class="locate-btn" style="color:var(--maqom);" onclick="locateMe('maqom')" aria-label="Ke lokasi saya">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+  </button>
+</div>
+
+<!-- ===================== PAGE 2 : RUMAH BLACKLIST ===================== -->
+<div id="page-blacklist" class="page">
+  <div id="map-blacklist"></div>
+  <div class="top-bar">
+    <div class="search-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--rust); flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search-blacklist" type="text" placeholder="Cari alamat rumah…" />
+      <button onclick="doSearch('blacklist')" class="text-xs font-bold px-2" style="color:var(--rust);">CARI</button>
+    </div>
+  </div>
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
+    <div class="hint-banner" style="color:var(--rust);">Tap di peta untuk menandai rumah bermasalah</div>
+  </div>
+  <button id="locate-blacklist" class="locate-btn" style="color:var(--rust);" onclick="locateMe('blacklist')" aria-label="Ke lokasi saya">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+  </button>
+</div>
+
+<!-- ===================== BOTTOM NAVIGATION ===================== -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-cat="maqom" onclick="switchPage('maqom')">
+    <span class="arch"></span>
+    <span class="icon-wrap">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+    </span>
+    <span class="label">Map Maqom</span>
+    <span class="count" id="nav-count-maqom">0 titik</span>
+  </button>
+  <button class="nav-btn" data-cat="blacklist" onclick="switchPage('blacklist')">
+    <span class="arch"></span>
+    <span class="icon-wrap">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    </span>
+    <span class="label">Rumah Blacklist</span>
+    <span class="count" id="nav-count-blacklist">0 titik</span>
+  </button>
+</nav>
+
+<!-- ===================== ADD-PIN BOTTOM SHEET ===================== -->
+<div id="sheet-backdrop" class="sheet-backdrop" onclick="closeSheet()"></div>
+<div id="sheet" class="sheet">
+  <div class="sheet-handle"></div>
+  <div id="sheet-title" class="font-display text-xl mb-1">Tandai Lokasi</div>
+  <div id="sheet-coord" class="font-mono text-xs mb-4" style="color:rgba(28,27,23,0.5);">30.044400, 31.235700</div>
+
+  <label class="field-label" id="label-name">Nama Maqom</label>
+  <input id="input-name" class="field-input mb-4" type="text" placeholder="cth. Maqom Habib ..." />
+
+  <label class="field-label" id="label-address">Alamat</label>
+  <input id="input-address" class="field-input mb-4" type="text" placeholder="Jl. ... , Kelurahan, Kota" />
+
+  <label class="field-label" id="label-note">Catatan</label>
+  <textarea id="input-note" class="field-input mb-5" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+
+  <button id="btn-save" class="btn-primary maqom" onclick="savePin()">Simpan Titik</button>
+  <button class="btn-ghost" onclick="closeSheet()">Batal</button>
+</div>
+
+<div id="toast" class="toast">Tersimpan</div>
+
+<script>
+/* ---------- state ---------- */
+const store = {
+  maqom: [],
+  blacklist: []
+};
+let idCounter = 1;
+let currentPage = 'maqom';
+let pendingLatLng = null;
+let maps = {};
+let markerLayers = { maqom: null, blacklist: null };
+let userMarkers = { maqom: null, blacklist: null };
+
+const ICON_SVG = {
+  landmark: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+  'triangle-alert': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+};
+
+const meta = {
+  maqom: { color: 'var(--maqom)', icon: 'landmark', nameField: 'Nama Maqom', namePlaceholder: 'cth. Maqom Habib ...' },
+  blacklist: { color: 'var(--rust)', icon: 'triangle-alert', nameField: 'Nama / Pemilik Rumah', namePlaceholder: 'cth. Rumah Bpk. ...' }
+};
+
+/* ---------- init maps ---------- */
+function initMaps(){
+  const CAIRO = [30.0444, 31.2357];
+  const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const TILE_OPTS = { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' };
+
+  maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
+  L.control.zoom({ position:'bottomright' }).addTo(maps.maqom);
+
+  maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.blacklist);
+  L.control.zoom({ position:'bottomright' }).addTo(maps.blacklist);
+
+  markerLayers.maqom = L.layerGroup().addTo(maps.maqom);
+  markerLayers.blacklist = L.layerGroup().addTo(maps.blacklist);
+
+  maps.maqom.on('click', e => openSheet('maqom', e.latlng));
+  maps.blacklist.on('click', e => openSheet('blacklist', e.latlng));
+
+  maps.maqom.on('locationfound', e => onLocationFound('maqom', e));
+  maps.blacklist.on('locationfound', e => onLocationFound('blacklist', e));
+  maps.maqom.on('locationerror', e => onLocationError('maqom', e));
+  maps.blacklist.on('locationerror', e => onLocationError('blacklist', e));
+}
+
+/* ---------- locate me ---------- */
+function locateMe(cat){
+  const btn = document.getElementById('locate-' + cat);
+  btn.classList.add('loading');
+  maps[cat].locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+}
+
+function onLocationFound(cat, e){
+  document.getElementById('locate-' + cat).classList.remove('loading');
+  if(userMarkers[cat]){ maps[cat].removeLayer(userMarkers[cat]); }
+  userMarkers[cat] = L.marker(e.latlng, {
+    icon: L.divIcon({ className:'', html:'<div class="user-dot"></div>', iconSize:[16,16], iconAnchor:[8,8] }),
+    zIndexOffset: 1000
+  }).addTo(maps[cat]);
+  showToast('Ditemukan — posisimu sekarang');
+}
+
+function onLocationError(cat, e){
+  document.getElementById('locate-' + cat).classList.remove('loading');
+  showToast('Tidak bisa akses lokasi — cek izin lokasi di browser');
+}
+
+/* ---------- page switching ---------- */
+function switchPage(cat){
+  currentPage = cat;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + cat).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  setTimeout(() => maps[cat].invalidateSize(), 220);
+}
+
+/* ---------- custom marker icon ---------- */
+function makeIcon(cat, justAdded){
+  return L.divIcon({
+    className: '',
+    html: `<div class="pin ${cat} ${justAdded ? 'pin-drop' : ''}"><span>${ICON_SVG[meta[cat].icon]}</span></div>`,
+    iconSize: [30,30],
+    iconAnchor: [15,28],
+    popupAnchor: [0,-26]
+  });
+}
+
+/* ---------- bottom sheet: add pin ---------- */
+function openSheet(cat, latlng){
+  pendingLatLng = latlng;
+  const isMaqom = cat === 'maqom';
+  document.getElementById('sheet-title').textContent = isMaqom ? 'Tandai Maqom' : 'Tandai Rumah Blacklist';
+  document.getElementById('sheet-coord').textContent = latlng.lat.toFixed(6) + ', ' + latlng.lng.toFixed(6);
+  document.getElementById('label-name').textContent = meta[cat].nameField;
+  document.getElementById('input-name').placeholder = meta[cat].namePlaceholder;
+  document.getElementById('input-name').value = '';
+  document.getElementById('input-address').value = '';
+  document.getElementById('input-note').value = '';
+  document.getElementById('label-note').textContent = isMaqom ? 'Catatan' : 'Alasan / Catatan Kejadian';
+
+  const btn = document.getElementById('btn-save');
+  btn.className = 'btn-primary ' + cat;
+  btn.dataset.cat = cat;
+
+  document.getElementById('sheet-backdrop').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+  setTimeout(() => document.getElementById('input-name').focus(), 250);
+}
+
+function closeSheet(){
+  document.getElementById('sheet-backdrop').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+  pendingLatLng = null;
+}
+
+function savePin(){
+  if(!pendingLatLng) return;
+  const cat = document.getElementById('btn-save').dataset.cat;
+  const name = document.getElementById('input-name').value.trim();
+  const address = document.getElementById('input-address').value.trim();
+  const note = document.getElementById('input-note').value.trim();
+
+  if(!name){
+    document.getElementById('input-name').style.borderColor = 'var(--rust)';
+    document.getElementById('input-name').focus();
+    return;
+  }
+
+  const pin = {
+    id: idCounter++,
+    name, address, note,
+    lat: pendingLatLng.lat,
+    lng: pendingLatLng.lng
+  };
+  store[cat].push(pin);
+  renderMarker(cat, pin, true);
+  updateCounts();
+  closeSheet();
+  showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : 'Titik rumah tersimpan');
+}
+
+function renderMarker(cat, pin, justAdded){
+  const marker = L.marker([pin.lat, pin.lng], { icon: makeIcon(cat, justAdded) });
+  const label = cat === 'maqom' ? 'Maqom' : 'Rumah Blacklist';
+  marker.bindPopup(`
+    <div class="popup-title">${escapeHtml(pin.name)}</div>
+    ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
+    ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
+    <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
+    <button class="popup-del" onclick="deletePin('${cat}', ${pin.id})">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+      Hapus titik ini
+    </button>
+  `);
+  marker._pinId = pin.id;
+  markerLayers[cat].addLayer(marker);
+}
+
+function deletePin(cat, id){
+  store[cat] = store[cat].filter(p => p.id !== id);
+  markerLayers[cat].eachLayer(m => { if(m._pinId === id){ markerLayers[cat].removeLayer(m); } });
+  updateCounts();
+  showToast('Titik dihapus');
+}
+
+function updateCounts(){
+  document.getElementById('nav-count-maqom').textContent = store.maqom.length + ' titik';
+  document.getElementById('nav-count-blacklist').textContent = store.blacklist.length + ' titik';
+}
+
+/* ---------- address search (geocoding via Nominatim) ---------- */
+async function doSearch(cat){
+  const input = document.getElementById('search-' + cat);
+  const q = input.value.trim();
+  if(!q) return;
+  try{
+    const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=id&q=' + encodeURIComponent(q));
+    const data = await res.json();
+    if(data && data.length){
+      const { lat, lon } = data[0];
+      maps[cat].flyTo([parseFloat(lat), parseFloat(lon)], 16, { duration: 0.9 });
+      showToast('Lokasi ditemukan — tap peta untuk pin titik pasti');
+    } else {
+      showToast('Alamat tidak ditemukan');
+    }
+  } catch(err){
+    showToast('Pencarian gagal, cek koneksi');
+  }
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- boot ---------- */
+window.addEventListener('load', () => {
+  initMaps();
+  updateCounts();
+  ['input-name'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
+  });
+});
+</script>
+</body>
+</html>
