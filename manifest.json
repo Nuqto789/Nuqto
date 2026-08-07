@@ -1,0 +1,39 @@
+{
+  "name": "Nuqto — Peta Komunitas Masisir",
+  "short_name": "Nuqto",
+  "description": "Peta titik Maqom Ulama, info rumah, dan razia iqomah untuk komunitas mahasiswa Indonesia di Kairo.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#175038",
+  "lang": "id",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}
