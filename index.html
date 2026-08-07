@@ -2,8 +2,19 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Nuqto — Peta Titik</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#175038">
+<meta name="background-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nuqto">
+<link rel="icon" href="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg">
+<link rel="apple-touch-icon" href="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
@@ -29,6 +40,15 @@
     --amber-deep:#8C5716;
   }
   *{-webkit-tap-highlight-color:transparent;}
+  html, body{
+    -webkit-user-select:none; user-select:none;
+    -webkit-touch-callout:none;
+    overscroll-behavior:none;
+  }
+  input, textarea{
+    -webkit-user-select:text; user-select:text;
+  }
+  img{ -webkit-user-drag:none; user-drag:none; }
   body{
     font-family:'Plus Jakarta Sans', sans-serif;
     background:var(--paper);
@@ -46,7 +66,7 @@
   }
   .page.active{opacity:1; pointer-events:auto;}
 
-  #map-maqom, #map-blacklist{
+  #map-maqom, #map-blacklist, #map-razia{
     flex:1; width:100%; z-index:0;
   }
 
@@ -136,6 +156,8 @@
   }
   .pin.maqom{background:var(--maqom);}
   .pin.blacklist{background:var(--rust);}
+  .pin.razia{background:var(--amber);}
+  .pin span{color:#fff;}
   .pin span{transform:rotate(45deg); font-size:14px;}
 
   .pin-drop{animation:dropIn .45s cubic-bezier(.34,1.56,.64,1);}
@@ -250,25 +272,6 @@
   .empty-state{
     text-align:center; padding:32px 16px; color:var(--muted); font-size:13px;
   }
-
-  /* ---- razia feed ---- */
-  .razia-card{
-    border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; background:#fff;
-  }
-  .razia-tag{
-    display:inline-flex; align-items:center; gap:5px;
-    background:rgba(184,114,30,0.1); color:var(--amber-deep);
-    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px; margin-bottom:8px;
-  }
-  .fab{
-    position:fixed; right:18px; bottom:calc(96px + env(safe-area-inset-bottom, 0px)); z-index:450;
-    width:54px; height:54px; border-radius:50%;
-    background:var(--amber); color:#fff;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 6px 18px rgba(184,114,30,0.4);
-    border:none; cursor:pointer; transition:transform .15s ease;
-  }
-  .fab:active{transform:scale(0.92);}
 
   /* ---- akun ---- */
   .profile-card{
@@ -389,13 +392,19 @@
 
 <!-- ===================== PAGE 4 : RAZIA IQOMAH ===================== -->
 <div id="page-razia" class="page">
-  <div class="scroll-page">
-    <div class="font-display mb-1" style="font-size:22px; font-weight:700; color:var(--amber-deep);">Razia Iqomah</div>
-    <div class="hint-banner mb-5" style="color:var(--amber-deep); box-shadow:none; border-color:rgba(184,114,30,0.25);">Laporkan lokasi & waktu razia untuk saling mengingatkan sesama Masisir</div>
-    <div id="razia-list"></div>
+  <div id="map-razia"></div>
+  <div class="top-bar">
+    <div class="search-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber); flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search-razia" type="text" placeholder="Cari alamat/area…" />
+      <button onclick="doSearch('razia')" class="text-xs font-bold px-2" style="color:var(--amber);">CARI</button>
+    </div>
   </div>
-  <button class="fab" onclick="openRaziaSheet()" aria-label="Lapor razia">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
+    <div class="hint-banner" style="color:var(--amber-deep);">Tap di peta untuk menandai lokasi razia</div>
+  </div>
+  <button id="locate-razia" class="locate-btn" style="color:var(--amber);" onclick="locateMe('razia')" aria-label="Ke lokasi saya">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
   </button>
 </div>
 
@@ -524,35 +533,6 @@
   <button class="btn-ghost" onclick="closeSheet()">Batal</button>
 </div>
 
-<!-- ===================== LAPOR RAZIA BOTTOM SHEET ===================== -->
-<div id="sheet-razia-backdrop" class="sheet-backdrop" onclick="closeRaziaSheet()"></div>
-<div id="sheet-razia" class="sheet">
-  <div class="sheet-handle"></div>
-  <div class="font-display text-xl mb-4">Lapor Razia Iqomah</div>
-
-  <label class="field-label">Judul Laporan</label>
-  <input id="razia-title" class="field-input mb-4" type="text" placeholder="cth. Razia di area Hay Asher" />
-
-  <label class="field-label">Lokasi</label>
-  <input id="razia-location" class="field-input mb-4" type="text" placeholder="cth. Depan Masjid ..., dekat ..." />
-
-  <label class="field-label">Catatan</label>
-  <textarea id="razia-note" class="field-input mb-5" rows="2" placeholder="Waktu kejadian, ciri-ciri petugas, dll (opsional)"></textarea>
-
-  <label class="field-label">Foto (opsional)</label>
-  <div class="mb-5">
-    <input id="razia-photo" type="file" accept="image/*" capture="environment" style="display:none;" onchange="handleRaziaPhotoSelect(event)">
-    <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('razia-photo').click()">Pilih Foto</button>
-    <div id="razia-photo-preview-wrap" class="hidden" style="margin-top:10px; position:relative;">
-      <img id="razia-photo-preview" style="width:100%; max-height:160px; object-fit:cover; border-radius:12px;" />
-      <button type="button" onclick="removeRaziaPhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">✕</button>
-    </div>
-  </div>
-
-  <button id="btn-save-razia" class="btn-primary razia" onclick="saveRazia()">Kirim Laporan</button>
-  <button class="btn-ghost" onclick="closeRaziaSheet()">Batal</button>
-</div>
-
 <div id="toast" class="toast">Tersimpan</div>
 
 <script>
@@ -571,10 +551,9 @@ const store = {
 let currentPage = 'home';
 let pendingLatLng = null;
 let pendingPhotoFile = null;
-let pendingRaziaPhotoFile = null;
 let maps = {};
 let markerLayers = { maqom: null, blacklist: null };
-let userMarkers = { maqom: null, blacklist: null };
+let userMarkers = { maqom: null, blacklist: null, razia: null };
 
 const ICON_SVG = {
   landmark: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
@@ -590,7 +569,8 @@ const ICON_SVG_OUTLINE = {
 
 const meta = {
   maqom: { color: 'var(--maqom)', icon: 'landmark', nameField: 'Nama Maqom', namePlaceholder: 'cth. Maqom Habib ...' },
-  blacklist: { color: 'var(--rust)', icon: 'triangle-alert', nameField: 'Nama / Pemilik Rumah', namePlaceholder: 'cth. Rumah Bpk. ...' }
+  blacklist: { color: 'var(--rust)', icon: 'triangle-alert', nameField: 'Nama / Pemilik Rumah', namePlaceholder: 'cth. Rumah Bpk. ...' },
+  razia: { color: 'var(--amber)', icon: 'shield', nameField: 'Judul Laporan', namePlaceholder: 'cth. Razia di area Hay Asher' }
 };
 
 /* ---------- init maps ---------- */
@@ -607,16 +587,24 @@ function initMaps(){
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.blacklist);
   L.control.zoom({ position:'bottomright' }).addTo(maps.blacklist);
 
+  maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.razia);
+  L.control.zoom({ position:'bottomright' }).addTo(maps.razia);
+
   markerLayers.maqom = L.layerGroup().addTo(maps.maqom);
   markerLayers.blacklist = L.layerGroup().addTo(maps.blacklist);
+  markerLayers.razia = L.layerGroup().addTo(maps.razia);
 
   maps.maqom.on('click', e => openSheet('maqom', e.latlng));
   maps.blacklist.on('click', e => openSheet('blacklist', e.latlng));
+  maps.razia.on('click', e => openSheet('razia', e.latlng));
 
   maps.maqom.on('locationfound', e => onLocationFound('maqom', e));
   maps.blacklist.on('locationfound', e => onLocationFound('blacklist', e));
+  maps.razia.on('locationfound', e => onLocationFound('razia', e));
   maps.maqom.on('locationerror', e => onLocationError('maqom', e));
   maps.blacklist.on('locationerror', e => onLocationError('blacklist', e));
+  maps.razia.on('locationerror', e => onLocationError('razia', e));
 }
 
 /* ---------- locate me ---------- */
@@ -879,121 +867,6 @@ function renderActivity(){
   `).join('');
 }
 
-/* ---------- razia iqomah ---------- */
-function openRaziaSheet(){
-  document.getElementById('razia-title').value = '';
-  document.getElementById('razia-location').value = '';
-  document.getElementById('razia-note').value = '';
-  removeRaziaPhoto();
-  document.getElementById('sheet-razia-backdrop').classList.add('open');
-  document.getElementById('sheet-razia').classList.add('open');
-  setTimeout(() => document.getElementById('razia-title').focus(), 250);
-}
-
-function closeRaziaSheet(){
-  document.getElementById('sheet-razia-backdrop').classList.remove('open');
-  document.getElementById('sheet-razia').classList.remove('open');
-}
-
-function handleRaziaPhotoSelect(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){
-    showToast('File harus berupa gambar');
-    e.target.value = '';
-    return;
-  }
-  pendingRaziaPhotoFile = file;
-  const preview = document.getElementById('razia-photo-preview');
-  preview.src = URL.createObjectURL(file);
-  document.getElementById('razia-photo-preview-wrap').classList.remove('hidden');
-}
-
-function removeRaziaPhoto(){
-  pendingRaziaPhotoFile = null;
-  document.getElementById('razia-photo').value = '';
-  document.getElementById('razia-photo-preview-wrap').classList.add('hidden');
-  document.getElementById('razia-photo-preview').src = '';
-}
-
-async function saveRazia(){
-  const title = document.getElementById('razia-title').value.trim();
-  const location = document.getElementById('razia-location').value.trim();
-  const note = document.getElementById('razia-note').value.trim();
-
-  if(!title){
-    document.getElementById('razia-title').style.borderColor = 'var(--rust)';
-    document.getElementById('razia-title').focus();
-    return;
-  }
-
-  const btn = document.getElementById('btn-save-razia');
-  btn.disabled = true;
-  const originalLabel = btn.textContent;
-
-  let photo_url = null;
-  if(pendingRaziaPhotoFile){
-    btn.textContent = 'Mengunggah foto…';
-    try{
-      photo_url = await uploadPhoto(pendingRaziaPhotoFile);
-    } catch(err){
-      console.error(err);
-      btn.disabled = false;
-      btn.textContent = originalLabel;
-      showToast('Gagal upload foto — coba lagi');
-      return;
-    }
-  }
-
-  btn.textContent = 'Mengirim…';
-
-  const { data, error } = await sb.from(TABLE.razia).insert({ title, location, note, photo_url }).select().single();
-
-  btn.disabled = false;
-  btn.textContent = originalLabel;
-
-  if(error){
-    console.error(error);
-    showToast('Gagal kirim laporan — cek koneksi internet');
-    return;
-  }
-
-  store.razia.unshift(data);
-  renderRaziaList();
-  updateCounts();
-  closeRaziaSheet();
-  showToast('Laporan razia terkirim');
-}
-
-function renderRaziaList(){
-  const list = document.getElementById('razia-list');
-  if(!list) return;
-
-  if(!store.razia.length){
-    list.innerHTML = '<div class="empty-state">Belum ada laporan razia. Jadilah yang pertama melapor.</div>';
-    return;
-  }
-
-  list.innerHTML = store.razia.map(r => `
-    <div class="razia-card">
-      ${r.photo_url ? `<img src="${escapeHtml(r.photo_url)}" style="width:100%; max-height:150px; object-fit:cover; border-radius:10px; margin-bottom:10px;" />` : ''}
-      <div class="razia-tag">${ICON_SVG_OUTLINE.shield} Razia Iqomah</div>
-      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(r.title)}</div>
-      ${r.location ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(r.location)}</div>` : ''}
-      ${r.note ? `<div class="popup-note" style="margin-bottom:6px;">${escapeHtml(r.note)}</div>` : ''}
-      <div class="activity-time">${timeAgo(r.created_at)}</div>
-    </div>
-  `).join('');
-}
-
-async function loadRazia(){
-  const { data, error } = await sb.from(TABLE.razia).select('*').order('created_at', { ascending: false });
-  if(error){ console.error(error); showToast('Gagal ambil data razia'); return; }
-  store.razia = data;
-  renderRaziaList();
-  updateCounts();
-}
-
 /* ---------- akun / lowongan ---------- */
 const DUMMY_JOBS = [
   { title: 'Admin Toko Online', location: 'Kairo — kerja dari rumah', tag: 'Part-time', desc: 'Balas chat pembeli & input pesanan, fleksibel sekitar jam kuliah.' },
@@ -1046,12 +919,15 @@ window.addEventListener('load', () => {
   initMaps();
   loadPins('maqom');
   loadPins('blacklist');
-  loadRazia();
+  loadPins('razia');
   updateCounts();
   ['input-name'].forEach(id => {
     document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
   });
-  document.getElementById('razia-title').addEventListener('input', function(){ this.style.borderColor = ''; });
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW gagal daftar:', err));
+  }
 });
 </script>
 </body>
