@@ -299,6 +299,15 @@
   .popup-title{font-weight:700; font-size:14px; margin-bottom:2px; color:#111827;}
   .popup-note{font-size:12.5px; font-weight:400; color:#111827; margin-bottom:8px; white-space:pre-wrap;}
   .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888;}
+  .popup-wrap{position:relative;}
+  .popup-menu-btn{
+    position:absolute; top:0; left:0; z-index:5;
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(20,19,16,0.55); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+  }
+  .popup-menu-btn:active{background:rgba(20,19,16,0.75);}
 
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
@@ -698,6 +707,9 @@ let maps = {};
 let markerLayers = { maqom: null, blacklist: null };
 let userMarkers = { maqom: null, blacklist: null, razia: null };
 let routeLayers = { maqom: null, blacklist: null, razia: null };
+let activeRoutedPinId = { maqom: null, blacklist: null, razia: null };
+let editState = null; // { cat, id } saat mode edit, null saat mode tambah baru
+let existingPhotoUrl = null; // foto lama saat mode edit (jika tidak diganti/dihapus)
 
 const ICON_SVG = {
   landmark: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
@@ -790,12 +802,21 @@ function makeIcon(cat, justAdded){
   });
 }
 
-/* ---------- bottom sheet: add pin ---------- */
+/* ---------- bottom sheet: tambah / edit pin ---------- */
+const SHEET_TITLES = {
+  maqom: { add: 'Tandai Maqom', edit: 'Edit Maqom' },
+  blacklist: { add: 'Tandai Rumah Blacklist', edit: 'Edit Rumah Blacklist' },
+  razia: { add: 'Lapor Razia Iqomah', edit: 'Edit Laporan Razia' }
+};
+
 function openSheet(cat, latlng){
+  editState = null;
+  existingPhotoUrl = null;
   pendingLatLng = latlng;
   const isMaqom = cat === 'maqom';
-  document.getElementById('sheet-title').textContent = isMaqom ? 'Tandai Maqom' : 'Tandai Rumah Blacklist';
+  document.getElementById('sheet-title').textContent = SHEET_TITLES[cat].add;
   document.getElementById('sheet-coord').textContent = latlng.lat.toFixed(6) + ', ' + latlng.lng.toFixed(6);
+  document.getElementById('sheet-coord').style.display = '';
   document.getElementById('label-name').textContent = meta[cat].nameField;
   document.getElementById('input-name').placeholder = meta[cat].namePlaceholder;
   document.getElementById('input-name').value = '';
@@ -807,6 +828,47 @@ function openSheet(cat, latlng){
   const btn = document.getElementById('btn-save');
   btn.className = 'btn-primary ' + cat;
   btn.dataset.cat = cat;
+  btn.textContent = 'Simpan Titik';
+
+  document.getElementById('sheet-backdrop').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+  setTimeout(() => document.getElementById('input-name').focus(), 250);
+}
+
+function openEditSheet(cat, pinId){
+  const pin = store[cat].find(p => String(p.id) === String(pinId));
+  if(!pin){ showToast('Data tidak ditemukan'); return; }
+
+  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+
+  editState = { cat, id: pin.id };
+  pendingLatLng = { lat: pin.lat, lng: pin.lng };
+  existingPhotoUrl = pin.photo_url || null;
+  pendingPhotoFile = null;
+
+  document.getElementById('sheet-title').textContent = SHEET_TITLES[cat].edit;
+  document.getElementById('sheet-coord').style.display = 'none';
+  document.getElementById('label-name').textContent = meta[cat].nameField;
+  document.getElementById('input-name').placeholder = meta[cat].namePlaceholder;
+  document.getElementById('input-name').value = pin.name || '';
+  document.getElementById('input-name').style.borderColor = '';
+  document.getElementById('input-address').value = pin.address || '';
+  document.getElementById('input-note').value = pin.note || '';
+  document.getElementById('label-note').textContent = cat === 'maqom' ? 'Catatan' : 'Alasan / Catatan Kejadian';
+
+  document.getElementById('input-photo').value = '';
+  if(existingPhotoUrl){
+    document.getElementById('photo-preview').src = existingPhotoUrl;
+    document.getElementById('photo-preview-wrap').classList.remove('hidden');
+  } else {
+    document.getElementById('photo-preview-wrap').classList.add('hidden');
+    document.getElementById('photo-preview').src = '';
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.className = 'btn-primary ' + cat;
+  btn.dataset.cat = cat;
+  btn.textContent = 'Simpan Perubahan';
 
   document.getElementById('sheet-backdrop').classList.add('open');
   document.getElementById('sheet').classList.add('open');
@@ -816,7 +878,10 @@ function openSheet(cat, latlng){
 function closeSheet(){
   document.getElementById('sheet-backdrop').classList.remove('open');
   document.getElementById('sheet').classList.remove('open');
+  document.getElementById('sheet-coord').style.display = '';
   pendingLatLng = null;
+  editState = null;
+  existingPhotoUrl = null;
 }
 
 function handlePhotoSelect(e){
@@ -835,6 +900,7 @@ function handlePhotoSelect(e){
 
 function removePhoto(){
   pendingPhotoFile = null;
+  existingPhotoUrl = null;
   document.getElementById('input-photo').value = '';
   document.getElementById('photo-preview-wrap').classList.add('hidden');
   document.getElementById('photo-preview').src = '';
@@ -857,6 +923,7 @@ async function savePin(){
   const name = document.getElementById('input-name').value.trim();
   const address = document.getElementById('input-address').value.trim();
   const note = document.getElementById('input-note').value.trim();
+  const isEdit = !!editState;
 
   if(!name){
     document.getElementById('input-name').style.borderColor = 'var(--rust)';
@@ -868,7 +935,7 @@ async function savePin(){
   btn.disabled = true;
   const originalLabel = btn.textContent;
 
-  let photo_url = null;
+  let photo_url = existingPhotoUrl || null;
   if(pendingPhotoFile){
     btn.textContent = 'Mengunggah foto…';
     try{
@@ -882,17 +949,23 @@ async function savePin(){
     }
   }
 
-  btn.textContent = 'Menyimpan…';
+  btn.textContent = isEdit ? 'Menyimpan perubahan…' : 'Menyimpan…';
 
   let data, error;
   try{
-    const res = await sb.from(TABLE[cat]).insert({
-      name, address, note, photo_url,
-      lat: pendingLatLng.lat,
-      lng: pendingLatLng.lng
-    }).select().single();
-    data = res.data;
-    error = res.error;
+    if(isEdit){
+      const res = await sb.from(TABLE[cat]).update({ name, address, note, photo_url }).eq('id', editState.id).select().single();
+      data = res.data;
+      error = res.error;
+    } else {
+      const res = await sb.from(TABLE[cat]).insert({
+        name, address, note, photo_url,
+        lat: pendingLatLng.lat,
+        lng: pendingLatLng.lng
+      }).select().single();
+      data = res.data;
+      error = res.error;
+    }
   } catch(err){
     error = err;
   }
@@ -907,29 +980,61 @@ async function savePin(){
     return;
   }
 
-  const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng, created_at: data.created_at };
-  store[cat].push(pin);
-  renderMarker(cat, pin, true);
-  updateCounts();
-  closeSheet();
-  showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : 'Titik rumah tersimpan');
+  if(isEdit){
+    const idx = store[cat].findIndex(p => String(p.id) === String(editState.id));
+    if(idx > -1) store[cat][idx] = { ...store[cat][idx], name, address, note, photo_url: data.photo_url };
+    replaceMarker(cat, editState.id, store[cat][idx]);
+    closeSheet();
+    showToast('Perubahan tersimpan');
+  } else {
+    const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng, created_at: data.created_at };
+    store[cat].push(pin);
+    renderMarker(cat, pin, true);
+    updateCounts();
+    closeSheet();
+    showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : 'Titik rumah tersimpan');
+  }
+}
+
+function replaceMarker(cat, pinId, updatedPin){
+  markerLayers[cat].eachLayer(l => {
+    if(String(l._pinId) === String(pinId)) markerLayers[cat].removeLayer(l);
+  });
+  renderMarker(cat, updatedPin, false);
 }
 
 function renderMarker(cat, pin, justAdded){
   const marker = L.marker([pin.lat, pin.lng], { icon: makeIcon(cat, justAdded) });
-  marker.bindPopup(`
-    ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
-    <div class="popup-title">${escapeHtml(pin.name)}</div>
-    ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
-    ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
-    <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
-  `, { minWidth: 320, maxWidth: 380 });
+  marker.bindPopup(buildPopupHtml(cat, pin), { minWidth: 320, maxWidth: 380 });
   marker._pinId = pin.id;
   markerLayers[cat].addLayer(marker);
 
   if(cat === 'maqom' || cat === 'blacklist'){
-    marker.on('click', () => drawRouteTo(cat, [pin.lat, pin.lng]));
+    marker.off('click');
+    marker.on('click', () => {
+      if(activeRoutedPinId[cat] !== pin.id){
+        activeRoutedPinId[cat] = pin.id;
+        drawRouteTo(cat, [pin.lat, pin.lng]);
+      } else {
+        marker.openPopup();
+      }
+    });
   }
+}
+
+function buildPopupHtml(cat, pin){
+  return `
+    <div class="popup-wrap">
+      <button class="popup-menu-btn" onclick="openEditSheet('${cat}', '${pin.id}')" aria-label="Edit">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </button>
+      ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
+      <div class="popup-title">${escapeHtml(pin.name)}</div>
+      ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
+      ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
+      <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
+    </div>
+  `;
 }
 
 /* ---------- rute jalan ke titik ---------- */
