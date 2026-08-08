@@ -78,7 +78,7 @@
   /* header pill */
   .top-bar{
     position:absolute; top:0; left:0; right:0; z-index:500;
-    padding:14px 14px 0 14px;
+    padding:calc(env(safe-area-inset-top, 0px) + 22px) 14px 0 14px;
     display:flex; flex-direction:column; gap:8px;
     pointer-events:none;
   }
@@ -177,6 +177,21 @@
   .locate-btn:active{transform:scale(0.92);}
   .locate-btn.loading svg{animation:spin .9s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .zoom-ctrl{
+    position:absolute; left:14px; z-index:450;
+    top:calc(env(safe-area-inset-top, 0px) + 86px);
+    display:flex; flex-direction:column;
+    background:var(--paper); border:1px solid var(--line);
+    border-radius:14px; box-shadow:0 4px 14px rgba(28,27,23,0.14);
+    overflow:hidden;
+  }
+  .zoom-ctrl button{
+    width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+    background:none; border:none; cursor:pointer; padding:0;
+  }
+  .zoom-ctrl button:active{ background:rgba(0,0,0,0.06); }
+  .zoom-ctrl .zoom-divider{ height:1px; margin:0 8px; background:var(--line); }
 
   .user-dot{
     width:16px; height:16px; border-radius:50%;
@@ -368,6 +383,15 @@
   <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--maqom);">Tap di peta untuk menandai lokasi maqom baru</div>
   </div>
+  <div id="zoom-maqom" class="zoom-ctrl" style="color:var(--maqom);">
+    <button onclick="maps.maqom.zoomIn()" aria-label="Zoom in">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button onclick="maps.maqom.zoomOut()" aria-label="Zoom out">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
   <button id="locate-maqom" class="locate-btn" style="color:var(--maqom);" onclick="locateMe('maqom')" aria-label="Ke lokasi saya">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
   </button>
@@ -386,6 +410,15 @@
   <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--rust);">Tap di peta untuk menandai rumah bermasalah</div>
   </div>
+  <div id="zoom-blacklist" class="zoom-ctrl" style="color:var(--rust);">
+    <button onclick="maps.blacklist.zoomIn()" aria-label="Zoom in">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button onclick="maps.blacklist.zoomOut()" aria-label="Zoom out">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
   <button id="locate-blacklist" class="locate-btn" style="color:var(--rust);" onclick="locateMe('blacklist')" aria-label="Ke lokasi saya">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
   </button>
@@ -403,6 +436,15 @@
   </div>
   <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--amber-deep);">Tap di peta untuk menandai lokasi razia</div>
+  </div>
+  <div id="zoom-razia" class="zoom-ctrl" style="color:var(--amber-deep);">
+    <button onclick="maps.razia.zoomIn()" aria-label="Zoom in">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button onclick="maps.razia.zoomOut()" aria-label="Zoom out">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
   </div>
   <button id="locate-razia" class="locate-btn" style="color:var(--amber);" onclick="locateMe('razia')" aria-label="Ke lokasi saya">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
@@ -579,15 +621,12 @@ function initMaps(){
 
   maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
-  L.control.zoom({ position:'bottomright' }).addTo(maps.maqom);
 
   maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.blacklist);
-  L.control.zoom({ position:'bottomright' }).addTo(maps.blacklist);
 
   maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.razia);
-  L.control.zoom({ position:'bottomright' }).addTo(maps.razia);
 
   markerLayers.maqom = L.layerGroup().addTo(maps.maqom);
   markerLayers.blacklist = L.layerGroup().addTo(maps.blacklist);
