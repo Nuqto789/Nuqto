@@ -853,7 +853,7 @@ async function savePin(){
 function renderMarker(cat, pin, justAdded){
   const marker = L.marker([pin.lat, pin.lng], { icon: makeIcon(cat, justAdded) });
   marker.bindPopup(`
-    ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
+    ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
     <div class="popup-title">${escapeHtml(pin.name)}</div>
     ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
     ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
