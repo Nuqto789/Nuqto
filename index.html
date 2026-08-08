@@ -114,26 +114,26 @@
     position:fixed; left:0; right:0; bottom:0; z-index:600;
     background:var(--paper);
     border-top:1px solid var(--line);
-    padding:3px 4px calc(3px + env(safe-area-inset-bottom, 0px)) 4px;
+    padding:4px 4px calc(4px + env(safe-area-inset-bottom, 0px)) 4px;
     display:flex; justify-content:space-between; align-items:flex-end;
     box-shadow:0 -6px 24px rgba(28,27,23,0.06);
   }
   .nav-btn{
     position:relative;
-    display:flex; flex-direction:column; align-items:center; gap:1px;
-    flex:1; min-width:0; padding-top:6px;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    flex:1; min-width:0; padding-top:4px;
     background:none; border:none; cursor:pointer;
     color:var(--muted);
     transition:color .2s ease, transform .2s ease;
   }
   .nav-btn .arch{
     position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:42px; height:16px;
-    border-radius:16px 16px 0 0;
+    width:38px; height:13px;
+    border-radius:14px 14px 0 0;
     background:transparent;
     transition:background .25s ease, box-shadow .25s ease;
   }
-  .nav-btn.active{transform:translateY(-2px);}
+  .nav-btn.active{transform:translateY(-1px);}
   .nav-btn.active[data-cat="home"]{color:var(--gold);}
   .nav-btn.active[data-cat="maqom"]{color:var(--maqom);}
   .nav-btn.active[data-cat="blacklist"]{color:var(--rust);}
@@ -144,9 +144,9 @@
   .nav-btn.active[data-cat="blacklist"] .arch{background:rgba(156,59,50,0.1);}
   .nav-btn.active[data-cat="razia"] .arch{background:rgba(184,114,30,0.12);}
   .nav-btn.active[data-cat="akun"] .arch{background:rgba(43,46,51,0.1);}
-  .nav-btn .icon-wrap{position:relative; z-index:2;}
-  .nav-btn .label{position:relative; z-index:2; font-size:10px; font-weight:600; letter-spacing:.01em; white-space:nowrap;}
-  .nav-btn .count{position:relative; z-index:2; font-size:9.5px; font-family:'JetBrains Mono',monospace; opacity:.7;}
+  .nav-btn .icon-wrap{position:relative; z-index:2; display:flex;}
+  .nav-btn .label{position:relative; z-index:2; font-size:10px; line-height:1.1; font-weight:600; letter-spacing:.01em; white-space:nowrap;}
+  .nav-btn .count{position:relative; z-index:2; font-size:8.5px; line-height:1; font-family:'JetBrains Mono',monospace; opacity:.7;}
 
   /* custom pin markers */
   .pin{
