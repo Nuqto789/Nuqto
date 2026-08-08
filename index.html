@@ -180,6 +180,42 @@
   .locate-btn.loading svg{animation:spin .9s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
+  /* ---- splash screen ---- */
+  #splash-screen{
+    position:fixed; inset:0; z-index:3000;
+    background:var(--ilmu-deep);
+    display:flex; flex-direction:column; align-items:center;
+    transition:opacity .6s ease, visibility .6s ease;
+  }
+  #splash-screen.fade-out{opacity:0; visibility:hidden; pointer-events:none;}
+  .splash-logo-area{
+    flex:1; display:flex; align-items:center; justify-content:center; width:100%;
+    padding:24px;
+  }
+  .splash-logo{
+    width:168px; height:168px; object-fit:contain;
+    border-radius:28px;
+    animation:splashIn .7s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes splashIn{
+    from{ opacity:0; transform:scale(0.92) translateY(6px); }
+    to{ opacity:1; transform:scale(1) translateY(0); }
+  }
+  .splash-footer{
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    padding-bottom:calc(48px + env(safe-area-inset-bottom, 0px));
+  }
+  .splash-spinner{
+    width:30px; height:30px; border-radius:50%;
+    border:3px solid rgba(190,154,70,0.22);
+    border-top-color:var(--gold);
+    animation:spin .85s linear infinite;
+  }
+  .splash-caption{
+    font-size:12.5px; font-weight:600; letter-spacing:.03em;
+    color:rgba(230,214,181,0.75);
+  }
+
   .zoom-ctrl{
     position:absolute; left:14px; z-index:450;
     top:calc(env(safe-area-inset-top, 0px) + 86px);
@@ -362,6 +398,17 @@
 </style>
 </head>
 <body>
+
+<!-- ===================== SPLASH SCREEN ===================== -->
+<div id="splash-screen">
+  <div class="splash-logo-area">
+    <img class="splash-logo" src="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg" alt="Nuqto" />
+  </div>
+  <div class="splash-footer">
+    <div class="splash-spinner"></div>
+    <div class="splash-caption">Sedang Menelusuri Jejak...</div>
+  </div>
+</div>
 
 <!-- ===================== PAGE 0 : BERANDA ===================== -->
 <div id="page-home" class="page active">
@@ -1032,6 +1079,12 @@ window.addEventListener('load', () => {
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW gagal daftar:', err));
   }
+
+  const splash = document.getElementById('splash-screen');
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    setTimeout(() => { splash.style.display = 'none'; }, 650);
+  }, 2200);
 });
 </script>
 </body>
