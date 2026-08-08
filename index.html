@@ -38,6 +38,8 @@
     --rust-deep:#742A24;
     --amber:#B8721E;
     --amber-deep:#8C5716;
+    --ilmu:#1E3A5F;
+    --ilmu-deep:#152A45;
   }
   *{-webkit-tap-highlight-color:transparent;}
   html, body{
@@ -111,22 +113,22 @@
     position:fixed; left:0; right:0; bottom:0; z-index:600;
     background:var(--paper);
     border-top:1px solid var(--line);
-    padding:5px 4px calc(5px + env(safe-area-inset-bottom, 0px)) 4px;
+    padding:3px 4px calc(3px + env(safe-area-inset-bottom, 0px)) 4px;
     display:flex; justify-content:space-between; align-items:flex-end;
     box-shadow:0 -6px 24px rgba(28,27,23,0.06);
   }
   .nav-btn{
     position:relative;
-    display:flex; flex-direction:column; align-items:center; gap:2px;
-    flex:1; min-width:0; padding-top:8px;
+    display:flex; flex-direction:column; align-items:center; gap:1px;
+    flex:1; min-width:0; padding-top:6px;
     background:none; border:none; cursor:pointer;
     color:var(--muted);
     transition:color .2s ease, transform .2s ease;
   }
   .nav-btn .arch{
     position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:44px; height:20px;
-    border-radius:20px 20px 0 0;
+    width:42px; height:16px;
+    border-radius:16px 16px 0 0;
     background:transparent;
     transition:background .25s ease, box-shadow .25s ease;
   }
@@ -264,10 +266,27 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* ---- home: header ---- */
+  .home-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+  .home-clock{ font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:2px; }
+  .home-title{ font-family:'Amiri',serif; font-size:24px; font-weight:700; color:var(--ink); }
+  .home-avatar{
+    width:42px; height:42px; border-radius:50%; flex-shrink:0;
+    background:#fff; color:var(--ink); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 8px rgba(28,27,23,0.08);
+    cursor:pointer;
+  }
+
   /* ---- home: stat cards & activity ---- */
   .stat-card{
     border-radius:16px; padding:14px 12px;
-    border:1px solid var(--line); background:#fff;
+    border:1px solid var(--line); border-top-width:3px;
+    background:#fff; box-shadow:0 3px 12px rgba(28,27,23,0.06);
+  }
+  .stat-card-icon{
+    width:26px; height:26px; border-radius:8px; margin-bottom:8px;
+    display:flex; align-items:center; justify-content:center;
   }
   .stat-num{font-family:'Amiri',serif; font-size:26px; font-weight:700; line-height:1;}
   .stat-label{font-size:11px; font-weight:600; color:var(--muted); margin-top:4px;}
@@ -347,21 +366,41 @@
 <!-- ===================== PAGE 0 : BERANDA ===================== -->
 <div id="page-home" class="page active">
   <div class="scroll-page">
-    <div class="mb-1" style="font-size:13px; color:var(--muted); font-weight:600;">Assalamualaikum,</div>
-    <div class="font-display mb-5" style="font-size:26px; font-weight:700;">Selamat datang di Nuqto</div>
+
+    <div class="home-header">
+      <div>
+        <div class="home-clock" id="home-clock">--.--</div>
+        <div class="home-title">Beranda</div>
+      </div>
+      <button class="home-avatar" onclick="showToast('Belum ada notifikasi baru')" aria-label="Notifikasi">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </button>
+    </div>
+
+    <div class="mb-1" style="font-size:13px; color:var(--muted); font-weight:600;">Assalamu'alaikum,</div>
+    <div class="font-display mb-5" style="font-size:22px; font-weight:700;">Selamat datang di Nuqto</div>
 
     <div class="grid grid-cols-3 gap-2 mb-6">
-      <div class="stat-card" style="border-color:rgba(23,80,56,0.2);">
+      <div class="stat-card" style="border-top-color:var(--maqom);">
+        <div class="stat-card-icon" style="background:rgba(23,80,56,0.1); color:var(--maqom);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><path d="M6 21v-7a6 6 0 0 1 12 0v7"/><path d="M12 8V4"/><path d="M10 4h4"/></svg>
+        </div>
         <div class="stat-num" style="color:var(--maqom);" id="stat-maqom">0</div>
         <div class="stat-label">Titik Maqom</div>
       </div>
-      <div class="stat-card" style="border-color:rgba(156,59,50,0.2);">
+      <div class="stat-card" style="border-top-color:var(--rust);">
+        <div class="stat-card-icon" style="background:rgba(156,59,50,0.1); color:var(--rust);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
         <div class="stat-num" style="color:var(--rust);" id="stat-blacklist">0</div>
         <div class="stat-label">Rumah Blacklist</div>
       </div>
-      <div class="stat-card" style="border-color:rgba(184,114,30,0.2);">
-        <div class="stat-num" style="color:var(--amber);" id="stat-razia">0</div>
-        <div class="stat-label">Talaqqi</div>
+      <div class="stat-card" style="border-top-color:var(--ilmu);">
+        <div class="stat-card-icon" style="background:rgba(30,58,95,0.1); color:var(--ilmu);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div class="stat-num" style="color:var(--ilmu);" id="stat-razia">0</div>
+        <div class="stat-label">Tempat Talaqqi</div>
       </div>
     </div>
 
@@ -509,35 +548,35 @@
   <button class="nav-btn active" data-cat="home" onclick="switchPage('home')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </span>
     <span class="label">Beranda</span>
   </button>
   <button class="nav-btn" data-cat="maqom" onclick="switchPage('maqom')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
     </span>
     <span class="label">Map Maqom</span>
   </button>
   <button class="nav-btn" data-cat="blacklist" onclick="switchPage('blacklist')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/></svg>
     </span>
     <span class="label">Blacklist</span>
   </button>
   <button class="nav-btn" data-cat="razia" onclick="switchPage('razia')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     </span>
     <span class="label">Talaqqi</span>
   </button>
   <button class="nav-btn" data-cat="akun" onclick="switchPage('akun')">
     <span class="arch"></span>
     <span class="icon-wrap">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
     </span>
     <span class="label">Akun</span>
   </button>
@@ -901,7 +940,7 @@ function renderActivity(){
   const items = [
     ...store.maqom.map(p => ({ ...p, _cat: 'maqom', _label: 'Maqom baru ditandai', _color: 'var(--maqom)', _bg: 'rgba(23,80,56,0.1)' })),
     ...store.blacklist.map(p => ({ ...p, _cat: 'blacklist', _label: 'Rumah blacklist ditandai', _color: 'var(--rust)', _bg: 'rgba(156,59,50,0.1)' })),
-    ...store.razia.map(p => ({ ...p, _cat: 'razia', _label: 'Talaqqi baru ditandai', _color: 'var(--amber)', _bg: 'rgba(184,114,30,0.1)' }))
+    ...store.razia.map(p => ({ ...p, _cat: 'razia', _label: 'Talaqqi baru ditandai', _color: 'var(--ilmu)', _bg: 'rgba(30,58,95,0.1)' }))
   ].filter(i => i.created_at).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
 
   if(!items.length){
@@ -969,12 +1008,23 @@ function escapeHtml(s){
 }
 
 /* ---------- boot ---------- */
+function updateClock(){
+  const el = document.getElementById('home-clock');
+  if(!el) return;
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  el.textContent = h + '.' + m;
+}
+
 window.addEventListener('load', () => {
   initMaps();
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
   updateCounts();
+  updateClock();
+  setInterval(updateClock, 30000);
   ['input-name'].forEach(id => {
     document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
   });
