@@ -842,7 +842,7 @@ async function savePin(){
     return;
   }
 
-  const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng };
+  const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng, created_at: data.created_at };
   store[cat].push(pin);
   renderMarker(cat, pin, true);
   updateCounts();
@@ -879,7 +879,7 @@ async function loadPins(cat){
     return;
   }
   data.forEach(row => {
-    const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng };
+    const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng, created_at: row.created_at };
     store[cat].push(pin);
     renderMarker(cat, pin, false);
   });
