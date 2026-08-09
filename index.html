@@ -804,6 +804,14 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
+    <button class="menu-row" id="push-row" onclick="enablePush()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </span>
+      <span class="menu-label" id="push-label">Aktifkan Notifikasi Darurat</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <button class="menu-row" onclick="shareApp()">
       <span class="menu-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="10.51" y2="6.49"/><line x1="8.59" x2="15.42" y1="13.49" y2="17.51"/></svg>
@@ -1931,8 +1939,52 @@ async function confirmEmergency(){
   const { error } = await sb.from('emergency_alerts').insert({ name, lat: coords[0], lng: coords[1] });
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
+  // broadcast push notification ke semua user (termasuk yang app-nya tertutup)
+  sb.functions.invoke('emergency-push', { body: { name, lat: coords[0], lng: coords[1] } }).catch(() => {});
   closeEmergencyConfirm();
   showToast('🚨 Laporan darurat terkirim — lokasimu disiarkan ke semua user');
+}
+
+/* ----- Web Push: aktifkan notifikasi & simpan langganan ----- */
+const VAPID_PUBLIC = 'BB3iAwxnDlMBRv0hbLRBBOnA2yQTiWIfxInDpZM0DW6eag3f77zdVyTbmb43wF6WRNmd9p6gI5H5B96bFxjnYMQ';
+function urlB64ToUint8Array(b64){
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const base64 = (b64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+async function enablePush(){
+  if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengaktifkan notifikasi.'); return; }
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)){ showToast('Browser/perangkat ini belum mendukung push. Di iPhone: pasang app ke Home Screen dulu.'); return; }
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm !== 'granted'){ showToast('Izin notifikasi ditolak'); return; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC) });
+    }
+    const { error } = await sb.from('push_subscriptions').upsert(
+      { user_id: currentUser.id, endpoint: sub.endpoint, subscription: sub.toJSON() },
+      { onConflict: 'endpoint', ignoreDuplicates: true }
+    );
+    if(error){ showToast('Gagal simpan langganan: ' + error.message); return; }
+    showToast('✅ Notifikasi darurat aktif di perangkat ini');
+    updatePushLabel();
+  } catch(e){ showToast('Gagal aktifkan notifikasi: ' + (e.message || e)); }
+}
+async function updatePushLabel(){
+  const label = document.getElementById('push-label');
+  if(!label) return;
+  try{
+    if(('Notification' in window) && Notification.permission === 'granted' && ('serviceWorker' in navigator)){
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      label.textContent = sub ? 'Notifikasi darurat: Aktif ✓' : 'Aktifkan Notifikasi Darurat';
+    } else {
+      label.textContent = 'Aktifkan Notifikasi Darurat';
+    }
+  } catch(e){}
 }
 
 function showIncomingEmergency(a){
@@ -1989,6 +2041,7 @@ window.addEventListener('load', () => {
   initMaps();
   initAuth();
   initEmergencyRealtime();
+  setTimeout(updatePushLabel, 1500);
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
