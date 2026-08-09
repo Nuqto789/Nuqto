@@ -323,6 +323,20 @@
     color:#fff;
   }
   .popup-menu-btn:active{background:rgba(20,19,16,0.75);}
+  .popup-badge{
+    display:inline-block; font-size:10.5px; font-weight:700;
+    padding:3px 9px; border-radius:99px; margin-bottom:8px;
+    background:#FEF3C7; color:#92400E;
+  }
+  .popup-actions{ display:flex; gap:8px; margin-top:10px; }
+  .popup-btn{
+    font-size:12.5px; font-weight:700; padding:8px 12px;
+    border:none; border-radius:10px; cursor:pointer; color:#fff;
+  }
+  .popup-btn.approve{ background:#059669; }
+  .popup-btn.reject{ background:#B45309; }
+  .popup-btn.del{ background:#DC2626; width:100%; margin-top:8px; }
+  .popup-btn:active{ opacity:.85; }
 
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
@@ -669,11 +683,21 @@
       <div class="profile-avatar">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
-      <div>
-        <div class="font-display" style="font-size:17px; font-weight:700;">Sahabat Masisir</div>
-        <div style="font-size:12.5px; opacity:.7;">Komunitas Nuqto — Kairo</div>
+      <div style="flex:1; min-width:0;">
+        <div class="font-display" id="akun-name" style="font-size:17px; font-weight:700;">Tamu</div>
+        <div id="akun-sub" style="font-size:12.5px; opacity:.7; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Belum masuk</div>
       </div>
     </div>
+
+    <button id="akun-auth-btn" class="btn-primary maqom" style="margin:0 0 6px;" onclick="onAuthBtn()">Masuk / Daftar</button>
+
+    <button id="akun-admin-btn" class="menu-row" style="display:none;" onclick="openAdmin()">
+      <span class="menu-icon" style="background:rgba(23,80,56,0.1);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+      </span>
+      <span class="menu-label">Panel Admin — Persetujuan Titik</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
 
     <div class="section-title">Layanan</div>
     <button class="menu-row" onclick="openLowongan()">
@@ -708,11 +732,77 @@
     <button class="back-btn" onclick="closeLowongan()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
-    <div class="font-display" style="font-size:19px; font-weight:700;">Lowongan Kerja</div>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Lowongan Kerja</div>
+    <button id="addjob-btn" class="back-btn" style="display:none;" onclick="openAddJob()" aria-label="Pasang lowongan">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
   </div>
   <div class="scroll-page" style="padding-top:16px;">
     <div id="job-list"></div>
   </div>
+</div>
+
+<!-- ===================== OVERLAY : PANEL ADMIN ===================== -->
+<div id="page-admin" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeAdmin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Persetujuan Titik</div>
+    <button class="back-btn" onclick="loadPendingAdmin()" aria-label="Muat ulang">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    </button>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <div id="admin-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : PASANG LOWONGAN ===================== -->
+<div id="page-addjob" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeAddJob()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700;">Pasang Lowongan</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <label class="field-label">Judul Pekerjaan</label>
+    <input id="job-title" class="field-input mb-4" type="text" placeholder="cth. Admin Toko Online" />
+    <label class="field-label">Lokasi</label>
+    <input id="job-location" class="field-input mb-4" type="text" placeholder="cth. Nasr City / kerja dari rumah" />
+    <label class="field-label">Tipe</label>
+    <input id="job-tag" class="field-input mb-4" type="text" placeholder="cth. Part-time / Freelance" />
+    <label class="field-label">Deskripsi</label>
+    <textarea id="job-desc" class="field-input mb-4" rows="3" placeholder="Rincian pekerjaan…"></textarea>
+    <label class="field-label">Kontak (WA / email)</label>
+    <input id="job-contact" class="field-input mb-5" type="text" placeholder="cth. wa.me/62…" />
+    <button class="btn-primary maqom" onclick="submitJob()">Pasang Lowongan</button>
+    <button class="btn-ghost" onclick="closeAddJob()">Batal</button>
+  </div>
+</div>
+
+<!-- ===================== AUTH SHEET (OTP) ===================== -->
+<div id="auth-backdrop" class="sheet-backdrop" onclick="closeAuth()"></div>
+<div id="auth-sheet" class="sheet">
+  <div class="sheet-handle"></div>
+  <div class="font-display text-xl mb-1">Masuk / Daftar</div>
+  <div id="auth-msg" style="font-size:12.5px; color:var(--muted); margin-bottom:16px;">Masukkan email untuk menerima kode OTP.</div>
+
+  <div id="auth-step-email">
+    <label class="field-label">Email</label>
+    <input id="auth-email" class="field-input mb-4" type="email" inputmode="email" autocomplete="email" placeholder="email@contoh.com" />
+    <button id="auth-send-btn" class="btn-primary maqom" onclick="sendOtp()">Kirim Kode OTP</button>
+  </div>
+
+  <div id="auth-step-code" style="display:none;">
+    <label class="field-label">Kode OTP (6 digit)</label>
+    <input id="auth-code" class="field-input mb-2" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" />
+    <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">Kode dikirim ke <span id="auth-email-echo" style="font-weight:600;"></span>. Cek folder spam bila belum masuk.</div>
+    <button id="auth-verify-btn" class="btn-primary maqom" onclick="verifyOtp()">Verifikasi &amp; Masuk</button>
+    <button class="btn-ghost" onclick="authBackToEmail()">Ganti email</button>
+  </div>
+  <button class="btn-ghost" onclick="closeAuth()">Tutup</button>
 </div>
 
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
@@ -802,6 +892,13 @@ const SUPA_URL = 'https://xiszpsqmroynihbfijwa.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpc3pwc3Ftcm95bmloYmZpandhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NjM1MjIsImV4cCI6MjEwMTIzOTUyMn0.Z9Qz5GWG8UWY47JhLvD7_4ym7rnpl5lyPWrQJCvPXR0';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const TABLE = { maqom: 'maqom_pins', blacklist: 'blacklist_pins', razia: 'razia_reports' };
+
+/* ---------- auth state ---------- */
+const ADMIN_EMAIL = 'abdsyakir160@gmail.com';
+let currentUser = null;
+function isLoggedIn(){ return !!currentUser; }
+function isAdmin(){ return !!currentUser && (currentUser.email || '').toLowerCase() === ADMIN_EMAIL; }
+function canManagePin(pin){ return isAdmin() || (isLoggedIn() && pin && pin.user_id && pin.user_id === currentUser.id); }
 
 /* ---------- state ---------- */
 const store = {
@@ -930,6 +1027,7 @@ const SHEET_TITLES = {
 };
 
 function openSheet(cat, latlng){
+  if(!isLoggedIn()){ openAuth('Masuk / daftar dulu untuk menambahkan titik di peta.'); return; }
   editState = null;
   existingPhotoUrl = null;
   pendingLatLng = latlng;
@@ -1081,7 +1179,8 @@ async function savePin(){
       const res = await sb.from(TABLE[cat]).insert({
         name, address, note, photo_url,
         lat: pendingLatLng.lat,
-        lng: pendingLatLng.lng
+        lng: pendingLatLng.lng,
+        status: isAdmin() ? 'approved' : 'pending'
       }).select().single();
       data = res.data;
       error = res.error;
@@ -1107,12 +1206,16 @@ async function savePin(){
     closeSheet();
     showToast('Perubahan tersimpan');
   } else {
-    const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng, created_at: data.created_at };
+    const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng, created_at: data.created_at, status: data.status, user_id: data.user_id };
     store[cat].push(pin);
     renderMarker(cat, pin, true);
     updateCounts();
     closeSheet();
-    showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : 'Titik rumah tersimpan');
+    if(data.status === 'pending'){
+      showToast('Titik terkirim — menunggu persetujuan admin sebelum tampil untuk umum.');
+    } else {
+      showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : cat === 'blacklist' ? 'Titik rumah tersimpan' : 'Titik talaqqi tersimpan');
+    }
   }
 }
 
@@ -1128,6 +1231,7 @@ function renderMarker(cat, pin, justAdded){
   marker.bindPopup(buildPopupHtml(cat, pin), { minWidth: 320, maxWidth: 380 });
   marker._pinId = pin.id;
   markerLayers[cat].addLayer(marker);
+  if(pin.status === 'pending') marker.setOpacity(0.5);
 
   if(cat === 'maqom' || cat === 'blacklist'){
     marker.off('click');
@@ -1143,16 +1247,24 @@ function renderMarker(cat, pin, justAdded){
 }
 
 function buildPopupHtml(cat, pin){
+  const manage = canManagePin(pin);
+  const pending = pin.status === 'pending';
   return `
     <div class="popup-wrap">
-      <button class="popup-menu-btn" onclick="openEditSheet('${cat}', '${pin.id}')" aria-label="Edit">
+      ${manage ? `<button class="popup-menu-btn" onclick="openEditSheet('${cat}', '${pin.id}')" aria-label="Edit">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
-      </button>
+      </button>` : ''}
+      ${pending ? `<div class="popup-badge">⏳ Menunggu persetujuan</div>` : ''}
       ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
       <div class="popup-title">${escapeHtml(pin.name)}</div>
       ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
       ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
       <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
+      ${(isAdmin() && pending) ? `<div class="popup-actions">
+        <button class="popup-btn approve" onclick="approvePin('${cat}','${pin.id}')">Setujui</button>
+        <button class="popup-btn reject" onclick="rejectPin('${cat}','${pin.id}')">Tolak</button>
+      </div>` : ''}
+      ${manage ? `<button class="popup-btn del" onclick="deletePin('${cat}','${pin.id}')">Hapus titik</button>` : ''}
     </div>
   `;
 }
@@ -1225,8 +1337,10 @@ async function loadPins(cat){
     showToast('Gagal ambil ' + cat + ': ' + detail);
     return;
   }
+  store[cat] = [];
+  if(markerLayers[cat]) markerLayers[cat].clearLayers();
   data.forEach(row => {
-    const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng, created_at: row.created_at };
+    const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng, created_at: row.created_at, status: row.status, user_id: row.user_id };
     store[cat].push(pin);
     renderMarker(cat, pin, false);
   });
@@ -1308,23 +1422,10 @@ function renderActivity(){
 }
 
 /* ---------- akun / lowongan ---------- */
-const DUMMY_JOBS = [
-  { title: 'Admin Toko Online', location: 'Kairo — kerja dari rumah', tag: 'Part-time', desc: 'Balas chat pembeli & input pesanan, fleksibel sekitar jam kuliah.' },
-  { title: 'Guru Les Privat Bahasa Indonesia', location: 'Nasr City', tag: 'Freelance', desc: 'Mengajar anak ekspat, 2-3x seminggu, jadwal fleksibel.' },
-  { title: 'Kurir Titip Barang Mahasiswa', location: 'Hay Asher — Madinat Nasr', tag: 'Sampingan', desc: 'Bantu antar titipan sesama mahasiswa Indonesia di Kairo.' }
-];
-
 function openLowongan(){
-  const list = document.getElementById('job-list');
-  list.innerHTML = DUMMY_JOBS.map(j => `
-    <div class="job-card">
-      <div class="job-tag">${escapeHtml(j.tag)}</div>
-      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(j.title)}</div>
-      <div class="popup-note" style="margin-bottom:4px;">${escapeHtml(j.location)}</div>
-      <div style="font-size:12.5px; color:#555;">${escapeHtml(j.desc)}</div>
-    </div>
-  `).join('') + '<div class="empty-state">Lowongan contoh — hubungi admin Nuqto untuk memasang lowongan.</div>';
+  document.getElementById('addjob-btn').style.display = currentUser ? '' : 'none';
   document.getElementById('page-lowongan').classList.add('open');
+  loadJobs();
 }
 
 function closeLowongan(){
@@ -1368,6 +1469,201 @@ function rippleFx(e){
   setTimeout(() => span.remove(), 560);
 }
 
+/* ============================================================
+   AUTH (OTP via Supabase + Brevo SMTP)
+   ============================================================ */
+let authEmail = '';
+
+function updateAuthUI(){
+  const name = document.getElementById('akun-name');
+  const sub = document.getElementById('akun-sub');
+  const authBtn = document.getElementById('akun-auth-btn');
+  const adminBtn = document.getElementById('akun-admin-btn');
+  const addJobBtn = document.getElementById('addjob-btn');
+  if(currentUser){
+    if(name) name.textContent = isAdmin() ? 'Admin Nuqto' : 'Sahabat Masisir';
+    if(sub) sub.textContent = currentUser.email || 'Terdaftar';
+    if(authBtn) authBtn.textContent = 'Keluar';
+    if(adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
+  } else {
+    if(name) name.textContent = 'Tamu';
+    if(sub) sub.textContent = 'Belum masuk';
+    if(authBtn) authBtn.textContent = 'Masuk / Daftar';
+    if(adminBtn) adminBtn.style.display = 'none';
+  }
+  if(addJobBtn) addJobBtn.style.display = currentUser ? '' : 'none';
+}
+
+function onAuthBtn(){ if(currentUser) logout(); else openAuth(); }
+
+function openAuth(msg){
+  document.getElementById('auth-msg').textContent = msg || 'Masukkan email untuk menerima kode OTP.';
+  authBackToEmail();
+  document.getElementById('auth-backdrop').classList.add('open');
+  document.getElementById('auth-sheet').classList.add('open');
+  setTimeout(() => document.getElementById('auth-email').focus(), 250);
+}
+function closeAuth(){
+  document.getElementById('auth-backdrop').classList.remove('open');
+  document.getElementById('auth-sheet').classList.remove('open');
+}
+function authBackToEmail(){
+  document.getElementById('auth-step-email').style.display = '';
+  document.getElementById('auth-step-code').style.display = 'none';
+}
+
+async function sendOtp(){
+  const email = document.getElementById('auth-email').value.trim().toLowerCase();
+  if(!email || !email.includes('@')){ showToast('Masukkan email yang valid'); return; }
+  const btn = document.getElementById('auth-send-btn');
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Mengirim kode…';
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  btn.disabled = false; btn.textContent = lbl;
+  if(error){ showToast('Gagal kirim OTP: ' + error.message); return; }
+  authEmail = email;
+  document.getElementById('auth-email-echo').textContent = email;
+  document.getElementById('auth-step-email').style.display = 'none';
+  document.getElementById('auth-step-code').style.display = '';
+  document.getElementById('auth-code').value = '';
+  setTimeout(() => document.getElementById('auth-code').focus(), 200);
+  showToast('Kode OTP dikirim ke ' + email);
+}
+
+async function verifyOtp(){
+  const token = document.getElementById('auth-code').value.trim();
+  if(token.length < 6){ showToast('Masukkan 6 digit kode'); return; }
+  const btn = document.getElementById('auth-verify-btn');
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Memverifikasi…';
+  const { error } = await sb.auth.verifyOtp({ email: authEmail, token, type: 'email' });
+  btn.disabled = false; btn.textContent = lbl;
+  if(error){ showToast('Kode salah / kadaluarsa: ' + error.message); return; }
+  closeAuth();
+  showToast('Berhasil masuk sebagai ' + authEmail);
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  showToast('Kamu sudah keluar');
+}
+
+/* ============================================================
+   ADMIN — persetujuan titik
+   ============================================================ */
+const CAT_LABEL = { maqom: 'Maqom', blacklist: 'Blacklist', razia: 'Talaqqi' };
+
+function openAdmin(){
+  if(!isAdmin()){ showToast('Khusus admin'); return; }
+  document.getElementById('page-admin').classList.add('open');
+  loadPendingAdmin();
+}
+function closeAdmin(){ document.getElementById('page-admin').classList.remove('open'); }
+
+async function loadPendingAdmin(){
+  const list = document.getElementById('admin-list');
+  list.innerHTML = '<div class="empty-state">Memuat…</div>';
+  const cats = ['maqom','blacklist','razia'];
+  let items = [];
+  for(const cat of cats){
+    const { data, error } = await sb.from(TABLE[cat]).select('*').eq('status','pending').order('created_at',{ascending:true});
+    if(!error && data) items = items.concat(data.map(r => ({ ...r, _cat: cat })));
+  }
+  if(!items.length){ list.innerHTML = '<div class="empty-state">Tidak ada titik menunggu persetujuan. 🎉</div>'; return; }
+  list.innerHTML = items.map(i => `
+    <div class="job-card" id="pend-${i.id}">
+      <div class="job-tag">${CAT_LABEL[i._cat]}</div>
+      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(i.name || '(tanpa nama)')}</div>
+      ${i.address ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(i.address)}</div>` : ''}
+      ${i.note ? `<div style="font-size:12.5px; color:#555; margin-bottom:6px;">${escapeHtml(i.note)}</div>` : ''}
+      <div class="popup-coord" style="margin-bottom:10px;">${(i.lat||0).toFixed(6)}, ${(i.lng||0).toFixed(6)}</div>
+      <div style="display:flex; gap:8px;">
+        <button class="popup-btn approve" style="flex:1;" onclick="approvePin('${i._cat}','${i.id}')">Setujui</button>
+        <button class="popup-btn reject" style="flex:1;" onclick="rejectPin('${i._cat}','${i.id}')">Tolak</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approvePin(cat, id){
+  const { error } = await sb.from(TABLE[cat]).update({ status: 'approved' }).eq('id', id);
+  if(error){ showToast('Gagal setujui: ' + error.message); return; }
+  showToast('Titik disetujui & kini tampil untuk umum');
+  await loadPins(cat);
+  const el = document.getElementById('pend-' + id); if(el) el.remove();
+  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+}
+
+async function rejectPin(cat, id){
+  const { error } = await sb.from(TABLE[cat]).delete().eq('id', id);
+  if(error){ showToast('Gagal tolak: ' + error.message); return; }
+  showToast('Titik ditolak & dihapus');
+  await loadPins(cat);
+  const el = document.getElementById('pend-' + id); if(el) el.remove();
+  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+}
+
+async function deletePin(cat, id){
+  if(!confirm('Hapus titik ini?')) return;
+  const { error } = await sb.from(TABLE[cat]).delete().eq('id', id);
+  if(error){ showToast('Gagal hapus: ' + error.message); return; }
+  showToast('Titik dihapus');
+  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+  await loadPins(cat);
+}
+
+/* ============================================================
+   LOWONGAN (jobs) — dari Supabase
+   ============================================================ */
+async function loadJobs(){
+  const list = document.getElementById('job-list');
+  list.innerHTML = '<div class="empty-state">Memuat lowongan…</div>';
+  const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
+  if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
+  if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada lowongan. ' + (currentUser ? 'Tekan + untuk memasang.' : 'Masuk untuk memasang lowongan.') + '</div>'; return; }
+  const canDel = (j) => isAdmin() || (currentUser && j.user_id === currentUser.id);
+  list.innerHTML = data.map(j => `
+    <div class="job-card">
+      ${j.tag ? `<div class="job-tag">${escapeHtml(j.tag)}</div>` : ''}
+      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(j.title)}</div>
+      ${j.location ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(j.location)}</div>` : ''}
+      ${j.description ? `<div style="font-size:12.5px; color:#555; margin-bottom:6px;">${escapeHtml(j.description)}</div>` : ''}
+      ${j.contact ? `<div style="font-size:12.5px; font-weight:600; color:var(--maqom);">${escapeHtml(j.contact)}</div>` : ''}
+      ${canDel(j) ? `<button class="popup-btn del" style="margin-top:8px;" onclick="deleteJob('${j.id}')">Hapus lowongan</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function openAddJob(){
+  if(!isLoggedIn()){ openAuth('Masuk / daftar dulu untuk memasang lowongan.'); return; }
+  ['job-title','job-location','job-tag','job-desc','job-contact'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('page-addjob').classList.add('open');
+}
+function closeAddJob(){ document.getElementById('page-addjob').classList.remove('open'); }
+
+async function submitJob(){
+  const title = document.getElementById('job-title').value.trim();
+  if(!title){ showToast('Judul pekerjaan wajib diisi'); return; }
+  const payload = {
+    title,
+    location: document.getElementById('job-location').value.trim() || null,
+    tag: document.getElementById('job-tag').value.trim() || null,
+    description: document.getElementById('job-desc').value.trim() || null,
+    contact: document.getElementById('job-contact').value.trim() || null
+  };
+  const { error } = await sb.from('jobs').insert(payload);
+  if(error){ showToast('Gagal pasang: ' + error.message); return; }
+  showToast('Lowongan berhasil dipasang');
+  closeAddJob();
+  loadJobs();
+}
+
+async function deleteJob(id){
+  if(!confirm('Hapus lowongan ini?')) return;
+  const { error } = await sb.from('jobs').delete().eq('id', id);
+  if(error){ showToast('Gagal hapus: ' + error.message); return; }
+  showToast('Lowongan dihapus');
+  loadJobs();
+}
+
 /* ---------- boot ---------- */
 function updateClock(){
   const el = document.getElementById('home-clock');
@@ -1378,8 +1674,25 @@ function updateClock(){
   el.textContent = h + '.' + m;
 }
 
+async function initAuth(){
+  try{
+    const { data } = await sb.auth.getSession();
+    currentUser = (data && data.session && data.session.user) || null;
+  } catch(e){ currentUser = null; }
+  updateAuthUI();
+  sb.auth.onAuthStateChange((_event, session) => {
+    const prev = currentUser ? currentUser.id : null;
+    currentUser = (session && session.user) || null;
+    updateAuthUI();
+    if((currentUser ? currentUser.id : null) !== prev){
+      loadPins('maqom'); loadPins('blacklist'); loadPins('razia');
+    }
+  });
+}
+
 window.addEventListener('load', () => {
   initMaps();
+  initAuth();
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
