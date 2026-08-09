@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuqto-shell-v2';
+const CACHE_NAME = 'nuqto-shell-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -43,4 +43,32 @@ self.addEventListener('fetch', (event) => {
       return cached || network;
     })
   );
+});
+
+/* ===================== PUSH NOTIFICATION ===================== */
+const NUQTO_ICON = 'https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg';
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; }
+  catch (e) { data = { title: 'Nuqto', body: event.data ? event.data.text() : '' }; }
+
+  const title = data.title || '🚨 Ada yang dalam bahaya';
+  const options = {
+    body: data.body || 'Seseorang menandai dirinya dalam bahaya. Ketuk untuk lihat lokasi.',
+    icon: data.icon || NUQTO_ICON,
+    badge: NUQTO_ICON,
+    vibrate: [200, 100, 200, 100, 300],
+    requireInteraction: true,
+    tag: data.tag || 'nuqto-emergency',
+    renotify: true,
+    data: { url: data.url || '/' }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(clients.openWindow(target));
 });
