@@ -363,6 +363,16 @@
   .emg-btn.danger{ background:#DC2626; color:#fff; box-shadow:0 6px 16px rgba(220,38,38,0.32); }
   .emg-btn:active{ opacity:.88; }
 
+  /* tombol keluar (bawah, merah, tengah) */
+  .btn-logout{
+    display:block; margin:40px auto 24px; padding:13px 40px;
+    background:#DC2626; color:#fff; border:none; border-radius:14px;
+    font-weight:700; font-size:15px; cursor:pointer;
+    box-shadow:0 6px 18px rgba(220,38,38,0.28);
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .btn-logout:active{ opacity:.9; transform:scale(.97); }
+
   .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
   .field-input{
     width:100%; border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
@@ -774,8 +784,6 @@
       </div>
     </div>
 
-    <button id="akun-auth-btn" class="btn-primary maqom" style="margin:0 0 6px;" onclick="onAuthBtn()">Masuk / Daftar</button>
-
     <button id="akun-admin-btn" class="menu-row" style="display:none;" onclick="openAdmin()">
       <span class="menu-icon" style="background:rgba(23,80,56,0.1);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
@@ -828,6 +836,8 @@
       <span class="menu-label">Tentang Nuqto</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
+
+    <button id="akun-auth-btn" class="btn-logout" onclick="onAuthBtn()">Keluar</button>
   </div>
 </div>
 
