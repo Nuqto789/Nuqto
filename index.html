@@ -21,7 +21,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -40,6 +40,24 @@
     --amber-deep:#8C5716;
     --ilmu:#1E3A5F;
     --ilmu-deep:#152A45;
+    /* ---- redesign beranda (premium/iOS) ---- */
+    --bg-soft:#FAFAFA;
+    --card:#FFFFFF;
+    --emerald:#10B981;
+    --emerald-deep:#059669;
+    --ink-2:#1A1A1A;
+    --muted-2:#8A8F98;
+    --divider:#ECECEC;
+    --soft-green:#DDF7EC;
+    --soft-red:#FDECEC;
+    --soft-blue:#EEF4FF;
+    --num-green:#059669;
+    --num-red:#DC2626;
+    --num-blue:#2563EB;
+    --shadow-soft:0 10px 30px rgba(0,0,0,0.06);
+    --shadow-nav:0 12px 34px rgba(0,0,0,0.10);
+    --radius-lg:28px;
+    --radius-md:24px;
   }
   *{-webkit-tap-highlight-color:transparent;}
   html, body{
@@ -54,12 +72,14 @@
   }
   img{ -webkit-user-drag:none; user-drag:none; }
   body{
-    font-family:'Plus Jakarta Sans', sans-serif;
+    font-family:-apple-system, BlinkMacSystemFont, 'Inter', 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
     background:var(--paper);
     color:var(--ink);
     overscroll-behavior:none;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
   }
-  .font-display{font-family:'Amiri', serif;}
+  .font-display{font-family:-apple-system, BlinkMacSystemFont, 'Inter', 'Plus Jakarta Sans', sans-serif; letter-spacing:-0.02em;}
   .font-mono{font-family:'JetBrains Mono', monospace;}
 
   .page{
@@ -110,47 +130,34 @@
   }
   .search-row input::placeholder{color:var(--muted);}
 
-  /* bottom nav — arch / gate motif, 5 menu */
+  /* bottom nav — floating pill, 5 menu */
   .bottom-nav{
-    position:fixed; left:0; right:0; bottom:0; z-index:600;
-    background:var(--paper);
-    border-top:1px solid var(--line);
-    padding:4px 4px calc(4px + env(safe-area-inset-bottom, 0px)) 4px;
-    display:flex; justify-content:space-between; align-items:flex-end;
-    box-shadow:0 -6px 24px rgba(28,27,23,0.06);
+    position:fixed; left:20px; right:20px; z-index:600;
+    bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+    background:var(--card);
+    border:none; border-radius:32px;
+    padding:10px 8px;
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow:var(--shadow-nav);
   }
   .nav-btn{
     position:relative;
-    display:flex; flex-direction:column; align-items:center; gap:2px;
-    flex:1; min-width:0; padding-top:4px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    flex:1; min-width:0; padding:7px 2px;
     background:none; border:none; cursor:pointer;
-    color:var(--muted);
-    transition:color .2s ease, transform .2s ease;
+    color:var(--muted-2);
+    border-radius:18px;
+    transition:color .2s ease, background .25s ease;
   }
   .nav-btn-top{
     position:relative;
-    width:38px; height:24px;
-    display:flex; align-items:flex-end; justify-content:center;
+    width:30px; height:22px;
+    display:flex; align-items:center; justify-content:center;
   }
-  .nav-btn .arch{
-    position:absolute; inset:0;
-    border-radius:12px;
-    background:transparent;
-    transition:background .25s ease, box-shadow .25s ease;
-  }
-  .nav-btn.active{transform:translateY(-1px);}
-  .nav-btn.active[data-cat="home"]{color:var(--gold);}
-  .nav-btn.active[data-cat="maqom"]{color:var(--maqom);}
-  .nav-btn.active[data-cat="blacklist"]{color:var(--rust);}
-  .nav-btn.active[data-cat="razia"]{color:var(--amber);}
-  .nav-btn.active[data-cat="akun"]{color:var(--slate);}
-  .nav-btn.active[data-cat="home"] .arch{background:rgba(190,154,70,0.14);}
-  .nav-btn.active[data-cat="maqom"] .arch{background:rgba(23,80,56,0.1);}
-  .nav-btn.active[data-cat="blacklist"] .arch{background:rgba(156,59,50,0.1);}
-  .nav-btn.active[data-cat="razia"] .arch{background:rgba(184,114,30,0.12);}
-  .nav-btn.active[data-cat="akun"] .arch{background:rgba(43,46,51,0.1);}
+  .nav-btn .arch{ display:none; }
+  .nav-btn.active{ color:var(--emerald-deep); background:var(--soft-green); }
   .nav-btn .icon-wrap{position:relative; z-index:2; display:flex;}
-  .nav-btn .label{position:relative; z-index:2; font-size:10px; line-height:1.1; font-weight:600; letter-spacing:.01em; white-space:nowrap;}
+  .nav-btn .label{position:relative; z-index:2; font-size:10.5px; line-height:1.1; font-weight:600; letter-spacing:-0.01em; white-space:nowrap;}
   .nav-btn .count{position:relative; z-index:2; font-size:8.5px; line-height:1; font-family:'JetBrains Mono',monospace; opacity:.7;}
 
   /* custom pin markers */
@@ -175,7 +182,7 @@
   }
 
   .locate-btn{
-    position:absolute; right:14px; bottom:96px; z-index:450;
+    position:absolute; right:14px; bottom:calc(112px + env(safe-area-inset-bottom, 0px)); z-index:450;
     width:46px; height:46px; border-radius:50%;
     background:var(--paper); border:1px solid var(--line);
     box-shadow:0 4px 14px rgba(28,27,23,0.14);
@@ -317,43 +324,111 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* ================= HOME REDESIGN (premium / iOS) ================= */
+  #page-home{ background:var(--bg-soft); }
+  #page-home .scroll-page{
+    padding:calc(20px + env(safe-area-inset-top, 0px)) 20px calc(150px + env(safe-area-inset-bottom, 0px)) 20px;
+  }
+
+  /* entrance animation */
+  @keyframes cardIn{
+    from{ opacity:0; transform:translateY(14px) scale(.98); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .reveal{ animation:cardIn .25s ease-out both; }
+  .reveal.d1{ animation-delay:.04s; }
+  .reveal.d2{ animation-delay:.10s; }
+  .reveal.d3{ animation-delay:.16s; }
+  .reveal.d4{ animation-delay:.22s; }
+
   /* ---- home: header ---- */
-  .home-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
-  .home-clock{ font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:2px; }
-  .home-title{ font-family:'Amiri',serif; font-size:24px; font-weight:700; color:var(--ink); }
+  .home-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:22px; }
+  .home-greet{ font-size:18px; font-weight:500; color:var(--muted-2); margin-bottom:4px; letter-spacing:-0.01em; }
+  .home-title{ font-size:29px; line-height:1.15; font-weight:800; color:var(--ink-2); letter-spacing:-0.03em; }
+  .home-actions{ display:flex; align-items:center; gap:10px; flex-shrink:0; padding-top:4px; }
+  .home-icon-btn{
+    width:44px; height:44px; border-radius:50%; flex-shrink:0;
+    background:var(--card); color:var(--ink-2); border:none;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-soft);
+    cursor:pointer; transition:transform .2s ease;
+  }
+  .home-icon-btn:active{ transform:scale(.92); }
   .home-avatar{
-    width:42px; height:42px; border-radius:50%; flex-shrink:0;
-    background:#fff; color:var(--ink); border:1px solid var(--line);
+    width:44px; height:44px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,var(--emerald),var(--emerald-deep));
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 2px 8px rgba(28,27,23,0.08);
-    cursor:pointer;
+    box-shadow:var(--shadow-soft); cursor:pointer; padding:0; border:none;
+    transition:transform .2s ease;
   }
+  .home-avatar:active{ transform:scale(.92); }
 
-  /* ---- home: stat cards & activity ---- */
+  /* ---- hero card ---- */
+  .hero-card{
+    position:relative; overflow:hidden;
+    border-radius:var(--radius-lg);
+    background:linear-gradient(135deg,#FFFFFF 0%,#F3FBF7 55%,#E7F7EF 100%);
+    box-shadow:var(--shadow-soft);
+    padding:22px 22px 20px;
+    margin-bottom:28px;
+  }
+  .hero-text{ position:relative; z-index:2; }
+  .hero-title{ font-size:18px; line-height:1.32; font-weight:700; color:var(--ink-2); letter-spacing:-0.02em; }
+  .hero-sub{ font-size:13.5px; line-height:1.4; color:var(--muted-2); margin-top:8px; }
+  .hero-btn{
+    position:relative; overflow:hidden;
+    display:inline-flex; align-items:center; gap:7px;
+    margin-top:18px; padding:11px 20px;
+    background:var(--emerald); color:#fff;
+    font-size:13.5px; font-weight:600; letter-spacing:-0.01em;
+    border:none; border-radius:999px; cursor:pointer;
+    box-shadow:0 6px 16px rgba(16,185,129,0.32);
+    transition:transform .18s ease, box-shadow .2s ease;
+  }
+  .hero-btn:active{ transform:scale(.96); }
+  .ripple{ position:absolute; border-radius:50%; transform:scale(0); background:rgba(255,255,255,0.45); pointer-events:none; animation:rippleOut .55s ease-out; }
+  @keyframes rippleOut{ to{ transform:scale(2.6); opacity:0; } }
+
+  /* ---- section head ---- */
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin:0 2px 14px; }
+  .section-head .st{ font-size:20px; font-weight:700; color:var(--ink-2); letter-spacing:-0.02em; }
+  .link-btn{ background:none; border:none; font-size:13.5px; font-weight:600; color:var(--emerald-deep); cursor:pointer; padding:4px 2px; }
+  .link-btn:active{ opacity:.6; }
+
+  /* ---- home: summary cards ---- */
+  .summary-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
   .stat-card{
-    border-radius:16px; padding:14px 12px;
-    border:1px solid var(--line); border-top-width:3px;
-    background:#fff; box-shadow:0 3px 12px rgba(28,27,23,0.06);
+    position:relative;
+    border-radius:var(--radius-md); padding:16px 14px 34px;
+    border:none; background:var(--card); box-shadow:var(--shadow-soft);
+    cursor:pointer; transition:transform .2s ease;
   }
+  .stat-card:active{ transform:scale(.97); }
   .stat-card-icon{
-    width:26px; height:26px; border-radius:8px; margin-bottom:8px;
+    width:40px; height:40px; border-radius:50%; margin-bottom:12px;
     display:flex; align-items:center; justify-content:center;
   }
-  .stat-num{font-family:'Amiri',serif; font-size:26px; font-weight:700; line-height:1;}
-  .stat-label{font-size:11px; font-weight:600; color:var(--muted); margin-top:4px;}
+  .stat-num{ font-size:30px; font-weight:800; line-height:1; letter-spacing:-0.03em; }
+  .stat-label{ font-size:11.5px; font-weight:500; color:var(--muted-2); margin-top:5px; line-height:1.25; }
+  .stat-chev{ position:absolute; right:12px; bottom:12px; color:#C7CBD1; display:flex; }
 
-  .activity-item{
-    display:flex; gap:12px; align-items:flex-start;
-    padding:12px 0; border-bottom:1px solid var(--line);
+  /* ---- home: activity ---- */
+  #activity-list{
+    background:var(--card); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft); padding:6px 20px; overflow:hidden;
   }
-  .activity-item:last-child{border-bottom:none;}
+  .activity-item{
+    display:flex; gap:14px; align-items:center;
+    min-height:86px; padding:15px 0; border-bottom:1px solid var(--divider);
+  }
+  .activity-item:last-child{ border-bottom:none; }
   .activity-icon{
-    width:34px; height:34px; border-radius:10px; flex-shrink:0;
+    width:46px; height:46px; border-radius:50%; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
   }
-  .activity-title{font-size:13.5px; font-weight:700;}
-  .activity-sub{font-size:12px; color:var(--muted); margin-top:1px;}
-  .activity-time{font-size:10.5px; color:var(--muted); font-family:'JetBrains Mono',monospace; flex-shrink:0;}
+  .activity-title{ font-size:15px; font-weight:600; color:var(--ink-2); letter-spacing:-0.01em; }
+  .activity-sub{ font-size:13px; color:var(--muted-2); margin-top:2px; }
+  .activity-time{ font-size:13px; font-weight:500; color:var(--muted-2); flex-shrink:0; }
 
   .empty-state{
     text-align:center; padding:32px 16px; color:var(--muted); font-size:13px;
@@ -413,7 +488,7 @@
 </style>
 </head>
 <body>
-<script>document.documentElement.style.background = '#152A45';</script>
+<script>document.documentElement.style.background = '#152A45'; document.body.style.background = '#152A45';</script>
 
 <!-- ===================== SPLASH SCREEN ===================== -->
 <div id="splash-screen">
@@ -429,46 +504,69 @@
 <!-- ===================== PAGE 0 : BERANDA ===================== -->
 <div id="page-home" class="page active">
   <div class="scroll-page">
+    <span id="home-clock" style="display:none;"></span>
 
-    <div class="home-header">
-      <div>
-        <div class="home-clock" id="home-clock">--.--</div>
-        <div class="home-title">Beranda</div>
+    <div class="home-header reveal">
+      <div style="min-width:0;">
+        <div class="home-greet">Assalamu'alaikum,</div>
+        <div class="home-title">Selamat datang<br>di Nuqto</div>
       </div>
-      <button class="home-avatar" onclick="showToast('Belum ada notifikasi baru')" aria-label="Notifikasi">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-      </button>
+      <div class="home-actions">
+        <button class="home-icon-btn" onclick="showToast('Belum ada notifikasi baru')" aria-label="Notifikasi">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </button>
+        <button class="home-avatar" onclick="switchPage('akun')" aria-label="Akun">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+      </div>
     </div>
 
-    <div class="mb-1" style="font-size:13px; color:var(--muted); font-weight:600;">Assalamu'alaikum,</div>
-    <div class="font-display mb-5" style="font-size:22px; font-weight:700;">Selamat datang di Nuqto</div>
+    <!-- HERO CARD -->
+    <div class="hero-card reveal d1">
+      <div class="hero-text">
+        <div class="hero-title">Kelola maqom, blacklist, dan talaqqi dengan mudah</div>
+        <div class="hero-sub">Semua aktivitas tersusun dalam satu tempat.</div>
+        <button class="hero-btn" onclick="rippleFx(event); showToast('Panduan Nuqto segera hadir')">
+          Lihat Panduan
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
 
-    <div class="grid grid-cols-3 gap-2 mb-6">
-      <div class="stat-card" style="border-top-color:var(--maqom);">
-        <div class="stat-card-icon" style="background:rgba(23,80,56,0.1); color:var(--maqom);">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><path d="M6 21v-7a6 6 0 0 1 12 0v7"/><path d="M12 8V4"/><path d="M10 4h4"/></svg>
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid">
+      <div class="stat-card reveal d2" onclick="switchPage('maqom')">
+        <div class="stat-card-icon" style="background:var(--soft-green); color:var(--num-green);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><path d="M6 21v-7a6 6 0 0 1 12 0v7"/><path d="M12 8V4"/><path d="M10 4h4"/></svg>
         </div>
-        <div class="stat-num" style="color:var(--maqom);" id="stat-maqom">0</div>
+        <div class="stat-num" style="color:var(--num-green);" id="stat-maqom">0</div>
         <div class="stat-label">Titik Maqom</div>
+        <span class="stat-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
       </div>
-      <div class="stat-card" style="border-top-color:var(--rust);">
-        <div class="stat-card-icon" style="background:rgba(156,59,50,0.1); color:var(--rust);">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="stat-card reveal d3" onclick="switchPage('blacklist')">
+        <div class="stat-card-icon" style="background:var(--soft-red); color:var(--num-red);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/></svg>
         </div>
-        <div class="stat-num" style="color:var(--rust);" id="stat-blacklist">0</div>
+        <div class="stat-num" style="color:var(--num-red);" id="stat-blacklist">0</div>
         <div class="stat-label">Rumah Blacklist</div>
+        <span class="stat-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
       </div>
-      <div class="stat-card" style="border-top-color:var(--ilmu);">
-        <div class="stat-card-icon" style="background:rgba(30,58,95,0.1); color:var(--ilmu);">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <div class="stat-card reveal d4" onclick="switchPage('razia')">
+        <div class="stat-card-icon" style="background:var(--soft-blue); color:var(--num-blue);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         </div>
-        <div class="stat-num" style="color:var(--ilmu);" id="stat-razia">0</div>
+        <div class="stat-num" style="color:var(--num-blue);" id="stat-razia">0</div>
         <div class="stat-label">Tempat Talaqqi</div>
+        <span class="stat-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
       </div>
     </div>
 
-    <div class="section-title">Aktivitas Terbaru</div>
-    <div id="activity-list"></div>
+    <!-- ACTIVITY -->
+    <div class="section-head reveal d4">
+      <div class="st">Aktivitas Terbaru</div>
+      <button class="link-btn" onclick="showToast('Semua aktivitas sudah ditampilkan')">Lihat semua →</button>
+    </div>
+    <div id="activity-list" class="reveal d4"></div>
   </div>
 </div>
 
@@ -482,7 +580,7 @@
       <button onclick="doSearch('maqom')" class="text-xs font-bold px-2" style="color:var(--maqom);">CARI</button>
     </div>
   </div>
-  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(104px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--maqom);">Tap di peta untuk menandai lokasi maqom baru</div>
   </div>
   <div id="zoom-maqom" class="zoom-ctrl" style="color:var(--maqom);">
@@ -509,7 +607,7 @@
       <button onclick="doSearch('blacklist')" class="text-xs font-bold px-2" style="color:var(--rust);">CARI</button>
     </div>
   </div>
-  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(104px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--rust);">Tap di peta untuk menandai rumah bermasalah</div>
   </div>
   <div id="zoom-blacklist" class="zoom-ctrl" style="color:var(--rust);">
@@ -536,7 +634,7 @@
       <button onclick="doSearch('razia')" class="text-xs font-bold px-2" style="color:var(--amber);">CARI</button>
     </div>
   </div>
-  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:86px; z-index:400; pointer-events:none;">
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(104px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--amber-deep);">Tap di peta untuk menandai lokasi talaqqi</div>
   </div>
   <div id="zoom-razia" class="zoom-ctrl" style="color:var(--amber-deep);">
@@ -732,8 +830,8 @@ const meta = {
 /* ---------- init maps ---------- */
 function initMaps(){
   const CAIRO = [30.0444, 31.2357];
-  const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  const TILE_OPTS = { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' };
+  const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
+  const TILE_OPTS = { maxZoom: 19, attribution: 'Tiles &copy; Esri' };
 
   maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
@@ -1234,6 +1332,20 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* ripple effect for pill buttons */
+function rippleFx(e){
+  const btn = e.currentTarget;
+  const r = btn.getBoundingClientRect();
+  const size = Math.max(r.width, r.height);
+  const span = document.createElement('span');
+  span.className = 'ripple';
+  span.style.width = span.style.height = size + 'px';
+  span.style.left = (e.clientX - r.left - size/2) + 'px';
+  span.style.top  = (e.clientY - r.top  - size/2) + 'px';
+  btn.appendChild(span);
+  setTimeout(() => span.remove(), 560);
+}
+
 /* ---------- boot ---------- */
 function updateClock(){
   const el = document.getElementById('home-clock');
@@ -1264,6 +1376,7 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     splash.classList.add('fade-out');
     document.documentElement.style.background = '';
+    document.body.style.background = '';
     setTimeout(() => { splash.style.display = 'none'; }, 650);
   }, 2200);
 });
