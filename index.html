@@ -83,7 +83,8 @@
   .font-mono{font-family:'JetBrains Mono', monospace;}
 
   .page{
-    position:fixed; inset:0;
+    position:fixed; top:0; left:0; right:0;
+    bottom:calc(-1 * env(safe-area-inset-bottom, 0px));
     display:flex; flex-direction:column;
     opacity:0; pointer-events:none;
     transition:opacity .25s ease;
@@ -133,7 +134,7 @@
   /* bottom nav — floating pill, 5 menu */
   .bottom-nav{
     position:fixed; left:20px; right:20px; z-index:600;
-    bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(8px + env(safe-area-inset-bottom, 0px));
     background:var(--card);
     border:none; border-radius:32px;
     padding:10px 8px;
@@ -182,7 +183,7 @@
   }
 
   .locate-btn{
-    position:absolute; right:14px; bottom:calc(112px + env(safe-area-inset-bottom, 0px)); z-index:450;
+    position:absolute; right:14px; bottom:calc(132px + env(safe-area-inset-bottom, 0px)); z-index:450;
     width:46px; height:46px; border-radius:50%;
     background:var(--paper); border:1px solid var(--line);
     box-shadow:0 4px 14px rgba(28,27,23,0.14);
@@ -580,7 +581,7 @@
       <button onclick="doSearch('maqom')" class="text-xs font-bold px-2" style="color:var(--maqom);">CARI</button>
     </div>
   </div>
-  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(104px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(124px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--maqom);">Tap di peta untuk menandai lokasi maqom baru</div>
   </div>
   <div id="zoom-maqom" class="zoom-ctrl" style="color:var(--maqom);">
@@ -607,7 +608,7 @@
       <button onclick="doSearch('blacklist')" class="text-xs font-bold px-2" style="color:var(--rust);">CARI</button>
     </div>
   </div>
-  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(104px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(124px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--rust);">Tap di peta untuk menandai rumah bermasalah</div>
   </div>
   <div id="zoom-blacklist" class="zoom-ctrl" style="color:var(--rust);">
@@ -634,7 +635,7 @@
       <button onclick="doSearch('razia')" class="text-xs font-bold px-2" style="color:var(--amber);">CARI</button>
     </div>
   </div>
-  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(104px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
+  <div class="absolute left-0 right-0 flex justify-center px-4" style="bottom:calc(124px + env(safe-area-inset-bottom, 0px)); z-index:400; pointer-events:none;">
     <div class="hint-banner" style="color:var(--amber-deep);">Tap di peta untuk menandai lokasi talaqqi</div>
   </div>
   <div id="zoom-razia" class="zoom-ctrl" style="color:var(--amber-deep);">
