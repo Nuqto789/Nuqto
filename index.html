@@ -90,6 +90,14 @@
   }
   .page.active{opacity:1; pointer-events:auto;}
 
+  /* status-bar (top safe-area) fill — warna ikut halaman aktif, simetris dgn strip bawah */
+  #statusbar-fill{
+    position:fixed; top:0; left:0; right:0;
+    height:env(safe-area-inset-top, 0px);
+    z-index:550; background:#FAFAFA; pointer-events:none;
+    transition:background .2s ease;
+  }
+
   #map-maqom, #map-blacklist, #map-razia{
     flex:1; width:100%; z-index:0;
   }
@@ -501,6 +509,9 @@
   </div>
 </div>
 
+<!-- status-bar fill (atas) — warna ikut halaman aktif -->
+<div id="statusbar-fill"></div>
+
 <!-- ===================== PAGE 0 : BERANDA ===================== -->
 <div id="page-home" class="page active">
   <div class="scroll-page">
@@ -886,6 +897,8 @@ function applySafeBg(cat){
   const c = SAFE_BG[cat] || '#FAFAFA';
   document.documentElement.style.background = c;
   document.body.style.background = c;
+  const bar = document.getElementById('statusbar-fill');
+  if(bar) bar.style.background = c;
 }
 
 /* ---------- page switching ---------- */
