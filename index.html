@@ -318,6 +318,51 @@
   }
   .pw-eye:active{ color:var(--ink); }
 
+  /* ---- emergency / laporan darurat ---- */
+  .menu-row.emergency-row{
+    border:1.5px solid rgba(220,38,38,0.35); border-radius:16px;
+    padding:13px 12px; margin:6px 0 2px; background:#fff;
+    box-shadow:0 4px 16px rgba(220,38,38,0.10);
+    animation:emgPulse 1.9s ease-in-out infinite;
+  }
+  .menu-row.emergency-row:active{ transform:scale(.985); }
+  @keyframes emgPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(220,38,38,0.30), 0 4px 16px rgba(220,38,38,0.10); }
+    50%{ box-shadow:0 0 0 7px rgba(220,38,38,0), 0 6px 18px rgba(220,38,38,0.18); }
+  }
+  .emergency-icon{ background:rgba(220,38,38,0.12) !important; color:#DC2626; }
+  .emergency-label{ display:block; font-size:14px; font-weight:800; color:#DC2626; letter-spacing:.02em; }
+  .emergency-desc{ display:block; font-size:11px; color:var(--muted-2); margin-top:2px; line-height:1.3; }
+
+  .emg-modal-backdrop{
+    position:fixed; inset:0; z-index:1200; display:none;
+    align-items:center; justify-content:center; padding:26px;
+    background:rgba(20,19,16,0.55); backdrop-filter:blur(2px);
+  }
+  .emg-modal-backdrop.open{ display:flex; }
+  .emg-modal{
+    width:100%; max-width:360px; background:#fff; border-radius:22px;
+    padding:24px 22px 20px; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.30);
+    animation:emgIn .22s ease-out both;
+  }
+  @keyframes emgIn{ from{ opacity:0; transform:scale(.94) translateY(8px);} to{ opacity:1; transform:scale(1) translateY(0);} }
+  .emg-modal-icon{
+    width:60px; height:60px; border-radius:50%; margin:0 auto 14px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(220,38,38,0.12);
+  }
+  .emg-modal-icon.big{ background:#DC2626; }
+  .emg-modal.alert{ border:2px solid #DC2626; }
+  .emg-modal-title{ font-size:18px; font-weight:800; color:#DC2626; letter-spacing:-0.01em; margin-bottom:8px; }
+  .emg-modal-body{ font-size:13.5px; line-height:1.5; color:var(--ink); margin-bottom:20px; }
+  .emg-modal-actions{ display:flex; gap:10px; }
+  .emg-modal-actions.col{ flex-direction:column; }
+  .emg-btn{ flex:1; padding:13px; border:none; border-radius:13px; font-weight:700; font-size:14px; cursor:pointer; }
+  .emg-btn.cancel{ background:rgba(28,27,23,0.08); color:var(--ink); }
+  .emg-btn.danger{ background:#DC2626; color:#fff; box-shadow:0 6px 16px rgba(220,38,38,0.32); }
+  .emg-btn:active{ opacity:.88; }
+
   .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
   .field-input{
     width:100%; border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
@@ -747,6 +792,18 @@
       <span class="menu-label">Lowongan Kerja</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
+
+    <button class="menu-row emergency-row" onclick="openEmergencyConfirm()">
+      <span class="menu-icon emergency-icon">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"/><path d="M21 12h1"/><path d="M18.5 4.5 18 5"/><path d="M2 12h1"/><path d="M12 2v1"/><path d="m4.929 4.929.707.707"/></svg>
+      </span>
+      <span style="flex:1; text-align:left; min-width:0;">
+        <span class="emergency-label">LAPORAN DARURAT</span>
+        <span class="emergency-desc">Kirim notifikasi lokasi bahaya ke semua user · tekan untuk konfirmasi</span>
+      </span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <button class="menu-row" onclick="shareApp()">
       <span class="menu-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="10.51" y2="6.49"/><line x1="8.59" x2="15.42" y1="13.49" y2="17.51"/></svg>
@@ -835,6 +892,11 @@
   </div>
   <div id="auth-msg" style="font-size:12.5px; color:var(--muted); margin:16px 0 18px;">Masuk dengan email &amp; password kamu.</div>
 
+  <div id="auth-name-wrap" style="display:none;">
+    <label class="field-label">Nama</label>
+    <input id="auth-name" class="field-input mb-4" type="text" autocomplete="name" placeholder="Nama kamu" />
+  </div>
+
   <label class="field-label">Email</label>
   <input id="auth-email" class="field-input mb-4" type="email" inputmode="email" autocomplete="email" placeholder="email@contoh.com" />
 
@@ -868,6 +930,36 @@
   </div>
   <button id="otp-verify-btn" class="btn-primary maqom" style="margin-top:22px;" onclick="verifyOtpCode()">Verifikasi &amp; Masuk</button>
   <button class="btn-ghost" onclick="resendOtp()">Kirim ulang kode</button>
+</div>
+
+<!-- ===================== MODAL : KONFIRMASI DARURAT ===================== -->
+<div id="emg-confirm" class="emg-modal-backdrop">
+  <div class="emg-modal">
+    <div class="emg-modal-icon">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    </div>
+    <div class="emg-modal-title">🚨 PERINGATAN DARURAT!</div>
+    <div class="emg-modal-body">Apakah kamu dalam bahaya nyata dan butuh bantuan komunitas? <b>Lokasimu akan disiarkan ke semua pengguna.</b></div>
+    <div class="emg-modal-actions">
+      <button class="emg-btn cancel" onclick="closeEmergencyConfirm()">Batal</button>
+      <button id="emg-confirm-btn" class="emg-btn danger" onclick="confirmEmergency()">YA, SAYA DALAM BAHAYA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL : PERINGATAN MASUK (penerima) ===================== -->
+<div id="emg-incoming" class="emg-modal-backdrop">
+  <div class="emg-modal alert">
+    <div class="emg-modal-icon big">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"/><path d="M12 2v1"/><path d="M21 12h1"/><path d="M2 12h1"/></svg>
+    </div>
+    <div class="emg-modal-title">🚨 ADA YANG DALAM BAHAYA</div>
+    <div class="emg-modal-body"><b id="emg-in-name">Seseorang</b> menandai dirinya dalam bahaya dan meminta bantuan. Buka lokasinya sekarang.</div>
+    <div class="emg-modal-actions col">
+      <button class="emg-btn danger" onclick="openEmergencyMaps()">Buka Lokasi di Google Maps</button>
+      <button class="emg-btn cancel" onclick="closeEmergencyIncoming()">Tutup</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
@@ -1546,7 +1638,8 @@ function updateAuthUI(){
   const adminBtn = document.getElementById('akun-admin-btn');
   const addJobBtn = document.getElementById('addjob-btn');
   if(currentUser){
-    if(name) name.textContent = isAdmin() ? 'Admin Nuqto' : 'Sahabat Masisir';
+    const displayName = (currentUser.user_metadata && currentUser.user_metadata.name) || (isAdmin() ? 'Admin Nuqto' : 'Sahabat Masisir');
+    if(name) name.textContent = displayName;
     if(sub) sub.textContent = currentUser.email || 'Terdaftar';
     if(authBtn) authBtn.textContent = 'Keluar';
     if(adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
@@ -1572,10 +1665,12 @@ function authTab(mode){
     : 'Daftar akun baru — kode verifikasi akan dikirim ke email.';
   document.getElementById('auth-password').setAttribute('autocomplete', mode === 'masuk' ? 'current-password' : 'new-password');
   document.getElementById('auth-submit-btn').textContent = mode === 'masuk' ? 'Masuk' : 'Daftar';
+  document.getElementById('auth-name-wrap').style.display = mode === 'daftar' ? '' : 'none';
 }
 
 function openAuth(){
   authTab('masuk');
+  document.getElementById('auth-name').value = '';
   document.getElementById('auth-email').value = '';
   const pw = document.getElementById('auth-password');
   pw.value = '';
@@ -1620,8 +1715,10 @@ async function authSubmit(){
     closeAuth();
     showToast('Berhasil masuk');
   } else {
+    const name = document.getElementById('auth-name').value.trim();
+    if(!name){ showToast('Isi nama kamu dulu'); btn.disabled = false; return; }
     btn.textContent = 'Mendaftar…';
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
     btn.disabled = false; btn.textContent = lbl;
     if(error){ showToast('Gagal daftar: ' + error.message); return; }
     if(data && data.session){ closeAuth(); showToast('Akun dibuat & kamu sudah masuk'); return; }
@@ -1812,6 +1909,55 @@ async function deleteJob(id){
   loadJobs();
 }
 
+/* ============================================================
+   LAPORAN DARURAT (emergency)
+   ============================================================ */
+let incomingAlert = null;
+
+function openEmergencyConfirm(){
+  if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengirim laporan darurat.'); return; }
+  document.getElementById('emg-confirm').classList.add('open');
+}
+function closeEmergencyConfirm(){ document.getElementById('emg-confirm').classList.remove('open'); }
+
+async function confirmEmergency(){
+  if(!isLoggedIn()){ closeEmergencyConfirm(); openAuth('Masuk dulu untuk mengirim laporan darurat.'); return; }
+  const btn = document.getElementById('emg-confirm-btn');
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Mengambil lokasi…';
+  let coords;
+  try{ coords = await getUserLatLng(); }
+  catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
+  const name = (currentUser.user_metadata && currentUser.user_metadata.name) || currentUser.email || 'Pengguna';
+  const { error } = await sb.from('emergency_alerts').insert({ name, lat: coords[0], lng: coords[1] });
+  btn.disabled = false; btn.textContent = lbl;
+  if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
+  closeEmergencyConfirm();
+  showToast('🚨 Laporan darurat terkirim — lokasimu disiarkan ke semua user');
+}
+
+function showIncomingEmergency(a){
+  incomingAlert = a;
+  document.getElementById('emg-in-name').textContent = a.name || 'Seseorang';
+  document.getElementById('emg-incoming').classList.add('open');
+  if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]);
+}
+function closeEmergencyIncoming(){ document.getElementById('emg-incoming').classList.remove('open'); }
+function openEmergencyMaps(){
+  if(!incomingAlert || incomingAlert.lat == null) return;
+  window.open('https://www.google.com/maps/search/?api=1&query=' + incomingAlert.lat + ',' + incomingAlert.lng, '_blank');
+}
+
+function initEmergencyRealtime(){
+  sb.channel('emergency-alerts')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'emergency_alerts' }, payload => {
+      const a = payload.new;
+      if(!a) return;
+      if(currentUser && a.user_id === currentUser.id) return; // jangan tampilkan ke pengirim sendiri
+      showIncomingEmergency(a);
+    })
+    .subscribe();
+}
+
 /* ---------- boot ---------- */
 function updateClock(){
   const el = document.getElementById('home-clock');
@@ -1842,6 +1988,7 @@ async function initAuth(){
 window.addEventListener('load', () => {
   initMaps();
   initAuth();
+  initEmergencyRealtime();
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
