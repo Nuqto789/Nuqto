@@ -278,6 +278,26 @@
   .sheet.open{transform:translateY(0);}
   .sheet-handle{width:40px; height:4px; border-radius:99px; background:rgba(28,27,23,0.2); margin:0 auto 16px auto;}
 
+  /* auth tabs */
+  .auth-tabs{ display:flex; gap:6px; background:rgba(28,27,23,0.06); border-radius:14px; padding:4px; }
+  .auth-tab{
+    flex:1; padding:10px; border:none; border-radius:11px; cursor:pointer;
+    background:transparent; color:var(--muted); font-size:14px; font-weight:700;
+    transition:background .2s ease, color .2s ease;
+  }
+  .auth-tab.active{ background:#fff; color:var(--maqom); box-shadow:0 2px 8px rgba(28,27,23,0.08); }
+
+  /* OTP 6 boxes */
+  .otp-boxes{ display:flex; gap:9px; justify-content:space-between; }
+  .otp-box{
+    flex:1; min-width:0; aspect-ratio:1/1; max-width:52px;
+    text-align:center; font-size:22px; font-weight:700;
+    border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
+    background:#fff; outline:none; color:var(--ink);
+    transition:border-color .15s ease;
+  }
+  .otp-box:focus{ border-color:var(--maqom); }
+
   .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
   .field-input{
     width:100%; border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
@@ -782,27 +802,43 @@
   </div>
 </div>
 
-<!-- ===================== AUTH SHEET (OTP) ===================== -->
+<!-- ===================== AUTH SHEET (Masuk / Daftar) ===================== -->
 <div id="auth-backdrop" class="sheet-backdrop" onclick="closeAuth()"></div>
 <div id="auth-sheet" class="sheet">
   <div class="sheet-handle"></div>
-  <div class="font-display text-xl mb-1">Masuk / Daftar</div>
-  <div id="auth-msg" style="font-size:12.5px; color:var(--muted); margin-bottom:16px;">Masukkan email untuk menerima kode OTP.</div>
-
-  <div id="auth-step-email">
-    <label class="field-label">Email</label>
-    <input id="auth-email" class="field-input mb-4" type="email" inputmode="email" autocomplete="email" placeholder="email@contoh.com" />
-    <button id="auth-send-btn" class="btn-primary maqom" onclick="sendOtp()">Kirim Kode OTP</button>
+  <div class="auth-tabs">
+    <button id="tab-masuk" class="auth-tab active" onclick="authTab('masuk')">Masuk</button>
+    <button id="tab-daftar" class="auth-tab" onclick="authTab('daftar')">Daftar</button>
   </div>
+  <div id="auth-msg" style="font-size:12.5px; color:var(--muted); margin:16px 0 18px;">Masuk dengan email &amp; password kamu.</div>
 
-  <div id="auth-step-code" style="display:none;">
-    <label class="field-label">Kode OTP (6 digit)</label>
-    <input id="auth-code" class="field-input mb-2" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" />
-    <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">Kode dikirim ke <span id="auth-email-echo" style="font-weight:600;"></span>. Cek folder spam bila belum masuk.</div>
-    <button id="auth-verify-btn" class="btn-primary maqom" onclick="verifyOtp()">Verifikasi &amp; Masuk</button>
-    <button class="btn-ghost" onclick="authBackToEmail()">Ganti email</button>
-  </div>
+  <label class="field-label">Email</label>
+  <input id="auth-email" class="field-input mb-4" type="email" inputmode="email" autocomplete="email" placeholder="email@contoh.com" />
+
+  <label class="field-label">Password</label>
+  <input id="auth-password" class="field-input mb-5" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter" />
+
+  <button id="auth-submit-btn" class="btn-primary maqom" onclick="authSubmit()">Masuk</button>
   <button class="btn-ghost" onclick="closeAuth()">Tutup</button>
+</div>
+
+<!-- ===================== OTP SHEET (verifikasi daftar) ===================== -->
+<div id="otp-backdrop" class="sheet-backdrop" onclick="closeOtp()"></div>
+<div id="otp-sheet" class="sheet">
+  <div class="sheet-handle"></div>
+  <div class="font-display text-xl mb-1">Verifikasi Email</div>
+  <div style="font-size:12.5px; color:var(--muted); margin-bottom:18px;">Masukkan 6 digit kode yang dikirim ke <span id="otp-email-echo" style="font-weight:600;"></span>. Cek folder spam bila belum masuk.</div>
+  <div class="otp-boxes" id="otp-boxes">
+    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="digit 1" />
+    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="digit 2" />
+    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="digit 3" />
+    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="digit 4" />
+    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="digit 5" />
+    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="digit 6" />
+  </div>
+  <button id="otp-verify-btn" class="btn-primary maqom" style="margin-top:22px;" onclick="verifyOtpCode()">Verifikasi &amp; Masuk</button>
+  <button class="btn-ghost" onclick="resendOtp()">Kirim ulang kode</button>
+  <button class="btn-ghost" onclick="closeOtp()">Tutup</button>
 </div>
 
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
@@ -843,7 +879,7 @@
     </span>
     <span class="label">Talaqqi</span>
   </button>
-  <button class="nav-btn" data-cat="akun" onclick="switchPage('akun')">
+  <button class="nav-btn" data-cat="akun" onclick="goAkun()">
     <span class="nav-btn-top">
       <span class="arch"></span>
       <span class="icon-wrap">
@@ -1495,10 +1531,24 @@ function updateAuthUI(){
 }
 
 function onAuthBtn(){ if(currentUser) logout(); else openAuth(); }
+function goAkun(){ if(isLoggedIn()) switchPage('akun'); else openAuth(); }
 
-function openAuth(msg){
-  document.getElementById('auth-msg').textContent = msg || 'Masukkan email untuk menerima kode OTP.';
-  authBackToEmail();
+let authMode = 'masuk';
+function authTab(mode){
+  authMode = mode;
+  document.getElementById('tab-masuk').classList.toggle('active', mode === 'masuk');
+  document.getElementById('tab-daftar').classList.toggle('active', mode === 'daftar');
+  document.getElementById('auth-msg').textContent = mode === 'masuk'
+    ? 'Masuk dengan email & password kamu.'
+    : 'Daftar akun baru — kode verifikasi akan dikirim ke email.';
+  document.getElementById('auth-password').setAttribute('autocomplete', mode === 'masuk' ? 'current-password' : 'new-password');
+  document.getElementById('auth-submit-btn').textContent = mode === 'masuk' ? 'Masuk' : 'Daftar';
+}
+
+function openAuth(){
+  authTab('masuk');
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
   document.getElementById('auth-backdrop').classList.add('open');
   document.getElementById('auth-sheet').classList.add('open');
   setTimeout(() => document.getElementById('auth-email').focus(), 250);
@@ -1507,38 +1557,95 @@ function closeAuth(){
   document.getElementById('auth-backdrop').classList.remove('open');
   document.getElementById('auth-sheet').classList.remove('open');
 }
-function authBackToEmail(){
-  document.getElementById('auth-step-email').style.display = '';
-  document.getElementById('auth-step-code').style.display = 'none';
-}
 
-async function sendOtp(){
+async function authSubmit(){
   const email = document.getElementById('auth-email').value.trim().toLowerCase();
+  const password = document.getElementById('auth-password').value;
   if(!email || !email.includes('@')){ showToast('Masukkan email yang valid'); return; }
-  const btn = document.getElementById('auth-send-btn');
-  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Mengirim kode…';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-  btn.disabled = false; btn.textContent = lbl;
-  if(error){ showToast('Gagal kirim OTP: ' + error.message); return; }
+  if(password.length < 6){ showToast('Password minimal 6 karakter'); return; }
   authEmail = email;
-  document.getElementById('auth-email-echo').textContent = email;
-  document.getElementById('auth-step-email').style.display = 'none';
-  document.getElementById('auth-step-code').style.display = '';
-  document.getElementById('auth-code').value = '';
-  setTimeout(() => document.getElementById('auth-code').focus(), 200);
-  showToast('Kode OTP dikirim ke ' + email);
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true; const lbl = btn.textContent;
+
+  if(authMode === 'masuk'){
+    btn.textContent = 'Masuk…';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = lbl;
+    if(error){
+      const m = (error.message || '').toLowerCase();
+      if(m.includes('not confirmed')){ showToast('Email belum diverifikasi — masukkan kode'); closeAuth(); openOtp(email); return; }
+      showToast('Gagal masuk: email/password salah'); return;
+    }
+    closeAuth();
+    showToast('Berhasil masuk');
+  } else {
+    btn.textContent = 'Mendaftar…';
+    const { data, error } = await sb.auth.signUp({ email, password });
+    btn.disabled = false; btn.textContent = lbl;
+    if(error){ showToast('Gagal daftar: ' + error.message); return; }
+    if(data && data.session){ closeAuth(); showToast('Akun dibuat & kamu sudah masuk'); return; }
+    closeAuth();
+    openOtp(email);
+    showToast('Kode verifikasi dikirim ke ' + email);
+  }
 }
 
-async function verifyOtp(){
-  const token = document.getElementById('auth-code').value.trim();
+/* ----- OTP 6 kotak ----- */
+function openOtp(email){
+  document.getElementById('otp-email-echo').textContent = email;
+  const boxes = document.querySelectorAll('#otp-boxes .otp-box');
+  boxes.forEach(b => b.value = '');
+  document.getElementById('otp-backdrop').classList.add('open');
+  document.getElementById('otp-sheet').classList.add('open');
+  setTimeout(() => boxes[0] && boxes[0].focus(), 250);
+}
+function closeOtp(){
+  document.getElementById('otp-backdrop').classList.remove('open');
+  document.getElementById('otp-sheet').classList.remove('open');
+}
+function otpBoxInput(e, idx){
+  const boxes = document.querySelectorAll('#otp-boxes .otp-box');
+  const v = e.target.value.replace(/\D/g, '');
+  if(v.length > 1){
+    v.split('').forEach((ch, i) => { if(boxes[idx + i]) boxes[idx + i].value = ch; });
+    const next = Math.min(idx + v.length, boxes.length - 1);
+    boxes[next].focus();
+    return;
+  }
+  e.target.value = v;
+  if(v && idx < boxes.length - 1) boxes[idx + 1].focus();
+}
+function otpBoxKey(e, idx){
+  const boxes = document.querySelectorAll('#otp-boxes .otp-box');
+  if(e.key === 'Backspace' && !e.target.value && idx > 0){ boxes[idx - 1].focus(); boxes[idx - 1].value = ''; }
+}
+function bindOtpBoxes(){
+  document.querySelectorAll('#otp-boxes .otp-box').forEach((b, i) => {
+    b.addEventListener('input', e => otpBoxInput(e, i));
+    b.addEventListener('keydown', e => otpBoxKey(e, i));
+  });
+}
+function collectOtp(){
+  return Array.from(document.querySelectorAll('#otp-boxes .otp-box')).map(b => b.value).join('');
+}
+
+async function verifyOtpCode(){
+  const token = collectOtp();
   if(token.length < 6){ showToast('Masukkan 6 digit kode'); return; }
-  const btn = document.getElementById('auth-verify-btn');
+  const btn = document.getElementById('otp-verify-btn');
   btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Memverifikasi…';
-  const { error } = await sb.auth.verifyOtp({ email: authEmail, token, type: 'email' });
+  let { error } = await sb.auth.verifyOtp({ email: authEmail, token, type: 'signup' });
+  if(error){ const r = await sb.auth.verifyOtp({ email: authEmail, token, type: 'email' }); error = r.error; }
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Kode salah / kadaluarsa: ' + error.message); return; }
-  closeAuth();
-  showToast('Berhasil masuk sebagai ' + authEmail);
+  closeOtp();
+  showToast('Email terverifikasi — kamu sudah masuk');
+}
+
+async function resendOtp(){
+  const { error } = await sb.auth.resend({ type: 'signup', email: authEmail });
+  if(error){ showToast('Gagal kirim ulang: ' + error.message); return; }
+  showToast('Kode dikirim ulang ke ' + authEmail);
 }
 
 async function logout(){
@@ -1675,6 +1782,7 @@ function updateClock(){
 }
 
 async function initAuth(){
+  bindOtpBoxes();
   try{
     const { data } = await sb.auth.getSession();
     currentUser = (data && data.session && data.session.user) || null;
