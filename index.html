@@ -1945,12 +1945,12 @@ async function confirmEmergency(){
   let coords;
   try{ coords = await getUserLatLng(); }
   catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
-  const name = (currentUser.user_metadata && currentUser.user_metadata.name) || currentUser.email || 'Pengguna';
-  const { error } = await sb.from('emergency_alerts').insert({ name, lat: coords[0], lng: coords[1] });
+  // anonim: jangan simpan/siarkan nama atau email pengirim (privasi). user_id tetap terekam via trigger.
+  const { error } = await sb.from('emergency_alerts').insert({ name: null, lat: coords[0], lng: coords[1] });
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
-  // broadcast push notification ke semua user (termasuk yang app-nya tertutup)
-  sb.functions.invoke('emergency-push', { body: { name, lat: coords[0], lng: coords[1] } }).catch(() => {});
+  // broadcast push notification anonim ke semua user (termasuk yang app-nya tertutup)
+  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1] } }).catch(() => {});
   closeEmergencyConfirm();
   showToast('🚨 Laporan darurat terkirim — lokasimu disiarkan ke semua user');
 }
