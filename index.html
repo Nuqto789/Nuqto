@@ -386,6 +386,9 @@
   @keyframes dbPulse{ 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.4; transform:scale(.7);} }
   .db-text{ flex:1; font-size:12.5px; font-weight:700; line-height:1.2; }
   .db-safe{ background:#fff; color:#DC2626; border:none; border-radius:10px; padding:8px 11px; font-size:12px; font-weight:800; cursor:pointer; flex-shrink:0; }
+  .track-banner .tb-main{ flex:1; min-width:0; display:flex; align-items:center; gap:10px; background:transparent; border:none; color:#fff; cursor:pointer; text-align:left; padding:0; }
+  .tb-text{ display:flex; flex-direction:column; font-size:12.5px; font-weight:800; line-height:1.2; min-width:0; }
+  .tb-sub{ font-size:10.5px; font-weight:600; opacity:.85; }
 
   /* track overlay (penerima) */
   #page-track{ background:#E9E4D7; }
@@ -401,6 +404,8 @@
 
   .danger-dot{ width:22px; height:22px; border-radius:50%; background:#DC2626; border:3px solid #fff; box-shadow:0 0 0 0 rgba(220,38,38,0.5); animation:ddPulse 1.4s ease-out infinite; }
   @keyframes ddPulse{ 0%{ box-shadow:0 0 0 0 rgba(220,38,38,0.5);} 100%{ box-shadow:0 0 0 16px rgba(220,38,38,0);} }
+  .helper-dot{ width:16px; height:16px; border-radius:50%; background:#2563EB; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
+  .track-dist{ font-size:12px; font-weight:600; color:var(--ink); margin-top:2px; }
 
   .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
   .field-input{
@@ -1016,6 +1021,15 @@
   <button class="db-safe" onclick="iAmSafe()">Saya sudah aman</button>
 </div>
 
+<!-- ===================== BANNER : LOKASI DARURAT (penerima) ===================== -->
+<div id="track-banner" class="danger-banner track-banner">
+  <button class="tb-main" onclick="openLiveTrack()">
+    <span class="db-pulse"></span>
+    <span class="tb-text">🚨 Lokasi Darurat<span class="tb-sub">Ketuk untuk lihat pelacakan</span></span>
+  </button>
+  <button class="db-safe" onclick="ignoreTrackBanner()">Abaikan</button>
+</div>
+
 <!-- ===================== OVERLAY : PELACAKAN DARURAT (penerima) ===================== -->
 <div id="page-track" class="overlay-page">
   <div id="map-track"></div>
@@ -1026,6 +1040,7 @@
     <div class="track-titlecard">
       <div style="font-weight:800; font-size:15px; color:#DC2626;">🚨 Pelacakan Darurat</div>
       <div id="track-status" class="track-status live">Live · memantau pergerakan</div>
+      <div id="track-dist" class="track-dist" style="display:none;"></div>
     </div>
   </div>
   <button class="track-maps-btn" onclick="trackOpenMaps()">
@@ -1710,7 +1725,8 @@ function updateAuthUI(){
   const adminBtn = document.getElementById('akun-admin-btn');
   const addJobBtn = document.getElementById('addjob-btn');
   if(currentUser){
-    const displayName = (currentUser.user_metadata && currentUser.user_metadata.name) || (isAdmin() ? 'Admin Nuqto' : 'Sahabat Masisir');
+    const uname = (currentUser.user_metadata && currentUser.user_metadata.name) || '';
+    const displayName = uname || (isAdmin() ? 'Admin Nuqto' : 'Pengguna Nuqto');
     if(name) name.textContent = displayName;
     if(sub) sub.textContent = currentUser.email || 'Terdaftar';
     if(authBtn) authBtn.textContent = 'Keluar';
@@ -2087,6 +2103,7 @@ function showIncomingEmergency(a){
   incomingAlert = a;
   document.getElementById('emg-in-name').textContent = a.name || 'Seseorang';
   document.getElementById('emg-incoming').classList.add('open');
+  showTrackBanner();
   if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]);
 }
 function closeEmergencyIncoming(){ document.getElementById('emg-incoming').classList.remove('open'); }
@@ -2097,11 +2114,13 @@ function openEmergencyMaps(){
 
 /* ----- receiver: peta live tracking ----- */
 let trackMap = null, trackMarker = null, trackChannel = null, trackAlertId = null;
+let trackRouteLayer = null, trackHelperMarker = null, lastRouteTs = 0;
 
 function openLiveTrack(){
   if(!incomingAlert || incomingAlert.lat == null){ showToast('Lokasi belum tersedia'); return; }
   trackAlertId = incomingAlert.id;
   document.getElementById('emg-incoming').classList.remove('open');
+  hideTrackBanner();
   document.getElementById('page-track').classList.add('open');
   if(!trackMap){
     trackMap = L.map('map-track', { zoomControl: false, attributionControl: false }).setView([incomingAlert.lat, incomingAlert.lng], 16);
@@ -2112,6 +2131,8 @@ function openLiveTrack(){
   trackMap.setView([incomingAlert.lat, incomingAlert.lng], 16);
   const st = document.getElementById('track-status');
   st.textContent = 'Live · memantau pergerakan'; st.className = 'track-status live';
+  lastRouteTs = Date.now();
+  drawTrackRoute();
 
   if(trackChannel) sb.removeChannel(trackChannel);
   trackChannel = sb.channel('track-' + trackAlertId)
@@ -2119,10 +2140,38 @@ function openLiveTrack(){
       const a = payload.new;
       incomingAlert = { ...incomingAlert, ...a };
       if(a.lat != null) placeTrackMarker(a.lat, a.lng, true);
+      const now = Date.now();
+      if(a.lat != null && now - lastRouteTs > 20000){ lastRouteTs = now; drawTrackRoute(); } // perbarui rute mengikuti pergerakan
       if(a.active === false){
         st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done';
+        addDismissedAlert(a.id);
       }
     }).subscribe();
+}
+
+async function drawTrackRoute(){
+  if(!trackMap || !incomingAlert || incomingAlert.lat == null) return;
+  let origin;
+  try{ origin = await getUserLatLng(); }
+  catch(e){ const st = document.getElementById('track-status'); if(st && st.className.indexOf('done') < 0){ st.textContent = 'Aktifkan izin lokasi untuk melihat rute'; } return; }
+  if(!trackHelperMarker){
+    trackHelperMarker = L.marker([origin[0], origin[1]], { icon: L.divIcon({ className: '', html: '<div class="helper-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(trackMap);
+  } else { trackHelperMarker.setLatLng([origin[0], origin[1]]); }
+  try{
+    const dest = [incomingAlert.lat, incomingAlert.lng];
+    const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(!data.routes || !data.routes.length) return;
+    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    if(trackRouteLayer) trackMap.removeLayer(trackRouteLayer);
+    trackRouteLayer = L.polyline(coords, { color: '#DC2626', weight: 5, opacity: 0.9, lineCap: 'round' }).addTo(trackMap);
+    trackMap.fitBounds(trackRouteLayer.getBounds(), { padding: [70, 90] });
+    const km = (data.routes[0].distance / 1000).toFixed(1);
+    const menit = Math.round(data.routes[0].duration / 60);
+    const dist = document.getElementById('track-dist');
+    if(dist){ dist.textContent = `Rute ~${km} km · ${menit} menit jalan kaki`; dist.style.display = ''; }
+  } catch(e){ /* koneksi */ }
 }
 
 function placeTrackMarker(lat, lng, recenter){
@@ -2143,6 +2192,38 @@ function trackOpenMaps(){
 function closeLiveTrack(){
   document.getElementById('page-track').classList.remove('open');
   if(trackChannel){ sb.removeChannel(trackChannel); trackChannel = null; }
+  if(trackMap){
+    if(trackRouteLayer){ trackMap.removeLayer(trackRouteLayer); trackRouteLayer = null; }
+    if(trackHelperMarker){ trackMap.removeLayer(trackHelperMarker); trackHelperMarker = null; }
+    if(trackMarker){ trackMap.removeLayer(trackMarker); trackMarker = null; }
+  }
+  const dist = document.getElementById('track-dist');
+  if(dist){ dist.style.display = 'none'; }
+  if(incomingAlert && incomingAlert.active === false){ addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
+  else { showTrackBanner(); }
+}
+
+function showTrackBanner(){ const b = document.getElementById('track-banner'); if(b) b.classList.add('show'); }
+function hideTrackBanner(){ const b = document.getElementById('track-banner'); if(b) b.classList.remove('show'); }
+function getDismissedAlerts(){ try{ return JSON.parse(localStorage.getItem('nuqto_dismissed') || '[]'); }catch(e){ return []; } }
+function addDismissedAlert(id){ if(!id) return; const d = getDismissedAlerts(); if(!d.includes(id)){ d.push(id); if(d.length > 60) d.shift(); localStorage.setItem('nuqto_dismissed', JSON.stringify(d)); } }
+function ignoreTrackBanner(){ if(incomingAlert) addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
+
+// saat app dibuka: kalau masih ada darurat AKTIF yang belum diabaikan, tampilkan lagi bar-nya
+async function checkActiveEmergency(){
+  try{
+    const { data } = await sb.from('emergency_alerts').select('*').eq('active', true).order('created_at', { ascending: false }).limit(8);
+    if(!data || !data.length) return;
+    const dismissed = getDismissedAlerts();
+    // pengirim buka lagi app: lanjutkan penyiaran lokasi miliknya
+    if(currentUser){
+      const mine = data.find(a => a.user_id === currentUser.id);
+      if(mine && myAlertId == null){ myAlertId = mine.id; startDangerBroadcast(mine.id); }
+    }
+    // penerima: tampilkan bar untuk darurat aktif yang belum diabaikan & bukan milik sendiri
+    const found = data.find(a => (!currentUser || a.user_id !== currentUser.id) && !dismissed.includes(a.id));
+    if(found){ incomingAlert = found; showTrackBanner(); }
+  } catch(e){}
 }
 
 function initEmergencyRealtime(){
@@ -2173,6 +2254,7 @@ async function initAuth(){
     currentUser = (data && data.session && data.session.user) || null;
   } catch(e){ currentUser = null; }
   updateAuthUI();
+  checkActiveEmergency();
   sb.auth.onAuthStateChange((_event, session) => {
     const prev = currentUser ? currentUser.id : null;
     currentUser = (session && session.user) || null;
