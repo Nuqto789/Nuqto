@@ -407,6 +407,22 @@
   .helper-dot{ width:16px; height:16px; border-radius:50%; background:#2563EB; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
   .track-dist{ font-size:12px; font-weight:600; color:var(--ink); margin-top:2px; }
 
+  /* pusat informasi */
+  .info-card{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:14px; box-shadow:0 4px 16px rgba(28,27,23,0.05); }
+  .info-head{ display:flex; align-items:center; gap:10px; position:relative; }
+  .info-avatar{ width:38px; height:38px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,var(--emerald),var(--emerald-deep)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; }
+  .info-name{ flex:1; min-width:0; font-size:14.5px; font-weight:700; color:var(--ink-2); line-height:1.2; display:flex; flex-direction:column; }
+  .info-time{ font-size:11.5px; font-weight:500; color:var(--muted-2); margin-top:1px; }
+  .info-more-wrap{ position:relative; flex-shrink:0; }
+  .info-more{ width:32px; height:32px; border-radius:50%; border:none; background:transparent; color:var(--muted-2); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .info-more:active{ background:rgba(28,27,23,0.06); }
+  .info-menu{ position:absolute; top:36px; right:0; z-index:20; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.16); padding:4px; display:none; }
+  .info-menu.open{ display:block; }
+  .info-menu button{ display:flex; align-items:center; gap:8px; width:100%; background:none; border:none; padding:9px 14px 9px 10px; font-size:13.5px; font-weight:700; color:#DC2626; cursor:pointer; border-radius:9px; white-space:nowrap; }
+  .info-menu button:active{ background:rgba(220,38,38,0.08); }
+  .info-photo{ width:100%; border-radius:12px; margin-top:12px; display:block; }
+  .info-caption{ font-size:14px; line-height:1.5; color:var(--ink); margin-top:12px; white-space:pre-wrap; word-break:break-word; }
+
   .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
   .field-input{
     width:100%; border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
@@ -846,6 +862,14 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
+    <button class="menu-row" onclick="openInfo()">
+      <span class="menu-icon" style="background:var(--soft-blue);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      </span>
+      <span class="menu-label">Pusat Informasi</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <button class="menu-row" id="push-row" onclick="enablePush()">
       <span class="menu-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
@@ -928,6 +952,48 @@
     <input id="job-contact" class="field-input mb-5" type="text" placeholder="cth. wa.me/62…" />
     <button class="btn-primary maqom" onclick="submitJob()">Pasang Lowongan</button>
     <button class="btn-ghost" onclick="closeAddJob()">Batal</button>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : PUSAT INFORMASI (feed) ===================== -->
+<div id="page-info" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeInfo()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Pusat Informasi</div>
+    <button id="addinfo-btn" class="back-btn" style="display:none;" onclick="openAddInfo()" aria-label="Posting">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  <div class="scroll-page" style="padding-top:14px;" onclick="document.querySelectorAll('.info-menu.open').forEach(el=>el.classList.remove('open'))">
+    <div id="info-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : POSTING INFORMASI ===================== -->
+<div id="page-addinfo" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeAddInfo()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700;">Buat Postingan</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <label class="field-label">Caption</label>
+    <textarea id="info-caption-input" class="field-input mb-4" rows="3" placeholder="cth. Kehilangan dompet warna coklat di Hay Asher, hubungi…"></textarea>
+    <label class="field-label">Foto (opsional)</label>
+    <div class="mb-5">
+      <input id="info-photo-input" type="file" accept="image/*" style="display:none;" onchange="handleInfoPhoto(event)">
+      <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('info-photo-input').click()">Pilih Foto</button>
+      <div id="info-photo-preview-wrap" class="hidden" style="margin-top:10px; position:relative;">
+        <img id="info-photo-preview" style="width:100%; max-height:220px; object-fit:cover; border-radius:12px;" />
+        <button type="button" onclick="removeInfoPhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:11px; color:var(--muted); margin-top:8px;">Foto otomatis dikompres agar ringan.</div>
+    </div>
+    <button id="info-post-btn" class="btn-primary maqom" onclick="submitInfo()">Posting</button>
+    <button class="btn-ghost" onclick="closeAddInfo()">Batal</button>
   </div>
 </div>
 
@@ -1995,6 +2061,136 @@ async function deleteJob(id){
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   showToast('Lowongan dihapus');
   loadJobs();
+}
+
+/* ============================================================
+   PUSAT INFORMASI (info posts) — foto + caption
+   ============================================================ */
+let infoPhotoFile = null;
+
+// auto-kompres gambar sebelum upload
+async function compressImage(file, maxDim = 1280, quality = 0.7){
+  try{
+    if(!file.type || !file.type.startsWith('image/')) return file;
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+    let w = img.width, h = img.height;
+    if(w > maxDim || h > maxDim){
+      if(w >= h){ h = Math.round(h * maxDim / w); w = maxDim; }
+      else { w = Math.round(w * maxDim / h); h = maxDim; }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(img.src);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
+    if(!blob) return file;
+    return new File([blob], 'info.jpg', { type: 'image/jpeg' });
+  } catch(e){ return file; }
+}
+
+function openInfo(){
+  document.getElementById('addinfo-btn').style.display = currentUser ? '' : 'none';
+  document.getElementById('page-info').classList.add('open');
+  loadInfoPosts();
+}
+function closeInfo(){ document.getElementById('page-info').classList.remove('open'); }
+
+async function loadInfoPosts(){
+  const list = document.getElementById('info-list');
+  list.innerHTML = '<div class="empty-state">Memuat…</div>';
+  const { data, error } = await sb.from('info_posts').select('*').order('created_at', { ascending: false }).limit(100);
+  if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
+  if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada informasi. ' + (currentUser ? 'Tekan + untuk posting.' : 'Masuk untuk memposting.') + '</div>'; return; }
+  const canManage = (p) => isAdmin() || (currentUser && p.user_id === currentUser.id);
+  list.innerHTML = data.map(p => {
+    const nm = p.author_name || 'Pengguna';
+    const initial = nm.trim().charAt(0).toUpperCase() || '?';
+    return `
+    <div class="info-card">
+      <div class="info-head">
+        <div class="info-avatar">${escapeHtml(initial)}</div>
+        <div class="info-name">${escapeHtml(nm)}<span class="info-time">${timeAgo(p.created_at)}</span></div>
+        ${canManage(p) ? `<div class="info-more-wrap">
+          <button class="info-more" onclick="toggleInfoMenu('${p.id}')" aria-label="Opsi">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+          </button>
+          <div class="info-menu" id="info-menu-${p.id}">
+            <button onclick="deleteInfoPost('${p.id}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              Hapus
+            </button>
+          </div>
+        </div>` : ''}
+      </div>
+      ${p.photo_url ? `<img class="info-photo" src="${escapeHtml(p.photo_url)}" loading="lazy" />` : ''}
+      ${p.caption ? `<div class="info-caption">${escapeHtml(p.caption)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleInfoMenu(id){
+  const m = document.getElementById('info-menu-' + id);
+  if(!m) return;
+  const wasOpen = m.classList.contains('open');
+  document.querySelectorAll('.info-menu.open').forEach(el => el.classList.remove('open'));
+  if(!wasOpen) m.classList.add('open');
+}
+
+function openAddInfo(){
+  if(!isLoggedIn()){ openAuth('Masuk / daftar dulu untuk memposting.'); return; }
+  infoPhotoFile = null;
+  document.getElementById('info-caption-input').value = '';
+  document.getElementById('info-photo-input').value = '';
+  document.getElementById('info-photo-preview-wrap').classList.add('hidden');
+  document.getElementById('info-photo-preview').src = '';
+  document.getElementById('page-addinfo').classList.add('open');
+}
+function closeAddInfo(){ document.getElementById('page-addinfo').classList.remove('open'); }
+
+function handleInfoPhoto(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ showToast('File harus berupa gambar'); e.target.value = ''; return; }
+  infoPhotoFile = file;
+  document.getElementById('info-photo-preview').src = URL.createObjectURL(file);
+  document.getElementById('info-photo-preview-wrap').classList.remove('hidden');
+}
+function removeInfoPhoto(){
+  infoPhotoFile = null;
+  document.getElementById('info-photo-input').value = '';
+  document.getElementById('info-photo-preview-wrap').classList.add('hidden');
+  document.getElementById('info-photo-preview').src = '';
+}
+
+async function submitInfo(){
+  const caption = document.getElementById('info-caption-input').value.trim();
+  if(!caption && !infoPhotoFile){ showToast('Isi caption atau lampirkan foto dulu'); return; }
+  const btn = document.getElementById('info-post-btn');
+  btn.disabled = true; const lbl = btn.textContent;
+  let photo_url = null;
+  try{
+    if(infoPhotoFile){
+      btn.textContent = 'Mengompres & unggah…';
+      const compressed = await compressImage(infoPhotoFile);
+      photo_url = await uploadPhoto(compressed);
+    }
+  } catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal upload foto — coba lagi'); return; }
+  btn.textContent = 'Memposting…';
+  const author_name = (currentUser.user_metadata && currentUser.user_metadata.name) || 'Pengguna';
+  const { error } = await sb.from('info_posts').insert({ caption: caption || null, photo_url, author_name });
+  btn.disabled = false; btn.textContent = lbl;
+  if(error){ showToast('Gagal posting: ' + error.message); return; }
+  showToast('Informasi berhasil diposting');
+  closeAddInfo();
+  loadInfoPosts();
+}
+
+async function deleteInfoPost(id){
+  if(!confirm('Hapus postingan ini?')) return;
+  const { error } = await sb.from('info_posts').delete().eq('id', id);
+  if(error){ showToast('Gagal hapus: ' + error.message); return; }
+  showToast('Postingan dihapus');
+  loadInfoPosts();
 }
 
 /* ============================================================
