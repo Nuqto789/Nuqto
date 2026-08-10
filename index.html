@@ -373,6 +373,35 @@
   }
   .btn-logout:active{ opacity:.9; transform:scale(.97); }
 
+  /* danger banner (pengirim, lintas halaman) */
+  .danger-banner{
+    position:fixed; left:12px; right:12px; z-index:1150;
+    top:calc(env(safe-area-inset-top, 0px) + 10px);
+    display:none; align-items:center; gap:10px;
+    background:#DC2626; color:#fff; border-radius:14px;
+    padding:10px 12px; box-shadow:0 8px 24px rgba(220,38,38,0.40);
+  }
+  .danger-banner.show{ display:flex; }
+  .db-pulse{ width:10px; height:10px; border-radius:50%; background:#fff; flex-shrink:0; animation:dbPulse 1.1s ease-in-out infinite; }
+  @keyframes dbPulse{ 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.4; transform:scale(.7);} }
+  .db-text{ flex:1; font-size:12.5px; font-weight:700; line-height:1.2; }
+  .db-safe{ background:#fff; color:#DC2626; border:none; border-radius:10px; padding:8px 11px; font-size:12px; font-weight:800; cursor:pointer; flex-shrink:0; }
+
+  /* track overlay (penerima) */
+  #page-track{ background:#E9E4D7; }
+  #map-track{ position:absolute; inset:0; z-index:0; }
+  .track-top{ position:absolute; top:0; left:0; right:0; z-index:500; display:flex; align-items:flex-start; gap:10px; padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 0; pointer-events:none; }
+  .track-top > *{ pointer-events:auto; }
+  .track-titlecard{ background:#fff; border-radius:14px; padding:8px 14px; box-shadow:0 4px 14px rgba(0,0,0,0.14); }
+  .track-status{ font-size:12px; font-weight:600; margin-top:1px; }
+  .track-status.live{ color:#DC2626; }
+  .track-status.done{ color:var(--maqom); }
+  .track-maps-btn{ position:absolute; left:16px; right:16px; z-index:500; bottom:calc(20px + env(safe-area-inset-bottom,0px)); display:flex; align-items:center; justify-content:center; gap:9px; background:#DC2626; color:#fff; border:none; border-radius:14px; padding:14px; font-weight:700; font-size:14.5px; box-shadow:0 8px 22px rgba(220,38,38,0.34); cursor:pointer; }
+  .track-maps-btn:active{ opacity:.9; }
+
+  .danger-dot{ width:22px; height:22px; border-radius:50%; background:#DC2626; border:3px solid #fff; box-shadow:0 0 0 0 rgba(220,38,38,0.5); animation:ddPulse 1.4s ease-out infinite; }
+  @keyframes ddPulse{ 0%{ box-shadow:0 0 0 0 rgba(220,38,38,0.5);} 100%{ box-shadow:0 0 0 16px rgba(220,38,38,0);} }
+
   .field-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(28,27,23,0.55); margin-bottom:6px; display:block;}
   .field-input{
     width:100%; border:1.5px solid rgba(28,27,23,0.15); border-radius:12px;
@@ -974,10 +1003,35 @@
     <div class="emg-modal-title">🚨 ADA YANG DALAM BAHAYA</div>
     <div class="emg-modal-body"><b id="emg-in-name">Seseorang</b> menandai dirinya dalam bahaya dan meminta bantuan. Buka lokasinya sekarang.</div>
     <div class="emg-modal-actions col">
-      <button class="emg-btn danger" onclick="openEmergencyMaps()">Buka Lokasi di Google Maps</button>
+      <button class="emg-btn danger" onclick="openLiveTrack()">Lacak Lokasi (Live)</button>
       <button class="emg-btn cancel" onclick="closeEmergencyIncoming()">Tutup</button>
     </div>
   </div>
+</div>
+
+<!-- ===================== BANNER : SEDANG MENYIARKAN (pengirim) ===================== -->
+<div id="danger-banner" class="danger-banner">
+  <span class="db-pulse"></span>
+  <span class="db-text">📍 Menyiarkan lokasimu (live)…</span>
+  <button class="db-safe" onclick="iAmSafe()">Saya sudah aman</button>
+</div>
+
+<!-- ===================== OVERLAY : PELACAKAN DARURAT (penerima) ===================== -->
+<div id="page-track" class="overlay-page">
+  <div id="map-track"></div>
+  <div class="track-top">
+    <button class="back-btn" style="background:#fff;" onclick="closeLiveTrack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="track-titlecard">
+      <div style="font-weight:800; font-size:15px; color:#DC2626;">🚨 Pelacakan Darurat</div>
+      <div id="track-status" class="track-status live">Live · memantau pergerakan</div>
+    </div>
+  </div>
+  <button class="track-maps-btn" onclick="trackOpenMaps()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+    Buka di Google Maps
+  </button>
 </div>
 
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
@@ -1946,14 +2000,46 @@ async function confirmEmergency(){
   try{ coords = await getUserLatLng(); }
   catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
   // anonim: jangan simpan/siarkan nama atau email pengirim (privasi). user_id tetap terekam via trigger.
-  const { error } = await sb.from('emergency_alerts').insert({ name: null, lat: coords[0], lng: coords[1] });
+  const { data, error } = await sb.from('emergency_alerts').insert({ name: null, lat: coords[0], lng: coords[1] }).select().single();
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
+  myAlertId = data.id;
+  startDangerBroadcast(myAlertId);
   // broadcast push notification anonim ke semua user (termasuk yang app-nya tertutup)
   sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1] } }).catch(() => {});
   closeEmergencyConfirm();
-  showToast('🚨 Laporan darurat terkirim — lokasimu disiarkan ke semua user');
+  showToast('🚨 Laporan terkirim — lokasimu sedang disiarkan live. Biarkan Nuqto terbuka.');
 }
+
+/* ----- sender: siarkan lokasi live lintas-halaman ----- */
+let myAlertId = null;
+let myWatchId = null;
+let lastPosSent = 0;
+
+function startDangerBroadcast(id){
+  showDangerBanner();
+  if(!navigator.geolocation) return;
+  if(myWatchId != null) navigator.geolocation.clearWatch(myWatchId);
+  myWatchId = navigator.geolocation.watchPosition(async (pos) => {
+    const now = Date.now();
+    if(now - lastPosSent < 6000) return; // throttle ~6 detik
+    lastPosSent = now;
+    await sb.from('emergency_alerts').update({
+      lat: pos.coords.latitude, lng: pos.coords.longitude, updated_at: new Date().toISOString()
+    }).eq('id', id);
+  }, () => {}, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
+}
+
+async function iAmSafe(){
+  if(myWatchId != null){ navigator.geolocation.clearWatch(myWatchId); myWatchId = null; }
+  if(myAlertId){ await sb.from('emergency_alerts').update({ active: false }).eq('id', myAlertId); }
+  myAlertId = null;
+  hideDangerBanner();
+  showToast('Penyiaran lokasi dihentikan. Semoga kamu aman. 🤲');
+}
+
+function showDangerBanner(){ document.getElementById('danger-banner').classList.add('show'); }
+function hideDangerBanner(){ document.getElementById('danger-banner').classList.remove('show'); }
 
 /* ----- Web Push: aktifkan notifikasi & simpan langganan ----- */
 const VAPID_PUBLIC = 'BB3iAwxnDlMBRv0hbLRBBOnA2yQTiWIfxInDpZM0DW6eag3f77zdVyTbmb43wF6WRNmd9p6gI5H5B96bFxjnYMQ';
@@ -2007,6 +2093,56 @@ function closeEmergencyIncoming(){ document.getElementById('emg-incoming').class
 function openEmergencyMaps(){
   if(!incomingAlert || incomingAlert.lat == null) return;
   window.open('https://www.google.com/maps/search/?api=1&query=' + incomingAlert.lat + ',' + incomingAlert.lng, '_blank');
+}
+
+/* ----- receiver: peta live tracking ----- */
+let trackMap = null, trackMarker = null, trackChannel = null, trackAlertId = null;
+
+function openLiveTrack(){
+  if(!incomingAlert || incomingAlert.lat == null){ showToast('Lokasi belum tersedia'); return; }
+  trackAlertId = incomingAlert.id;
+  document.getElementById('emg-incoming').classList.remove('open');
+  document.getElementById('page-track').classList.add('open');
+  if(!trackMap){
+    trackMap = L.map('map-track', { zoomControl: false, attributionControl: false }).setView([incomingAlert.lat, incomingAlert.lng], 16);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(trackMap);
+  }
+  setTimeout(() => trackMap.invalidateSize(), 220);
+  placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
+  trackMap.setView([incomingAlert.lat, incomingAlert.lng], 16);
+  const st = document.getElementById('track-status');
+  st.textContent = 'Live · memantau pergerakan'; st.className = 'track-status live';
+
+  if(trackChannel) sb.removeChannel(trackChannel);
+  trackChannel = sb.channel('track-' + trackAlertId)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'emergency_alerts', filter: 'id=eq.' + trackAlertId }, (payload) => {
+      const a = payload.new;
+      incomingAlert = { ...incomingAlert, ...a };
+      if(a.lat != null) placeTrackMarker(a.lat, a.lng, true);
+      if(a.active === false){
+        st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done';
+      }
+    }).subscribe();
+}
+
+function placeTrackMarker(lat, lng, recenter){
+  if(!trackMap) return;
+  if(!trackMarker){
+    trackMarker = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div class="danger-dot"></div>', iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(trackMap);
+  } else {
+    trackMarker.setLatLng([lat, lng]);
+  }
+  if(recenter) trackMap.panTo([lat, lng], { animate: true });
+}
+
+function trackOpenMaps(){
+  if(!incomingAlert || incomingAlert.lat == null) return;
+  window.open('https://www.google.com/maps/search/?api=1&query=' + incomingAlert.lat + ',' + incomingAlert.lng, '_blank');
+}
+
+function closeLiveTrack(){
+  document.getElementById('page-track').classList.remove('open');
+  if(trackChannel){ sb.removeChannel(trackChannel); trackChannel = null; }
 }
 
 function initEmergencyRealtime(){
