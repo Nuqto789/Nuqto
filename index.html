@@ -2015,14 +2015,19 @@ async function confirmEmergency(){
   let coords;
   try{ coords = await getUserLatLng(); }
   catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
+  // nonaktifkan alert aktif lama milik sendiri (cegah penumpukan; RLS batasi ke baris sendiri)
+  await sb.from('emergency_alerts').update({ active: false }).eq('active', true);
   // anonim: jangan simpan/siarkan nama atau email pengirim (privasi). user_id tetap terekam via trigger.
   const { data, error } = await sb.from('emergency_alerts').insert({ name: null, lat: coords[0], lng: coords[1] }).select().single();
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
   myAlertId = data.id;
   startDangerBroadcast(myAlertId);
+  // ambil endpoint push perangkat ini agar server tidak mengirim notif balik ke pengirim
+  let senderEndpoint = null;
+  try{ if('serviceWorker' in navigator){ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) senderEndpoint = sub.endpoint; } }catch(e){}
   // broadcast push notification anonim ke semua user (termasuk yang app-nya tertutup)
-  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1] } }).catch(() => {});
+  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1], senderEndpoint } }).catch(() => {});
   closeEmergencyConfirm();
   showToast('🚨 Laporan terkirim — lokasimu sedang disiarkan live. Biarkan Nuqto terbuka.');
 }
@@ -2212,7 +2217,8 @@ function ignoreTrackBanner(){ if(incomingAlert) addDismissedAlert(incomingAlert.
 // saat app dibuka: kalau masih ada darurat AKTIF yang belum diabaikan, tampilkan lagi bar-nya
 async function checkActiveEmergency(){
   try{
-    const { data } = await sb.from('emergency_alerts').select('*').eq('active', true).order('created_at', { ascending: false }).limit(8);
+    const since = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+    const { data } = await sb.from('emergency_alerts').select('*').eq('active', true).gte('created_at', since).order('created_at', { ascending: false }).limit(8);
     if(!data || !data.length) return;
     const dismissed = getDismissedAlerts();
     // pengirim buka lagi app: lanjutkan penyiaran lokasi miliknya
