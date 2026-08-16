@@ -457,23 +457,13 @@
   .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888;}
   .popup-wrap{position:relative;}
   .popup-menu-btn{
-    position:absolute; top:0; right:0; z-index:5;
+    position:absolute; top:8px; left:8px; z-index:6;
     width:26px; height:26px; border-radius:50%;
     background:rgba(20,19,16,0.55); border:none; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
     color:#fff;
   }
   .popup-menu-btn:active{background:rgba(20,19,16,0.75);}
-  .popup-photo-wrap{ position:relative; margin-bottom:8px; }
-  .popup-photo{ width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; display:block; }
-  .popup-del-photo{
-    position:absolute; top:8px; left:8px; z-index:6;
-    width:30px; height:30px; border-radius:50%;
-    background:rgba(220,38,38,0.92); border:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.3);
-  }
-  .popup-del-photo:active{ background:rgba(185,28,28,0.95); }
   .popup-badge{
     display:inline-block; font-size:10.5px; font-weight:700;
     padding:3px 9px; border-radius:99px; margin-bottom:8px;
@@ -670,12 +660,19 @@
     display:flex; align-items:center; justify-content:center; background:none; cursor:pointer; flex-shrink:0;
   }
   .job-card{
-    border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px;
+    border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; position:relative;
   }
   .job-tag{
     display:inline-block; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px;
     background:rgba(23,80,56,0.1); color:var(--maqom-deep); margin-bottom:8px;
   }
+  .job-more{
+    position:absolute; top:10px; right:10px; z-index:3;
+    width:28px; height:28px; border-radius:50%;
+    background:rgba(28,27,23,0.06); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .job-more:active{ background:rgba(28,27,23,0.12); }
 </style>
 </head>
 <body>
@@ -961,7 +958,7 @@
     <button class="back-btn" onclick="closeAddJob()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
-    <div class="font-display" style="font-size:19px; font-weight:700;">Pasang Lowongan</div>
+    <div id="addjob-title" class="font-display" style="font-size:19px; font-weight:700;">Pasang Lowongan</div>
   </div>
   <div class="scroll-page" style="padding-top:16px;">
     <label class="field-label">Judul Pekerjaan</label>
@@ -974,7 +971,7 @@
     <textarea id="job-desc" class="field-input mb-4" rows="3" placeholder="Rincian pekerjaan…"></textarea>
     <label class="field-label">Kontak (WA / email)</label>
     <input id="job-contact" class="field-input mb-5" type="text" placeholder="cth. wa.me/62…" />
-    <button class="btn-primary maqom" onclick="submitJob()">Pasang Lowongan</button>
+    <button id="job-submit-btn" class="btn-primary maqom" onclick="submitJob()">Pasang Lowongan</button>
     <button class="btn-ghost" onclick="closeAddJob()">Batal</button>
   </div>
 </div>
@@ -1224,6 +1221,18 @@
   <span id="action-toast-msg">Hapus postingan ini?</span>
   <button class="action-toast-btn cancel" onclick="hideActionToast()">Batal</button>
   <button id="action-toast-ok" class="action-toast-btn danger">Hapus</button>
+</div>
+
+<div id="pin-menu-toast" class="action-toast">
+  <button class="action-toast-btn cancel" onclick="pinMenuEdit()">Edit</button>
+  <button class="action-toast-btn danger" onclick="pinMenuDelete()">Hapus</button>
+  <button class="action-toast-btn cancel" onclick="hidePinMenu()">Batal</button>
+</div>
+
+<div id="job-menu-toast" class="action-toast">
+  <button class="action-toast-btn cancel" onclick="jobMenuEdit()">Edit</button>
+  <button class="action-toast-btn danger" onclick="jobMenuDelete()">Hapus</button>
+  <button class="action-toast-btn cancel" onclick="hideJobMenu()">Batal</button>
 </div>
 
 <script>
@@ -1591,16 +1600,11 @@ function buildPopupHtml(cat, pin){
   const pending = pin.status === 'pending';
   return `
     <div class="popup-wrap">
-      ${manage ? `<button class="popup-menu-btn" onclick="openEditSheet('${cat}', '${pin.id}')" aria-label="Edit">
+      ${manage ? `<button class="popup-menu-btn" onclick="openPinMenu('${cat}','${pin.id}')" aria-label="Opsi">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>` : ''}
       ${pending ? `<div class="popup-badge">⏳ Menunggu persetujuan</div>` : ''}
-      ${pin.photo_url ? `<div class="popup-photo-wrap">
-        <img class="popup-photo" src="${escapeHtml(pin.photo_url)}" />
-        ${manage ? `<button class="popup-del-photo" onclick="confirmDeletePin('${cat}','${pin.id}')" aria-label="Hapus tanda">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-        </button>` : ''}
-      </div>` : ''}
+      ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
       <div class="popup-title">${escapeHtml(pin.name)}</div>
       ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
       ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
@@ -1609,7 +1613,6 @@ function buildPopupHtml(cat, pin){
         <button class="popup-btn approve" onclick="approvePin('${cat}','${pin.id}')">Setujui</button>
         <button class="popup-btn reject" onclick="rejectPin('${cat}','${pin.id}')">Tolak</button>
       </div>` : ''}
-      ${(manage && !pin.photo_url) ? `<button class="popup-btn del" onclick="confirmDeletePin('${cat}','${pin.id}')">Hapus titik</button>` : ''}
     </div>
   `;
 }
@@ -2035,14 +2038,30 @@ async function rejectPin(cat, id){
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
 }
 
-function confirmDeletePin(cat, id){
-  const t = document.getElementById('action-toast');
-  document.getElementById('action-toast-msg').textContent = 'Hapus tanda ini?';
-  const ok = document.getElementById('action-toast-ok');
-  ok.onclick = () => { hideActionToast(); deletePin(cat, id); };
+let pinMenuCtx = null;
+function openPinMenu(cat, id){
+  pinMenuCtx = { cat, id };
+  document.getElementById('action-toast').classList.remove('show');
+  const t = document.getElementById('pin-menu-toast');
   t.classList.add('show');
   clearTimeout(actionToastTimer);
-  actionToastTimer = setTimeout(hideActionToast, 6000);
+  actionToastTimer = setTimeout(hidePinMenu, 6000);
+}
+function hidePinMenu(){
+  document.getElementById('pin-menu-toast').classList.remove('show');
+  clearTimeout(actionToastTimer);
+}
+function pinMenuEdit(){
+  if(!pinMenuCtx) return;
+  const { cat, id } = pinMenuCtx;
+  hidePinMenu();
+  openEditSheet(cat, id);
+}
+function pinMenuDelete(){
+  if(!pinMenuCtx) return;
+  const { cat, id } = pinMenuCtx;
+  hidePinMenu();
+  deletePin(cat, id);
 }
 
 async function deletePin(cat, id){
@@ -2062,25 +2081,46 @@ async function loadJobs(){
   const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
   if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
   if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada lowongan. ' + (currentUser ? 'Tekan + untuk memasang.' : 'Masuk untuk memasang lowongan.') + '</div>'; return; }
-  const canDel = (j) => isAdmin() || (currentUser && j.user_id === currentUser.id);
+  const canManage = (j) => isAdmin() || (currentUser && j.user_id === currentUser.id);
   list.innerHTML = data.map(j => `
     <div class="job-card">
+      ${canManage(j) ? `<button class="job-more" onclick="openJobMenu('${j.id}')" aria-label="Opsi">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </button>` : ''}
       ${j.tag ? `<div class="job-tag">${escapeHtml(j.tag)}</div>` : ''}
-      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(j.title)}</div>
+      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px; padding-right:${canManage(j) ? '30px' : '0'};">${escapeHtml(j.title)}</div>
       ${j.location ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(j.location)}</div>` : ''}
       ${j.description ? `<div style="font-size:12.5px; color:#555; margin-bottom:6px;">${escapeHtml(j.description)}</div>` : ''}
       ${j.contact ? `<div style="font-size:12.5px; font-weight:600; color:var(--maqom);">${escapeHtml(j.contact)}</div>` : ''}
-      ${canDel(j) ? `<button class="popup-btn del" style="margin-top:8px;" onclick="deleteJob('${j.id}')">Hapus lowongan</button>` : ''}
     </div>
   `).join('');
 }
 
+let jobEditId = null;
+
 function openAddJob(){
   if(!isLoggedIn()){ openAuth('Masuk / daftar dulu untuk memasang lowongan.'); return; }
+  jobEditId = null;
   ['job-title','job-location','job-tag','job-desc','job-contact'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addjob-title').textContent = 'Pasang Lowongan';
+  document.getElementById('job-submit-btn').textContent = 'Pasang Lowongan';
   document.getElementById('page-addjob').classList.add('open');
 }
 function closeAddJob(){ document.getElementById('page-addjob').classList.remove('open'); }
+
+async function openEditJob(id){
+  const { data, error } = await sb.from('jobs').select('*').eq('id', id).single();
+  if(error || !data){ showToast('Gagal memuat lowongan'); return; }
+  jobEditId = id;
+  document.getElementById('job-title').value = data.title || '';
+  document.getElementById('job-location').value = data.location || '';
+  document.getElementById('job-tag').value = data.tag || '';
+  document.getElementById('job-desc').value = data.description || '';
+  document.getElementById('job-contact').value = data.contact || '';
+  document.getElementById('addjob-title').textContent = 'Edit Lowongan';
+  document.getElementById('job-submit-btn').textContent = 'Simpan Perubahan';
+  document.getElementById('page-addjob').classList.add('open');
+}
 
 async function submitJob(){
   const title = document.getElementById('job-title').value.trim();
@@ -2092,15 +2132,43 @@ async function submitJob(){
     description: document.getElementById('job-desc').value.trim() || null,
     contact: document.getElementById('job-contact').value.trim() || null
   };
-  const { error } = await sb.from('jobs').insert(payload);
-  if(error){ showToast('Gagal pasang: ' + error.message); return; }
-  showToast('Lowongan berhasil dipasang');
+  if(jobEditId){
+    const { error } = await sb.from('jobs').update(payload).eq('id', jobEditId);
+    if(error){ showToast('Gagal simpan: ' + error.message); return; }
+    showToast('Lowongan diperbarui');
+  } else {
+    const { error } = await sb.from('jobs').insert(payload);
+    if(error){ showToast('Gagal pasang: ' + error.message); return; }
+    showToast('Lowongan berhasil dipasang');
+  }
+  jobEditId = null;
   closeAddJob();
   loadJobs();
 }
 
+/* ---- menu titik-3 kartu lowongan (Edit / Hapus) ---- */
+let jobMenuId = null;
+function openJobMenu(id){
+  jobMenuId = id;
+  const t = document.getElementById('job-menu-toast');
+  t.classList.add('show');
+  clearTimeout(actionToastTimer);
+  actionToastTimer = setTimeout(hideJobMenu, 6000);
+}
+function hideJobMenu(){
+  document.getElementById('job-menu-toast').classList.remove('show');
+  clearTimeout(actionToastTimer);
+}
+function jobMenuEdit(){
+  if(!jobMenuId) return;
+  const id = jobMenuId; hideJobMenu(); openEditJob(id);
+}
+function jobMenuDelete(){
+  if(!jobMenuId) return;
+  const id = jobMenuId; hideJobMenu(); deleteJob(id);
+}
+
 async function deleteJob(id){
-  if(!confirm('Hapus lowongan ini?')) return;
   const { error } = await sb.from('jobs').delete().eq('id', id);
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   showToast('Lowongan dihapus');
