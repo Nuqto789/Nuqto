@@ -493,14 +493,14 @@
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
     background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
-    padding:10px 18px; border-radius:16px; z-index:800; opacity:0; transition:all .25s ease; pointer-events:none;
+    padding:10px 18px; border-radius:16px; z-index:1300; opacity:0; transition:all .25s ease; pointer-events:none;
     max-width:88vw; width:max-content; text-align:center; line-height:1.4;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
   .action-toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
-    background:var(--ink); color:var(--paper); z-index:900; opacity:0;
+    background:var(--ink); color:var(--paper); z-index:1300; opacity:0;
     transition:all .25s ease; pointer-events:none;
     display:flex; align-items:center; gap:10px;
     padding:10px 12px 10px 18px; border-radius:16px;
@@ -2592,14 +2592,19 @@ async function toggleRespond(){
   if(respondState.active){ await stopRespond(); return; }
   const alertId = trackAlertId;
   if(!alertId){ showToast('Alert tidak ditemukan'); return; }
+  const btn = document.getElementById('track-respond-btn');
+  const lbl = document.getElementById('track-respond-label');
+  if(btn) btn.disabled = true;
+  if(lbl) lbl.textContent = 'Mengambil lokasi…';
   let coords;
   try{ coords = await getUserLatLng(); }
-  catch(e){ showToast('Aktifkan izin lokasi untuk membantu'); return; }
+  catch(e){ if(btn) btn.disabled = false; setRespondBtn(false); showToast('Aktifkan izin lokasi untuk membantu'); return; }
   const { error } = await sb.from('emergency_responders').upsert(
     { alert_id: alertId, user_id: currentUser.id, lat: coords[0], lng: coords[1], active: true, updated_at: new Date().toISOString() },
     { onConflict: 'alert_id,user_id' }
   );
-  if(error){ showToast('Gagal: ' + error.message); return; }
+  if(btn) btn.disabled = false;
+  if(error){ setRespondBtn(false); showToast('Gagal: ' + error.message); return; }
   respondState.active = true; respondState.alertId = alertId; respondState.lastSent = Date.now();
   setRespondBtn(true);
   showToast('Kamu menuju lokasi — posisimu dibagikan ke korban');
@@ -2636,6 +2641,7 @@ let helpResponderMarkers = {}; // user_id -> marker
 async function openHelpMap(){
   if(!myAlertId){ showToast('Belum ada laporan darurat aktif'); return; }
   document.getElementById('page-helpmap').classList.add('open');
+  hideDangerBanner();
   const center = myLastCoords || [30.0444, 31.2357];
   if(!helpMap){
     helpMap = L.map('map-help', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(center, 15);
@@ -2687,6 +2693,7 @@ function closeHelpMap(){
   if(helpChannel){ sb.removeChannel(helpChannel); helpChannel = null; }
   Object.keys(helpResponderMarkers).forEach(uid => { if(helpMap) helpMap.removeLayer(helpResponderMarkers[uid]); });
   helpResponderMarkers = {};
+  if(myAlertId) showDangerBanner(); // tampilkan lagi banner kalau masih menyiarkan
 }
 
 // saat app dibuka: kalau masih ada darurat AKTIF yang belum diabaikan, tampilkan lagi bar-nya
