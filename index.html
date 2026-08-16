@@ -416,10 +416,6 @@
   .info-more-wrap{ position:relative; flex-shrink:0; }
   .info-more{ width:32px; height:32px; border-radius:50%; border:none; background:transparent; color:var(--muted-2); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .info-more:active{ background:rgba(28,27,23,0.06); }
-  .info-menu{ position:absolute; top:36px; right:0; z-index:20; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.16); padding:4px; display:none; }
-  .info-menu.open{ display:block; }
-  .info-menu button{ display:flex; align-items:center; gap:8px; width:100%; background:none; border:none; padding:9px 14px 9px 10px; font-size:13.5px; font-weight:700; color:#DC2626; cursor:pointer; border-radius:9px; white-space:nowrap; }
-  .info-menu button:active{ background:rgba(220,38,38,0.08); }
   .info-photo{ width:100%; border-radius:12px; margin-top:12px; display:block; }
   .info-caption{ font-size:14px; line-height:1.5; color:var(--ink); margin-top:12px; white-space:pre-wrap; word-break:break-word; }
 
@@ -461,13 +457,23 @@
   .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888;}
   .popup-wrap{position:relative;}
   .popup-menu-btn{
-    position:absolute; top:0; left:0; z-index:5;
+    position:absolute; top:0; right:0; z-index:5;
     width:26px; height:26px; border-radius:50%;
     background:rgba(20,19,16,0.55); border:none; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
     color:#fff;
   }
   .popup-menu-btn:active{background:rgba(20,19,16,0.75);}
+  .popup-photo-wrap{ position:relative; margin-bottom:8px; }
+  .popup-photo{ width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; display:block; }
+  .popup-del-photo{
+    position:absolute; top:8px; left:8px; z-index:6;
+    width:30px; height:30px; border-radius:50%;
+    background:rgba(220,38,38,0.92); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  }
+  .popup-del-photo:active{ background:rgba(185,28,28,0.95); }
   .popup-badge{
     display:inline-block; font-size:10.5px; font-weight:700;
     padding:3px 9px; border-radius:99px; margin-bottom:8px;
@@ -490,6 +496,24 @@
     max-width:88vw; width:max-content; text-align:center; line-height:1.4;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .action-toast{
+    position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
+    background:var(--ink); color:var(--paper); z-index:900; opacity:0;
+    transition:all .25s ease; pointer-events:none;
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px 10px 18px; border-radius:16px;
+    max-width:92vw; box-shadow:0 10px 30px rgba(0,0,0,.28);
+  }
+  .action-toast.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto;}
+  .action-toast #action-toast-msg{ font-size:13px; font-weight:600; margin-right:4px; }
+  .action-toast-btn{
+    border:0; border-radius:11px; padding:8px 14px; font-size:13px; font-weight:700;
+    cursor:pointer; white-space:nowrap;
+  }
+  .action-toast-btn.cancel{ background:rgba(255,255,255,.14); color:var(--paper); }
+  .action-toast-btn.danger{ background:#DC2626; color:#fff; }
+  .action-toast-btn:active{ opacity:.85; }
 
   /* ================= HOME REDESIGN (premium / iOS) ================= */
   #page-home{ background:var(--bg-soft); }
@@ -966,7 +990,7 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </div>
-  <div class="scroll-page" style="padding-top:14px;" onclick="document.querySelectorAll('.info-menu.open').forEach(el=>el.classList.remove('open'))">
+  <div class="scroll-page" style="padding-top:14px;">
     <div id="info-list"></div>
   </div>
 </div>
@@ -1195,6 +1219,12 @@
 </div>
 
 <div id="toast" class="toast">Tersimpan</div>
+
+<div id="action-toast" class="action-toast">
+  <span id="action-toast-msg">Hapus postingan ini?</span>
+  <button class="action-toast-btn cancel" onclick="hideActionToast()">Batal</button>
+  <button id="action-toast-ok" class="action-toast-btn danger">Hapus</button>
+</div>
 
 <script>
 /* ---------- supabase ---------- */
@@ -1565,7 +1595,12 @@ function buildPopupHtml(cat, pin){
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>` : ''}
       ${pending ? `<div class="popup-badge">⏳ Menunggu persetujuan</div>` : ''}
-      ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
+      ${pin.photo_url ? `<div class="popup-photo-wrap">
+        <img class="popup-photo" src="${escapeHtml(pin.photo_url)}" />
+        ${manage ? `<button class="popup-del-photo" onclick="confirmDeletePin('${cat}','${pin.id}')" aria-label="Hapus tanda">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        </button>` : ''}
+      </div>` : ''}
       <div class="popup-title">${escapeHtml(pin.name)}</div>
       ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
       ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
@@ -1574,7 +1609,7 @@ function buildPopupHtml(cat, pin){
         <button class="popup-btn approve" onclick="approvePin('${cat}','${pin.id}')">Setujui</button>
         <button class="popup-btn reject" onclick="rejectPin('${cat}','${pin.id}')">Tolak</button>
       </div>` : ''}
-      ${manage ? `<button class="popup-btn del" onclick="deletePin('${cat}','${pin.id}')">Hapus titik</button>` : ''}
+      ${(manage && !pin.photo_url) ? `<button class="popup-btn del" onclick="confirmDeletePin('${cat}','${pin.id}')">Hapus titik</button>` : ''}
     </div>
   `;
 }
@@ -2000,8 +2035,17 @@ async function rejectPin(cat, id){
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
 }
 
+function confirmDeletePin(cat, id){
+  const t = document.getElementById('action-toast');
+  document.getElementById('action-toast-msg').textContent = 'Hapus tanda ini?';
+  const ok = document.getElementById('action-toast-ok');
+  ok.onclick = () => { hideActionToast(); deletePin(cat, id); };
+  t.classList.add('show');
+  clearTimeout(actionToastTimer);
+  actionToastTimer = setTimeout(hideActionToast, 6000);
+}
+
 async function deletePin(cat, id){
-  if(!confirm('Hapus titik ini?')) return;
   const { error } = await sb.from(TABLE[cat]).delete().eq('id', id);
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   showToast('Titik dihapus');
@@ -2111,15 +2155,9 @@ async function loadInfoPosts(){
         <div class="info-avatar">${escapeHtml(initial)}</div>
         <div class="info-name">${escapeHtml(nm)}<span class="info-time">${timeAgo(p.created_at)}</span></div>
         ${canManage(p) ? `<div class="info-more-wrap">
-          <button class="info-more" onclick="toggleInfoMenu('${p.id}')" aria-label="Opsi">
+          <button class="info-more" onclick="confirmDeleteInfo('${p.id}')" aria-label="Hapus postingan">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
           </button>
-          <div class="info-menu" id="info-menu-${p.id}">
-            <button onclick="deleteInfoPost('${p.id}')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              Hapus
-            </button>
-          </div>
         </div>` : ''}
       </div>
       ${p.photo_url ? `<img class="info-photo" src="${escapeHtml(p.photo_url)}" loading="lazy" />` : ''}
@@ -2128,12 +2166,19 @@ async function loadInfoPosts(){
   }).join('');
 }
 
-function toggleInfoMenu(id){
-  const m = document.getElementById('info-menu-' + id);
-  if(!m) return;
-  const wasOpen = m.classList.contains('open');
-  document.querySelectorAll('.info-menu.open').forEach(el => el.classList.remove('open'));
-  if(!wasOpen) m.classList.add('open');
+let actionToastTimer = null;
+function confirmDeleteInfo(id){
+  const t = document.getElementById('action-toast');
+  document.getElementById('action-toast-msg').textContent = 'Hapus postingan ini?';
+  const ok = document.getElementById('action-toast-ok');
+  ok.onclick = () => { hideActionToast(); deleteInfoPost(id); };
+  t.classList.add('show');
+  clearTimeout(actionToastTimer);
+  actionToastTimer = setTimeout(hideActionToast, 6000);
+}
+function hideActionToast(){
+  document.getElementById('action-toast').classList.remove('show');
+  clearTimeout(actionToastTimer);
 }
 
 function openAddInfo(){
@@ -2186,7 +2231,6 @@ async function submitInfo(){
 }
 
 async function deleteInfoPost(id){
-  if(!confirm('Hapus postingan ini?')) return;
   const { error } = await sb.from('info_posts').delete().eq('id', id);
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   showToast('Postingan dihapus');
