@@ -1248,8 +1248,8 @@ const meta = {
 /* ---------- init maps ---------- */
 function initMaps(){
   const CAIRO = [30.0444, 31.2357];
-  const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
-  const TILE_OPTS = { maxZoom: 19, attribution: 'Tiles &copy; Esri' };
+  const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  const TILE_OPTS = { maxZoom: 20, subdomains: 'abcd', detectRetina: true, attribution: '&copy; OpenStreetMap, &copy; CARTO' };
 
   maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
@@ -2325,7 +2325,7 @@ function openLiveTrack(){
   document.getElementById('page-track').classList.add('open');
   if(!trackMap){
     trackMap = L.map('map-track', { zoomControl: false, attributionControl: false }).setView([incomingAlert.lat, incomingAlert.lng], 16);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(trackMap);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 20, subdomains: 'abcd', detectRetina: true, attribution: '&copy; OpenStreetMap, &copy; CARTO' }).addTo(trackMap);
   }
   setTimeout(() => trackMap.invalidateSize(), 220);
   placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
