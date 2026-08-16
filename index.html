@@ -544,6 +544,7 @@
     display:flex; align-items:center; justify-content:center;
     box-shadow:var(--shadow-soft);
     cursor:pointer; transition:transform .2s ease;
+    touch-action:manipulation; -webkit-tap-highlight-color:transparent;
   }
   .home-icon-btn:active{ transform:scale(.92); }
   .notif-badge{
@@ -2852,12 +2853,16 @@ window.addEventListener('load', () => {
   });
 
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW gagal daftar:', err));
+    navigator.serviceWorker.register('/sw.js').then(reg => { try{ reg.update(); }catch(e){} }).catch(err => console.warn('SW gagal daftar:', err));
     // saat notifikasi darurat diklik, SW mengirim pesan ini → tampilkan popup di dalam app
     navigator.serviceWorker.addEventListener('message', (event) => {
       if(event.data && event.data.type === 'show-emergency'){ checkActiveEmergency(true); }
     });
   }
+  // iOS PWA sering menahan realtime saat app di belakang → segarkan badge & cek darurat tiap app kembali ke depan
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible'){ updateNotifBadge(); checkActiveEmergency(); }
+  });
 
   const splash = document.getElementById('splash-screen');
   setTimeout(() => {
