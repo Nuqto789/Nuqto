@@ -18,6 +18,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -393,14 +394,24 @@
   /* track overlay (penerima) */
   #page-track{ background:#E9E4D7; }
   #map-track{ position:absolute; inset:0; z-index:0; }
+  #page-helpmap{ background:#E9E4D7; }
+  #map-help{ position:absolute; inset:0; z-index:0; }
   .track-top{ position:absolute; top:0; left:0; right:0; z-index:500; display:flex; align-items:flex-start; gap:10px; padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 0; pointer-events:none; }
   .track-top > *{ pointer-events:auto; }
   .track-titlecard{ background:#fff; border-radius:14px; padding:8px 14px; box-shadow:0 4px 14px rgba(0,0,0,0.14); }
   .track-status{ font-size:12px; font-weight:600; margin-top:1px; }
   .track-status.live{ color:#DC2626; }
   .track-status.done{ color:var(--maqom); }
-  .track-maps-btn{ position:absolute; left:16px; right:16px; z-index:500; bottom:calc(20px + env(safe-area-inset-bottom,0px)); display:flex; align-items:center; justify-content:center; gap:9px; background:#DC2626; color:#fff; border:none; border-radius:14px; padding:14px; font-weight:700; font-size:14.5px; box-shadow:0 8px 22px rgba(220,38,38,0.34); cursor:pointer; }
-  .track-maps-btn:active{ opacity:.9; }
+  .track-actions{ position:absolute; left:16px; right:16px; z-index:500; bottom:calc(20px + env(safe-area-inset-bottom,0px)); display:flex; gap:10px; }
+  .track-maps-btn, .track-respond-btn{ flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:8px; color:#fff; border:none; border-radius:14px; padding:14px 10px; font-weight:700; font-size:13.5px; cursor:pointer; }
+  .track-maps-btn{ background:#DC2626; box-shadow:0 8px 22px rgba(220,38,38,0.34); }
+  .track-respond-btn{ background:#059669; box-shadow:0 8px 22px rgba(5,150,105,0.34); }
+  .track-respond-btn.going{ background:#B45309; box-shadow:0 8px 22px rgba(180,83,9,0.34); }
+  .track-maps-btn:active, .track-respond-btn:active{ opacity:.9; }
+  .responder-dot{ width:16px; height:16px; border-radius:50%; background:#2563EB; border:3px solid #fff; box-shadow:0 0 0 0 rgba(37,99,235,0.5); animation:ddPulseBlue 1.4s ease-out infinite; }
+  @keyframes ddPulseBlue{ 0%{ box-shadow:0 0 0 0 rgba(37,99,235,0.5);} 100%{ box-shadow:0 0 0 14px rgba(37,99,235,0);} }
+  .db-main{ flex:1; min-width:0; display:flex; align-items:center; gap:10px; background:transparent; border:none; color:#fff; cursor:pointer; text-align:left; padding:0; }
+  .db-sub{ display:block; font-size:10.5px; font-weight:600; opacity:.85; margin-top:1px; }
 
   .danger-dot{ width:22px; height:22px; border-radius:50%; background:#DC2626; border:3px solid #fff; box-shadow:0 0 0 0 rgba(220,38,38,0.5); animation:ddPulse 1.4s ease-out infinite; }
   @keyframes ddPulse{ 0%{ box-shadow:0 0 0 0 rgba(220,38,38,0.5);} 100%{ box-shadow:0 0 0 16px rgba(220,38,38,0);} }
@@ -1103,8 +1114,10 @@
 
 <!-- ===================== BANNER : SEDANG MENYIARKAN (pengirim) ===================== -->
 <div id="danger-banner" class="danger-banner">
-  <span class="db-pulse"></span>
-  <span class="db-text">📍 Menyiarkan lokasimu (live)…</span>
+  <button class="db-main" onclick="openHelpMap()">
+    <span class="db-pulse"></span>
+    <span class="db-text">📍 Menyiarkan lokasimu (live)…<span class="db-sub">Ketuk untuk lihat penolong yang menuju</span></span>
+  </button>
   <button class="db-safe" onclick="iAmSafe()">Saya sudah aman</button>
 </div>
 
@@ -1130,10 +1143,30 @@
       <div id="track-dist" class="track-dist" style="display:none;"></div>
     </div>
   </div>
-  <button class="track-maps-btn" onclick="trackOpenMaps()">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-    Buka di Google Maps
-  </button>
+  <div class="track-actions">
+    <button id="track-respond-btn" class="track-respond-btn" onclick="toggleRespond()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      <span id="track-respond-label">Saya menuju ke sana</span>
+    </button>
+    <button class="track-maps-btn" onclick="trackOpenMaps()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      Google Maps
+    </button>
+  </div>
+</div>
+
+<!-- ============= OVERLAY : PETA BANTUAN (korban — lihat penolong yang menuju) ============= -->
+<div id="page-helpmap" class="overlay-page">
+  <div id="map-help"></div>
+  <div class="track-top">
+    <button class="back-btn" style="background:#fff;" onclick="closeHelpMap()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="track-titlecard">
+      <div style="font-weight:800; font-size:15px; color:#DC2626;">🚨 Bantuan Menuju Kamu</div>
+      <div id="help-count" class="track-status live">Mencari bantuan terdekat…</div>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
@@ -1290,13 +1323,13 @@ function initMaps(){
   const TILE_URL = 'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
   const TILE_OPTS = { maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '&copy; Google' };
 
-  maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
 
-  maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.blacklist);
 
-  maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.razia);
 
   markerLayers.maqom = L.layerGroup().addTo(maps.maqom);
@@ -2342,6 +2375,7 @@ async function confirmEmergency(){
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
   myAlertId = data.id;
+  myLastCoords = [coords[0], coords[1]];
   startDangerBroadcast(myAlertId);
   // ambil endpoint push perangkat ini agar server tidak mengirim notif balik ke pengirim
   let senderEndpoint = null;
@@ -2356,12 +2390,15 @@ async function confirmEmergency(){
 let myAlertId = null;
 let myWatchId = null;
 let lastPosSent = 0;
+let myLastCoords = null;
 
 function startDangerBroadcast(id){
   showDangerBanner();
   if(!navigator.geolocation) return;
   if(myWatchId != null) navigator.geolocation.clearWatch(myWatchId);
   myWatchId = navigator.geolocation.watchPosition(async (pos) => {
+    myLastCoords = [pos.coords.latitude, pos.coords.longitude];
+    if(document.getElementById('page-helpmap').classList.contains('open')) placeHelpVictim(myLastCoords[0], myLastCoords[1]);
     const now = Date.now();
     if(now - lastPosSent < 6000) return; // throttle ~6 detik
     lastPosSent = now;
@@ -2374,7 +2411,8 @@ function startDangerBroadcast(id){
 async function iAmSafe(){
   if(myWatchId != null){ navigator.geolocation.clearWatch(myWatchId); myWatchId = null; }
   if(myAlertId){ await sb.from('emergency_alerts').update({ active: false }).eq('id', myAlertId); }
-  myAlertId = null;
+  myAlertId = null; myLastCoords = null;
+  closeHelpMap();
   hideDangerBanner();
   showToast('Penyiaran lokasi dihentikan. Semoga kamu aman. 🤲');
 }
@@ -2447,8 +2485,9 @@ function openLiveTrack(){
   document.getElementById('emg-incoming').classList.remove('open');
   hideTrackBanner();
   document.getElementById('page-track').classList.add('open');
+  setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   if(!trackMap){
-    trackMap = L.map('map-track', { zoomControl: false, attributionControl: false }).setView([incomingAlert.lat, incomingAlert.lng], 16);
+    trackMap = L.map('map-track', { zoomControl: false, attributionControl: false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView([incomingAlert.lat, incomingAlert.lng], 16);
     L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '&copy; Google' }).addTo(trackMap);
   }
   setTimeout(() => trackMap.invalidateSize(), 220);
@@ -2470,6 +2509,7 @@ function openLiveTrack(){
       if(a.active === false){
         st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done';
         addDismissedAlert(a.id);
+        if(respondState.active && respondState.alertId === a.id) stopRespond();
       }
     }).subscribe();
 }
@@ -2534,6 +2574,121 @@ function getDismissedAlerts(){ try{ return JSON.parse(localStorage.getItem('nuqt
 function addDismissedAlert(id){ if(!id) return; const d = getDismissedAlerts(); if(!d.includes(id)){ d.push(id); if(d.length > 60) d.shift(); localStorage.setItem('nuqto_dismissed', JSON.stringify(d)); } }
 function ignoreTrackBanner(){ if(incomingAlert) addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
 
+/* ============================================================
+   PENOLONG: tombol "Saya menuju ke sana" — siarkan lokasi live ke korban
+   ============================================================ */
+let respondState = { active:false, alertId:null, watchId:null, lastSent:0 };
+
+function setRespondBtn(going){
+  const btn = document.getElementById('track-respond-btn');
+  const lbl = document.getElementById('track-respond-label');
+  if(!btn || !lbl) return;
+  if(going){ btn.classList.add('going'); lbl.textContent = 'Sedang menuju · batal'; }
+  else { btn.classList.remove('going'); lbl.textContent = 'Saya menuju ke sana'; }
+}
+
+async function toggleRespond(){
+  if(!isLoggedIn()){ openAuth('Masuk dulu untuk membantu.'); return; }
+  if(respondState.active){ await stopRespond(); return; }
+  const alertId = trackAlertId;
+  if(!alertId){ showToast('Alert tidak ditemukan'); return; }
+  let coords;
+  try{ coords = await getUserLatLng(); }
+  catch(e){ showToast('Aktifkan izin lokasi untuk membantu'); return; }
+  const { error } = await sb.from('emergency_responders').upsert(
+    { alert_id: alertId, user_id: currentUser.id, lat: coords[0], lng: coords[1], active: true, updated_at: new Date().toISOString() },
+    { onConflict: 'alert_id,user_id' }
+  );
+  if(error){ showToast('Gagal: ' + error.message); return; }
+  respondState.active = true; respondState.alertId = alertId; respondState.lastSent = Date.now();
+  setRespondBtn(true);
+  showToast('Kamu menuju lokasi — posisimu dibagikan ke korban');
+  if(navigator.geolocation){
+    if(respondState.watchId != null) navigator.geolocation.clearWatch(respondState.watchId);
+    respondState.watchId = navigator.geolocation.watchPosition(async (pos) => {
+      const now = Date.now();
+      if(now - respondState.lastSent < 6000) return; // throttle ~6 detik
+      respondState.lastSent = now;
+      await sb.from('emergency_responders').update({
+        lat: pos.coords.latitude, lng: pos.coords.longitude, updated_at: new Date().toISOString()
+      }).eq('alert_id', respondState.alertId).eq('user_id', currentUser.id);
+    }, () => {}, { enableHighAccuracy:true, maximumAge:3000, timeout:20000 });
+  }
+}
+
+async function stopRespond(){
+  if(respondState.watchId != null){ navigator.geolocation.clearWatch(respondState.watchId); respondState.watchId = null; }
+  const aid = respondState.alertId;
+  respondState.active = false; respondState.alertId = null;
+  setRespondBtn(false);
+  if(aid && currentUser){
+    await sb.from('emergency_responders').update({ active:false }).eq('alert_id', aid).eq('user_id', currentUser.id);
+  }
+  showToast('Berhenti menuju lokasi');
+}
+
+/* ============================================================
+   KORBAN: peta bantuan — lihat penolong yang menuju (live). Hanya korban yang bisa lihat.
+   ============================================================ */
+let helpMap = null, helpVictimMarker = null, helpChannel = null;
+let helpResponderMarkers = {}; // user_id -> marker
+
+async function openHelpMap(){
+  if(!myAlertId){ showToast('Belum ada laporan darurat aktif'); return; }
+  document.getElementById('page-helpmap').classList.add('open');
+  const center = myLastCoords || [30.0444, 31.2357];
+  if(!helpMap){
+    helpMap = L.map('map-help', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(center, 15);
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom:20, subdomains:['mt0','mt1','mt2','mt3'], attribution:'&copy; Google' }).addTo(helpMap);
+  }
+  setTimeout(() => helpMap.invalidateSize(), 220);
+  helpMap.setView(center, 15);
+  placeHelpVictim(center[0], center[1]);
+  await loadResponders();
+  if(helpChannel) sb.removeChannel(helpChannel);
+  helpChannel = sb.channel('help-' + myAlertId)
+    .on('postgres_changes', { event:'*', schema:'public', table:'emergency_responders', filter:'alert_id=eq.' + myAlertId }, () => { loadResponders(); })
+    .subscribe();
+}
+
+function placeHelpVictim(lat, lng){
+  if(!helpMap) return;
+  if(!helpVictimMarker){
+    helpVictimMarker = L.marker([lat, lng], { icon: L.divIcon({ className:'', html:'<div class="danger-dot"></div>', iconSize:[22,22], iconAnchor:[11,11] }) }).addTo(helpMap);
+  } else helpVictimMarker.setLatLng([lat, lng]);
+}
+
+async function loadResponders(){
+  if(!myAlertId) return;
+  const { data, error } = await sb.from('emergency_responders').select('*').eq('alert_id', myAlertId).eq('active', true);
+  if(error) return;
+  const seen = {};
+  (data || []).forEach(r => {
+    if(r.lat == null || r.lng == null) return;
+    seen[r.user_id] = true;
+    if(helpResponderMarkers[r.user_id]){ helpResponderMarkers[r.user_id].setLatLng([r.lat, r.lng]); }
+    else if(helpMap){
+      helpResponderMarkers[r.user_id] = L.marker([r.lat, r.lng], { icon: L.divIcon({ className:'', html:'<div class="responder-dot"></div>', iconSize:[16,16], iconAnchor:[8,8] }) }).addTo(helpMap);
+    }
+  });
+  Object.keys(helpResponderMarkers).forEach(uid => {
+    if(!seen[uid]){ if(helpMap) helpMap.removeLayer(helpResponderMarkers[uid]); delete helpResponderMarkers[uid]; }
+  });
+  const n = Object.keys(seen).length;
+  const el = document.getElementById('help-count');
+  if(el){
+    el.className = 'track-status live';
+    el.textContent = n > 0 ? (n + ' orang sedang menuju ke kamu') : 'Mencari bantuan terdekat…';
+  }
+}
+
+function closeHelpMap(){
+  document.getElementById('page-helpmap').classList.remove('open');
+  if(helpChannel){ sb.removeChannel(helpChannel); helpChannel = null; }
+  Object.keys(helpResponderMarkers).forEach(uid => { if(helpMap) helpMap.removeLayer(helpResponderMarkers[uid]); });
+  helpResponderMarkers = {};
+}
+
 // saat app dibuka: kalau masih ada darurat AKTIF yang belum diabaikan, tampilkan lagi bar-nya
 async function checkActiveEmergency(){
   try{
@@ -2544,7 +2699,7 @@ async function checkActiveEmergency(){
     // pengirim buka lagi app: lanjutkan penyiaran lokasi miliknya
     if(currentUser){
       const mine = data.find(a => a.user_id === currentUser.id);
-      if(mine && myAlertId == null){ myAlertId = mine.id; startDangerBroadcast(mine.id); }
+      if(mine && myAlertId == null){ myAlertId = mine.id; if(mine.lat != null) myLastCoords = [mine.lat, mine.lng]; startDangerBroadcast(mine.id); }
     }
     // penerima: tampilkan bar untuk darurat aktif yang belum diabaikan & bukan milik sendiri
     const found = data.find(a => (!currentUser || a.user_id !== currentUser.id) && !dismissed.includes(a.id));
