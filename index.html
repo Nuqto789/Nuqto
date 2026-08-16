@@ -2132,14 +2132,25 @@ async function submitJob(){
     description: document.getElementById('job-desc').value.trim() || null,
     contact: document.getElementById('job-contact').value.trim() || null
   };
-  if(jobEditId){
-    const { error } = await sb.from('jobs').update(payload).eq('id', jobEditId);
-    if(error){ showToast('Gagal simpan: ' + error.message); return; }
-    showToast('Lowongan diperbarui');
-  } else {
-    const { error } = await sb.from('jobs').insert(payload);
-    if(error){ showToast('Gagal pasang: ' + error.message); return; }
-    showToast('Lowongan berhasil dipasang');
+  const btn = document.getElementById('job-submit-btn');
+  const prevLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try{
+    if(jobEditId){
+      const { data, error } = await sb.from('jobs').update(payload).eq('id', jobEditId).select();
+      if(error){ showToast('Gagal simpan: ' + error.message); return; }
+      if(!data || !data.length){ showToast('Tidak bisa menyimpan — hanya pemilik/admin yang bisa mengedit lowongan ini'); return; }
+      showToast('Lowongan diperbarui');
+    } else {
+      const { data, error } = await sb.from('jobs').insert(payload).select();
+      if(error){ showToast('Gagal pasang: ' + error.message); return; }
+      showToast('Lowongan berhasil dipasang');
+    }
+  } catch(e){
+    showToast('Gagal menyimpan — cek koneksi lalu coba lagi');
+    return;
+  } finally {
+    btn.disabled = false; btn.textContent = prevLabel;
   }
   jobEditId = null;
   closeAddJob();
@@ -2169,8 +2180,9 @@ function jobMenuDelete(){
 }
 
 async function deleteJob(id){
-  const { error } = await sb.from('jobs').delete().eq('id', id);
+  const { data, error } = await sb.from('jobs').delete().eq('id', id).select();
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
+  if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
   showToast('Lowongan dihapus');
   loadJobs();
 }
