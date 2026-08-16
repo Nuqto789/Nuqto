@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuqto-shell-v3';
+const CACHE_NAME = 'nuqto-shell-v4';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -69,6 +69,18 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) || '/';
-  event.waitUntil(clients.openWindow(target));
+  // Klik notifikasi darurat → buka/fokus app Nuqto lalu tampilkan popup di dalam app
+  // (BUKAN membuka Google Maps).
+  event.waitUntil((async () => {
+    const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clientList) {
+      // ada tab Nuqto terbuka → fokuskan & minta app menampilkan popup darurat
+      if ('focus' in client) {
+        try { client.postMessage({ type: 'show-emergency' }); } catch (e) { /* ignore */ }
+        return client.focus();
+      }
+    }
+    // tidak ada tab terbuka → buka app dengan penanda ?emg=1 supaya popup langsung muncul
+    if (clients.openWindow) return clients.openWindow('/?emg=1');
+  })());
 });
