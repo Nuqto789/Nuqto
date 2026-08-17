@@ -723,7 +723,7 @@
 </style>
 </head>
 <body>
-<script>document.documentElement.style.background = '#FAFAFA'; document.body.style.background = '#FAFAFA';</script>
+<script>document.documentElement.style.background = '#0E3626'; document.body.style.background = '#0E3626';</script>
 
 <!-- ===================== SPLASH SCREEN ===================== -->
 <div id="splash-screen">
@@ -1445,8 +1445,10 @@ function onLocationError(cat, e){
 const SAFE_BG = { home:'#0E3626', maqom:'#E9E4D7', blacklist:'#E9E4D7', razia:'#E9E4D7', akun:'#FAFAFA' };
 function applySafeBg(cat){
   const c = SAFE_BG[cat] || '#FAFAFA';
-  document.documentElement.style.background = c;
-  document.body.style.background = c;
+  // strip BAWAH (home-indicator) ikut warna body → selalu putih senada bottom bar
+  document.documentElement.style.background = 'var(--card)';
+  document.body.style.background = 'var(--card)';
+  // strip ATAS (status bar) ikut warna halaman
   const bar = document.getElementById('statusbar-fill');
   if(bar) bar.style.background = c;
 }
