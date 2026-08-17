@@ -2492,6 +2492,44 @@ function urlB64ToUint8Array(b64){
   const raw = atob(base64);
   return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
 }
+function subPlatform(endpoint){ return /apple/.test(endpoint) ? 'apple' : (/(fcm|google)/.test(endpoint) ? 'fcm' : 'other'); }
+
+// simpan langganan + bersihkan langganan LAMA milik user ini di perangkat/platform yang sama
+async function savePushSubscription(sub){
+  const { error } = await sb.from('push_subscriptions').upsert(
+    { user_id: currentUser.id, endpoint: sub.endpoint, subscription: sub.toJSON() },
+    { onConflict: 'endpoint', ignoreDuplicates: true }
+  );
+  if(error) return false;
+  try{
+    const plat = subPlatform(sub.endpoint);
+    const { data: mine } = await sb.from('push_subscriptions').select('id, endpoint').eq('user_id', currentUser.id);
+    for(const r of (mine || [])){
+      if(r.endpoint !== sub.endpoint && subPlatform(r.endpoint) === plat){
+        await sb.from('push_subscriptions').delete().eq('id', r.id); // buang langganan basi (mis. sisa sebelum reinstall)
+      }
+    }
+  }catch(e){}
+  return true;
+}
+
+// pastikan ada langganan valid; dibuat ulang otomatis jika hilang (mis. setelah reinstall PWA)
+async function ensurePushSubscription(silent){
+  if(!isLoggedIn()) return false;
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  if(!('Notification' in window) || Notification.permission !== 'granted') return false; // jangan minta izin diam-diam
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC) });
+    }
+    const ok = await savePushSubscription(sub);
+    if(!silent) updatePushLabel();
+    return ok;
+  }catch(e){ return false; }
+}
+
 async function enablePush(){
   if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengaktifkan notifikasi.'); return; }
   if(!('serviceWorker' in navigator) || !('PushManager' in window)){ showToast('Browser/perangkat ini belum mendukung push. Di iPhone: pasang app ke Home Screen dulu.'); return; }
@@ -2503,11 +2541,8 @@ async function enablePush(){
     if(!sub){
       sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC) });
     }
-    const { error } = await sb.from('push_subscriptions').upsert(
-      { user_id: currentUser.id, endpoint: sub.endpoint, subscription: sub.toJSON() },
-      { onConflict: 'endpoint', ignoreDuplicates: true }
-    );
-    if(error){ showToast('Gagal simpan langganan: ' + error.message); return; }
+    const ok = await savePushSubscription(sub);
+    if(!ok){ showToast('Gagal simpan langganan'); return; }
     showToast('✅ Notifikasi darurat aktif di perangkat ini');
     updatePushLabel();
   } catch(e){ showToast('Gagal aktifkan notifikasi: ' + (e.message || e)); }
@@ -2842,6 +2877,7 @@ window.addEventListener('load', () => {
   initEmergencyRealtime();
   updateNotifBadge();
   setTimeout(updatePushLabel, 1500);
+  setTimeout(() => ensurePushSubscription(true), 2000); // buat ulang langganan otomatis jika hilang (mis. sesudah reinstall)
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
