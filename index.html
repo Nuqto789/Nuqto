@@ -491,6 +491,19 @@
   .popup-btn.del{ background:#DC2626; width:100%; margin-top:8px; }
   .popup-btn:active{ opacity:.85; }
 
+  .popup-more{ font-size:12px; font-weight:700; color:var(--maqom); margin-top:4px; cursor:pointer; }
+  .pin-detail{ position:fixed; inset:0; z-index:1200; background:var(--paper); transform:translateX(100%); transition:transform .28s cubic-bezier(.22,1,.36,1); overflow:hidden; }
+  .pin-detail.open{ transform:translateX(0); }
+  .pin-detail-scroll{ position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .pin-detail-img{ width:100%; max-height:58vh; object-fit:cover; display:block; background:#0E3626; }
+  .pin-detail-close{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 14px); left:14px; z-index:5; width:40px; height:40px; border-radius:50%; background:rgba(20,19,16,0.55); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .pin-detail-close:active{ background:rgba(20,19,16,0.75); }
+  .pin-detail-body{ padding:20px 22px calc(48px + env(safe-area-inset-bottom,0px)); }
+  .pin-detail-title{ font-size:22px; font-weight:800; color:var(--ink); letter-spacing:-0.02em; line-height:1.25; }
+  .pin-detail-addr{ font-size:13.5px; color:var(--muted); margin-top:6px; }
+  .pin-detail-label{ font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--maqom); margin-top:22px; }
+  .pin-detail-note{ font-size:15px; line-height:1.7; color:var(--ink); margin-top:8px; white-space:pre-wrap; }
+
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
     background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
@@ -1210,6 +1223,22 @@
   </div>
 </div>
 
+<!-- ===================== OVERLAY : DETAIL TITIK (fullscreen) ===================== -->
+<div id="pin-detail" class="pin-detail">
+  <button class="pin-detail-close" onclick="closePinDetail()" aria-label="Tutup">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+  </button>
+  <div class="pin-detail-scroll">
+    <img id="pin-detail-img" class="pin-detail-img" alt="" />
+    <div class="pin-detail-body">
+      <div id="pin-detail-title" class="pin-detail-title"></div>
+      <div id="pin-detail-addr" class="pin-detail-addr"></div>
+      <div id="pin-detail-label" class="pin-detail-label"></div>
+      <div id="pin-detail-note" class="pin-detail-note"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== BOTTOM NAVIGATION ===================== -->
 <nav class="bottom-nav">
   <button class="nav-btn active" data-cat="home" onclick="switchPage('home')">
@@ -1691,6 +1720,25 @@ function buildPopupHtml(cat, pin){
     </div>
   `;
 }
+
+/* ---------- detail fullscreen (foto + alasan/sejarah) ---------- */
+function openPinDetail(cat, id){
+  const pin = (store[cat] || []).find(p => String(p.id) === String(id));
+  if(!pin) return;
+  const img = document.getElementById('pin-detail-img');
+  if(pin.photo_url){ img.src = pin.photo_url; img.style.display = ''; } else { img.removeAttribute('src'); img.style.display = 'none'; }
+  document.getElementById('pin-detail-title').textContent = pin.name || '';
+  const addrEl = document.getElementById('pin-detail-addr');
+  if(pin.address){ addrEl.textContent = pin.address; addrEl.style.display = ''; } else { addrEl.style.display = 'none'; }
+  const labels = { maqom:'Kilas Sejarah', blacklist:'Alasan Blacklist', razia:'Keterangan Talaqqi' };
+  const labelEl = document.getElementById('pin-detail-label');
+  const noteEl = document.getElementById('pin-detail-note');
+  if(pin.note){ labelEl.textContent = labels[cat] || 'Keterangan'; labelEl.style.display = ''; noteEl.textContent = pin.note; noteEl.style.display = ''; }
+  else { labelEl.style.display = 'none'; noteEl.style.display = 'none'; }
+  document.querySelector('.pin-detail-scroll').scrollTop = 0;
+  document.getElementById('pin-detail').classList.add('open');
+}
+function closePinDetail(){ document.getElementById('pin-detail').classList.remove('open'); }
 
 /* ---------- rute jalan ke titik ---------- */
 function getUserLatLng(){
