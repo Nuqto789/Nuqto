@@ -1678,10 +1678,11 @@ function buildPopupHtml(cat, pin){
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>` : ''}
       ${pending ? `<div class="popup-badge">⏳ Menunggu persetujuan</div>` : ''}
-      ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px;" />` : ''}
-      <div class="popup-title">${escapeHtml(pin.name)}</div>
+      ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" onclick="openPinDetail('${cat}','${pin.id}')" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px; cursor:pointer;" />` : ''}
+      <div class="popup-title" onclick="openPinDetail('${cat}','${pin.id}')" style="cursor:pointer;">${escapeHtml(pin.name)}</div>
       ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
-      ${pin.note ? `<div class="popup-note">${escapeHtml(pin.note)}</div>` : ''}
+      ${pin.note ? `<div class="popup-note" onclick="openPinDetail('${cat}','${pin.id}')" style="cursor:pointer;">${escapeHtml(pin.note)}</div>` : ''}
+      ${(pin.photo_url || pin.note) ? `<div class="popup-more" onclick="openPinDetail('${cat}','${pin.id}')">Ketuk untuk lihat &amp; baca lengkap →</div>` : ''}
       <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
       ${(isAdmin() && pending) ? `<div class="popup-actions">
         <button class="popup-btn approve" onclick="approvePin('${cat}','${pin.id}')">Setujui</button>
