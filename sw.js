@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuqto-shell-v4';
+const CACHE_NAME = 'nuqto-shell-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -23,12 +23,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-
-  // jangan cache API/data calls (Supabase, upload) — selalu ambil terbaru
   if (event.request.method !== 'GET' || url.pathname.startsWith('/api/') || url.hostname.includes('supabase.co')) {
     return;
   }
-
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const network = fetch(event.request)
@@ -69,18 +66,6 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  // Klik notifikasi darurat → buka/fokus app Nuqto lalu tampilkan popup di dalam app
-  // (BUKAN membuka Google Maps).
-  event.waitUntil((async () => {
-    const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const client of clientList) {
-      // ada tab Nuqto terbuka → fokuskan & minta app menampilkan popup darurat
-      if ('focus' in client) {
-        try { client.postMessage({ type: 'show-emergency' }); } catch (e) { /* ignore */ }
-        return client.focus();
-      }
-    }
-    // tidak ada tab terbuka → buka app dengan penanda ?emg=1 supaya popup langsung muncul
-    if (clients.openWindow) return clients.openWindow('/?emg=1');
-  })());
+  const target = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(clients.openWindow(target));
 });
