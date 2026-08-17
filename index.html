@@ -505,6 +505,52 @@
   .pin-detail-label{ font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--maqom); margin-top:22px; }
   .pin-detail-note{ font-size:15px; line-height:1.7; color:var(--ink); margin-top:8px; white-space:pre-wrap; }
 
+  /* ---- panduan penggunaan (fullscreen) ---- */
+  .guide-view{
+    position:fixed; inset:0; z-index:1250; background:var(--paper);
+    display:flex; flex-direction:column;
+    transform:translateX(100%); transition:transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  .guide-view.open{ transform:translateX(0); }
+  .guide-top{
+    flex-shrink:0; background:#0E3626; color:#fff;
+    padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 16px;
+    display:flex; align-items:center; gap:12px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.12);
+  }
+  .guide-close{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    background:rgba(255,255,255,0.15); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .guide-close:active{ background:rgba(255,255,255,0.28); }
+  .guide-top .g-head{ font-size:18px; font-weight:800; letter-spacing:-0.01em; line-height:1.2; }
+  .guide-scroll{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:8px 20px calc(64px + env(safe-area-inset-bottom,0px));
+  }
+  .g-h2{ font-size:19px; font-weight:800; color:var(--maqom-deep); letter-spacing:-0.01em; margin:30px 0 4px; }
+  .g-h2:first-child{ margin-top:20px; }
+  .g-h3{ font-size:15.5px; font-weight:800; color:var(--ink); margin:20px 0 4px; }
+  .g-p{ font-size:14.5px; line-height:1.72; color:var(--ink-2); margin:8px 0; }
+  .g-ol, .g-ul{ margin:8px 0; padding-left:22px; }
+  .g-ol li, .g-ul li{ font-size:14.5px; line-height:1.7; color:var(--ink-2); margin:6px 0; padding-left:3px; }
+  .g-ul.sub{ margin:6px 0 6px; }
+  .g-note{
+    background:var(--soft-green); border-radius:12px;
+    padding:12px 15px; font-size:14px; line-height:1.65; color:#0F5B3C;
+    margin:12px 0; font-weight:600;
+  }
+  .g-div{ height:1px; background:var(--divider); border:none; margin:26px 0; }
+  .g-hotline{
+    display:flex; align-items:center; gap:13px;
+    background:#0E3626; border-radius:16px; padding:16px 18px; margin:26px 0 6px;
+  }
+  .g-hotline .hl-ic{ width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.14); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .g-hotline .hl-lbl{ font-size:12px; color:rgba(255,255,255,0.7); }
+  .g-hotline .hl-num{ font-size:16px; font-weight:800; color:#fff; letter-spacing:0.01em; margin-top:2px; }
+  .g-hotline a{ color:#fff; text-decoration:none; }
+
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
     background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
@@ -769,7 +815,7 @@
       <div class="hero-text">
         <div class="hero-title">Kelola maqom, rumah blacklist, dan talaqqi dengan mudah</div>
         <div class="hero-sub">Semua aktivitas tersusun dalam satu tempat.</div>
-        <button class="hero-btn" onclick="rippleFx(event); showToast('Panduan Nuqto segera hadir')">
+        <button class="hero-btn" onclick="rippleFx(event); openGuide()">
           Lihat Panduan
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
@@ -1239,6 +1285,151 @@
       <div id="pin-detail-label" class="pin-detail-label"></div>
       <div id="pin-detail-note" class="pin-detail-note"></div>
     </div>
+  </div>
+</div>
+
+<!-- ===================== PANDUAN PENGGUNAAN (fullscreen) ===================== -->
+<div id="guide-view" class="guide-view">
+  <div class="guide-top">
+    <button class="guide-close" onclick="closeGuide()" aria-label="Tutup">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="g-head">Panduan Penggunaan</div>
+  </div>
+  <div class="guide-scroll">
+
+    <div class="g-h2">1. Pendaftaran Akun</div>
+    <p class="g-p">Untuk menggunakan aplikasi Nuqto, pengguna harus melakukan pendaftaran terlebih dahulu.</p>
+    <ol class="g-ol">
+      <li>Buka aplikasi Nuqto.</li>
+      <li>Pilih menu Daftar.</li>
+      <li>Masukkan alamat email yang aktif.</li>
+      <li>Masukkan kode OTP yang dikirimkan ke email.</li>
+      <li>Setelah kode OTP berhasil diverifikasi, akun siap digunakan.</li>
+    </ol>
+
+    <hr class="g-div">
+
+    <div class="g-h2">2. Menambahkan Titik Lokasi Maqom, Rumah Blacklist, atau Tempat Talaqqi</div>
+    <p class="g-p">Pengguna dapat menambahkan titik lokasi tertentu langsung melalui peta. Pastikan lokasi yang ditandai sudah sesuai dengan tempat sebenarnya.</p>
+
+    <div class="g-h3">A. Menambahkan Titik Lokasi Maqom</div>
+    <ol class="g-ol">
+      <li>Klik titik lokasi maqom yang ingin ditandai pada peta.</li>
+      <li>Masukkan nama maqom.</li>
+      <li>Pada bagian Catatan, masukkan informasi yang berkaitan dengan maqom tersebut, misalnya sejarah, kisah, atau informasi semasa hidup shohibul maqom.</li>
+      <li>Setelah semua informasi diisi, klik Simpan Perubahan.</li>
+    </ol>
+    <div class="g-note">Usahakan informasi yang diberikan jelas dan berdasarkan informasi yang dapat dipertanggungjawabkan.</div>
+
+    <div class="g-h3">B. Menambahkan Titik Lokasi Rumah Blacklist</div>
+    <p class="g-p">Untuk menambahkan lokasi rumah atau imaroh yang masuk dalam daftar blacklist:</p>
+    <ol class="g-ol">
+      <li>Klik titik lokasi imaroh atau rumah pada peta.</li>
+      <li>Masukkan nama pemilik jika diketahui. Bagian ini bersifat opsional.</li>
+      <li>Masukkan alamat lengkap.</li>
+      <li>Jelaskan kronologi atau alasan secara lengkap dan jelas.</li>
+      <li>Jika memungkinkan, sebutkan informasi detail seperti lantai, nomor pintu, dan bagian imaroh tempat kejadian agar lokasi lebih mudah ditemukan.</li>
+      <li>Masukkan foto imaroh sebagai pendukung informasi.</li>
+    </ol>
+    <div class="g-note">Pastikan informasi yang ditulis benar dan tidak mengandung tuduhan yang tidak memiliki dasar.</div>
+
+    <div class="g-h3">C. Menambahkan Titik Lokasi Tempat Talaqqi</div>
+    <p class="g-p">Untuk menambahkan tempat talaqqi:</p>
+    <ol class="g-ol">
+      <li>Klik titik lokasi tempat talaqqi pada peta.</li>
+      <li>Pada bagian Nama Talaqqi, masukkan nama atau keterangan tempat talaqqi.</li>
+      <li>Masukkan alamat atau patokan lokasi agar tempat tersebut mudah ditemukan.</li>
+      <li>Pada bagian Alasan/Catatan Kejadian, masukkan informasi yang diperlukan, misalnya:
+        <ul class="g-ul sub">
+          <li>Kitab yang digunakan dalam talaqqi.</li>
+          <li>Waktu talaqqi, mulai dari jam berapa sampai jam berapa.</li>
+          <li>Lantai tempat talaqqi.</li>
+          <li>Nomor pintu.</li>
+          <li>Informasi lain yang dapat membantu pengguna menemukan lokasi.</li>
+        </ul>
+      </li>
+      <li>Masukkan foto bagian depan imaroh sebagai foto pendukung.</li>
+      <li>Periksa kembali informasi yang sudah dimasukkan, lalu simpan.</li>
+    </ol>
+
+    <hr class="g-div">
+
+    <div class="g-h2">3. Lowongan Kerja</div>
+    <p class="g-p">Fitur Lowongan Kerja dapat digunakan untuk membagikan informasi pekerjaan kepada pengguna Nuqto.</p>
+    <p class="g-p">Cara menambahkan lowongan kerja:</p>
+    <ol class="g-ol">
+      <li>Klik menu Lowongan Kerja.</li>
+      <li>Klik ikon + di pojok kanan atas untuk membuat lowongan baru.</li>
+      <li>Pada bagian Judul Pekerjaan, masukkan posisi yang sedang dibutuhkan, misalnya Pramusaji.</li>
+      <li>Pada bagian Lokasi, masukkan alamat lengkap tempat pekerjaan.</li>
+      <li>Pada bagian Tipe/Jam Kerja, jelaskan waktu kerja, misalnya:
+        <ul class="g-ul sub">
+          <li>Pagi sampai malam.</li>
+          <li>Sore sampai malam.</li>
+          <li>Malam sampai pagi.</li>
+        </ul>
+      </li>
+      <li>Pada bagian Deskripsi, jelaskan pekerjaan secara lengkap, termasuk tugas dan persyaratan jika ada.</li>
+      <li>Pada bagian Kontak, masukkan nomor WhatsApp atau telepon aktif yang dapat dihubungi oleh calon pelamar.</li>
+      <li>Periksa kembali informasi yang sudah dimasukkan sebelum memposting lowongan.</li>
+    </ol>
+
+    <hr class="g-div">
+
+    <div class="g-h2">4. Laporan Darurat</div>
+    <p class="g-p">Fitur Laporan Darurat dapat digunakan ketika pengguna sedang mengalami keadaan yang membahayakan atau membutuhkan bantuan segera, misalnya mengalami pelecehan, merasa terancam, atau berada dalam situasi darurat lainnya.</p>
+    <p class="g-p">Cara menggunakan fitur laporan darurat:</p>
+    <ol class="g-ol">
+      <li>Klik tombol Laporan Darurat.</li>
+      <li>Jika benar-benar berada dalam kondisi bahaya, klik tombol merah "Ya, Saya dalam Bahaya".</li>
+      <li>Setelah laporan dikirim, pengguna Nuqto lainnya akan mendapatkan notifikasi bahwa ada pengguna yang sedang membutuhkan bantuan.</li>
+      <li>Notifikasi tersebut akan menampilkan lokasi pengguna yang sedang dalam bahaya, sehingga pengguna lain dapat mengetahui lokasi dan membantu menuju tempat tersebut.</li>
+      <li>Pengguna yang membutuhkan bantuan juga dapat menekan tombol merah "Menyiarkan Lokasimu". Setelah diaktifkan, lokasi pengguna akan ditampilkan pada peta sehingga pengguna lain yang sedang menuju lokasi dapat melihat posisi tersebut.</li>
+    </ol>
+    <div class="g-h3">Jika Sudah Merasa Aman</div>
+    <p class="g-p">Setelah keadaan sudah aman, jangan lupa menekan tombol "Saya Sudah Aman".</p>
+    <p class="g-p">Dengan begitu, pengguna lain akan mengetahui bahwa keadaan sudah terkendali dan mereka tidak perlu lagi menuju lokasi tersebut.</p>
+
+    <hr class="g-div">
+
+    <div class="g-h2">5. Pusat Informasi</div>
+    <p class="g-p">Fitur Pusat Informasi dapat digunakan untuk membagikan informasi kepada pengguna Nuqto, seperti pemberitahuan kehilangan barang atau informasi mengenai barang yang ditemukan.</p>
+    <div class="g-h3">Cara Membuat Postingan</div>
+    <ol class="g-ol">
+      <li>Klik menu Pusat Informasi.</li>
+      <li>Klik ikon + di pojok kanan atas.</li>
+      <li>Masukkan caption atau keterangan yang menjelaskan informasi secara lengkap.</li>
+      <li>Jika berkaitan dengan barang hilang atau ditemukan, jelaskan ciri-ciri barang, lokasi, waktu kejadian, dan informasi lain yang diperlukan.</li>
+      <li>Masukkan kontak yang dapat dihubungi.</li>
+      <li>Tambahkan foto jika diperlukan. Foto bersifat opsional.</li>
+      <li>Periksa kembali informasi sebelum memposting.</li>
+    </ol>
+    <div class="g-h3">Mengedit atau Menghapus Postingan</div>
+    <p class="g-p">Jika ingin mengedit atau menghapus postingan:</p>
+    <ol class="g-ol">
+      <li>Cari postingan yang ingin diubah.</li>
+      <li>Klik ikon tiga titik di pojok kanan postingan.</li>
+      <li>Pilih Edit atau Hapus sesuai kebutuhan.</li>
+    </ol>
+    <p class="g-p">Jika masalah atau informasi yang diposting sudah selesai, jangan lupa menghapus postingan tersebut agar pengguna lain tidak mendapatkan informasi yang sudah tidak diperlukan.</p>
+
+    <hr class="g-div">
+
+    <div class="g-h2">6. Mengaktifkan Notifikasi Darurat</div>
+    <p class="g-p">Mengaktifkan notifikasi darurat sangat penting bagi seluruh pengguna Nuqto.</p>
+    <p class="g-p">Dengan mengaktifkan fitur ini, pengguna dapat menerima pemberitahuan ketika ada pengguna lain yang membutuhkan bantuan, meskipun aplikasi Nuqto sedang tidak dibuka.</p>
+    <p class="g-p">Notifikasi darurat akan muncul sebagai pemberitahuan di layar perangkat. Dengan begitu, pengguna dapat segera mengetahui jika ada keadaan darurat dan membantu jika memang memungkinkan.</p>
+    <p class="g-p">Pastikan notifikasi darurat sudah diaktifkan agar sistem bantuan Nuqto dapat berjalan dengan baik.</p>
+
+    <div class="g-hotline">
+      <span class="hl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+      <div>
+        <div class="hl-lbl">Jika masih ada yang kurang dipahami, hubungi hotline kami:</div>
+        <div class="hl-num"><a href="tel:+201554232652">+20 155 4232 652</a></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1744,6 +1935,14 @@ function openPinDetail(cat, id){
   document.getElementById('pin-detail').classList.add('open');
 }
 function closePinDetail(){ document.getElementById('pin-detail').classList.remove('open'); }
+
+function openGuide(){
+  const g = document.getElementById('guide-view');
+  const sc = g.querySelector('.guide-scroll');
+  if(sc) sc.scrollTop = 0;
+  g.classList.add('open');
+}
+function closeGuide(){ document.getElementById('guide-view').classList.remove('open'); }
 
 /* ---------- rute jalan ke titik ---------- */
 function getUserLatLng(){
