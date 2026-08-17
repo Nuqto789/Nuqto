@@ -155,19 +155,20 @@
     display:flex; flex-direction:column; align-items:center; gap:3px;
     flex:1; min-width:0; padding:7px 2px;
     background:none; border:none; cursor:pointer;
-    color:var(--muted-2);
+    color:#1A8A56;
     border-radius:18px;
     transition:color .2s ease, background .25s ease;
   }
   .nav-btn-top{
     position:relative;
-    width:30px; height:22px;
+    width:36px; height:28px;
     display:flex; align-items:center; justify-content:center;
   }
   .nav-btn .arch{ display:none; }
-  .nav-btn.active{ color:var(--emerald-deep); background:var(--soft-green); }
+  .nav-btn.active{ color:#0F6B41; background:var(--soft-green); }
   .nav-btn .icon-wrap{position:relative; z-index:2; display:flex;}
-  .nav-btn .label{position:relative; z-index:2; font-size:10.5px; line-height:1.1; font-weight:600; letter-spacing:-0.01em; white-space:nowrap;}
+  .nav-btn .icon-wrap svg{ width:23px; height:23px; }
+  .nav-btn .label{position:relative; z-index:2; font-size:11px; line-height:1.1; font-weight:700; letter-spacing:-0.01em; white-space:nowrap;}
   .nav-btn .count{position:relative; z-index:2; font-size:8.5px; line-height:1; font-family:'JetBrains Mono',monospace; opacity:.7;}
 
   /* custom pin markers */
@@ -1259,7 +1260,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
       </span>
     </span>
-    <span class="label">Map Maqom</span>
+    <span class="label">Maqom</span>
   </button>
   <button class="nav-btn" data-cat="blacklist" onclick="switchPage('blacklist')">
     <span class="nav-btn-top">
