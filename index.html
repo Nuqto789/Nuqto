@@ -227,7 +227,7 @@
   }
   .splash-footer{
     display:flex; flex-direction:column; align-items:center; gap:12px;
-    padding-bottom:calc(48px + env(safe-area-inset-bottom, 0px));
+    padding-bottom:22px;
   }
   .splash-spinner{
     width:30px; height:30px; border-radius:50%;
@@ -239,6 +239,17 @@
     font-size:12.5px; font-weight:600; letter-spacing:.03em;
     color:rgba(230,214,181,0.75);
   }
+  .splash-sponsor{
+    display:flex; flex-direction:column; align-items:center; gap:9px;
+    padding-bottom:calc(34px + env(safe-area-inset-bottom, 0px));
+  }
+  .splash-sponsor-label{
+    font-size:10.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+    color:rgba(230,214,181,0.5);
+  }
+  .splash-sponsor-brand{ display:flex; align-items:center; gap:9px; }
+  .splash-sponsor-logo{ width:26px; height:26px; object-fit:contain; border-radius:7px; }
+  .splash-sponsor-name{ font-size:15px; font-weight:800; color:rgba(255,255,255,0.9); letter-spacing:-0.01em; }
 
   .zoom-ctrl{
     position:absolute; left:14px; z-index:450;
@@ -780,6 +791,13 @@
   <div class="splash-footer">
     <div class="splash-spinner"></div>
     <div class="splash-caption">Sedang Menelusuri Jejak...</div>
+  </div>
+  <div class="splash-sponsor">
+    <div class="splash-sponsor-label">Disponsori oleh</div>
+    <div class="splash-sponsor-brand">
+      <img class="splash-sponsor-logo" src="https://pub-9dd2194675504a8c9d0f67fd0ce3aa67.r2.dev/Icon%20aplikasi%20yallamart/file_00000000061071f4a2bf027d7ff5df98.png" alt="YallaMart" />
+      <span class="splash-sponsor-name">YallaMart</span>
+    </div>
   </div>
 </div>
 
