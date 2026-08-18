@@ -23,6 +23,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -574,6 +575,47 @@
   .g-hotline .hl-num{ font-size:16px; font-weight:800; color:#fff; letter-spacing:0.01em; margin-top:2px; }
   .g-hotline a{ color:#fff; text-decoration:none; }
 
+  /* ---- pustaka (kartu horizontal: Al-Quran, dst) ---- */
+  .lib-row{ display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:2px 0 6px; margin-bottom:22px; scrollbar-width:none; }
+  .lib-row::-webkit-scrollbar{ display:none; }
+  .lib-card{
+    flex:0 0 auto; width:118px; background:#fff; border:none; border-radius:16px;
+    padding:14px 12px 13px; box-shadow:0 4px 14px rgba(16,18,16,0.06);
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .lib-card:active{ transform:scale(.97); }
+  .lib-card-img{ width:54px; height:54px; display:flex; align-items:center; justify-content:center; }
+  .lib-card-img svg{ width:54px; height:54px; }
+  .lib-card-title{ font-size:13.5px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
+  .lib-card-sub{ font-size:11px; font-weight:500; color:var(--muted); margin-top:-2px; }
+
+  /* ---- al-quran: daftar surah ---- */
+  .surah-row{
+    display:flex; align-items:center; gap:14px; width:100%;
+    padding:13px 4px; background:none; border:none; border-bottom:1px solid rgba(0,0,0,0.06);
+    text-align:left; cursor:pointer; color:var(--ink);
+  }
+  .surah-row:active{ background:rgba(0,0,0,0.02); }
+  .qs-num{
+    width:36px; height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-size:12.5px; font-weight:700; color:var(--maqom); background:var(--soft-green); border-radius:10px;
+  }
+  .qs-info{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .qs-name{ font-size:14.5px; font-weight:700; }
+  .qs-meta{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .qs-arabic{ font-family:'Scheherazade New', serif; font-size:23px; color:var(--maqom-deep); flex-shrink:0; }
+
+  /* ---- al-quran: bacaan surah ---- */
+  .quran-bismillah{ font-family:'Scheherazade New', serif; font-size:27px; text-align:center; color:var(--maqom-deep); margin:6px 0 20px; direction:rtl; }
+  .quran-text{ font-family:'Scheherazade New', serif; font-size:28px; line-height:2.2; text-align:right; color:var(--ink); direction:rtl; }
+  .ayah-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:28px; height:28px; margin:0 5px; padding:0 5px;
+    font-family:'Scheherazade New', serif; font-size:15px; font-weight:700;
+    color:var(--maqom); border:1.5px solid var(--gold); border-radius:50%;
+    vertical-align:middle; line-height:1;
+  }
+
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
     background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
@@ -892,6 +934,28 @@
       <button id="activity-toggle" class="link-btn" onclick="toggleActivityAll()" style="display:none;">Lihat semua →</button>
     </div>
     <div id="activity-list" class="reveal d4"></div>
+
+    <!-- PUSTAKA -->
+    <div class="section-head reveal d4" style="margin-top:26px; margin-bottom:10px;">
+      <div class="st">Pustaka</div>
+    </div>
+    <div class="lib-row reveal d4">
+      <button class="lib-card" onclick="openQuran()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="13" y="9" width="38" height="46" rx="5" fill="#0E3626"/>
+            <rect x="13" y="9" width="7" height="46" rx="3.5" fill="#0A2A1E"/>
+            <rect x="24" y="13" width="23" height="38" rx="3" fill="none" stroke="#BE9A46" stroke-width="1.4"/>
+            <path d="M35.5 23.5 L41 32 L35.5 40.5 L30 32 Z" fill="none" stroke="#BE9A46" stroke-width="1.4"/>
+            <circle cx="35.5" cy="32" r="2.8" fill="#BE9A46"/>
+            <circle cx="35.5" cy="17.6" r="1.1" fill="#BE9A46"/>
+            <circle cx="35.5" cy="46.4" r="1.1" fill="#BE9A46"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Al-Qur'an</span>
+        <span class="lib-card-sub">30 Juz</span>
+      </button>
+    </div>
     </div>
   </div>
 </div>
@@ -1070,6 +1134,32 @@
   </div>
   <div class="scroll-page" style="padding-top:16px;">
     <div id="job-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : AL-QURAN (daftar surah) ===================== -->
+<div id="page-quran" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeQuran()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Al-Qur'an</div>
+  </div>
+  <div class="scroll-page" style="padding-top:8px;">
+    <div id="surah-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : BACAAN SURAH ===================== -->
+<div id="page-surah" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeSurah()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div id="surah-title" class="font-display" style="font-size:19px; font-weight:700; flex:1;">Surah</div>
+  </div>
+  <div class="scroll-page" style="padding-top:12px;">
+    <div id="surah-body"></div>
   </div>
 </div>
 
@@ -2197,6 +2287,71 @@ function openLowongan(){
 
 function closeLowongan(){
   document.getElementById('page-lowongan').classList.remove('open');
+}
+
+/* ---------- al-quran (teks, sumber: alquran.cloud) ---------- */
+function toArabicNum(n){ return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]); }
+
+function openQuran(){
+  document.getElementById('page-quran').classList.add('open');
+  loadSurahList();
+}
+function closeQuran(){ document.getElementById('page-quran').classList.remove('open'); }
+function closeSurah(){ document.getElementById('page-surah').classList.remove('open'); }
+
+async function loadSurahList(){
+  const list = document.getElementById('surah-list');
+  if(list.dataset.loaded === '1') return;
+  list.innerHTML = '<div class="empty-state">Memuat daftar surah…</div>';
+  try{
+    const res = await fetch('https://api.alquran.cloud/v1/surah');
+    const json = await res.json();
+    if(!json.data) throw new Error('kosong');
+    list.innerHTML = json.data.map(s => `
+      <button class="surah-row" onclick="openSurah(${s.number}, '${String(s.englishName).replace(/'/g, "\\'")}')">
+        <span class="qs-num">${s.number}</span>
+        <span class="qs-info">
+          <span class="qs-name">${escapeHtml(s.englishName)}</span>
+          <span class="qs-meta">${s.revelationType === 'Meccan' ? 'Makkiyah' : 'Madaniyah'} · ${s.numberOfAyahs} ayat</span>
+        </span>
+        <span class="qs-arabic">${escapeHtml(s.name)}</span>
+      </button>
+    `).join('');
+    list.dataset.loaded = '1';
+  }catch(e){
+    list.innerHTML = '<div class="empty-state">Gagal memuat daftar surah. Cek koneksi lalu buka lagi.</div>';
+  }
+}
+
+async function openSurah(num, title){
+  document.getElementById('surah-title').textContent = title || ('Surah ' + num);
+  const body = document.getElementById('surah-body');
+  body.innerHTML = '<div class="empty-state">Memuat…</div>';
+  document.getElementById('page-surah').classList.add('open');
+  const sc = document.querySelector('#page-surah .scroll-page');
+  if(sc) sc.scrollTop = 0;
+  try{
+    const res = await fetch('https://api.alquran.cloud/v1/surah/' + num + '/quran-uthmani');
+    const json = await res.json();
+    const s = json.data;
+    if(!s || !s.ayahs) throw new Error('kosong');
+    const BES = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
+    let showHeader = false;
+    const parts = s.ayahs.map((a, idx) => {
+      let t = a.text.replace(/^﻿/, '');
+      if(idx === 0 && num !== 1 && num !== 9 && t.startsWith(BES)){
+        t = t.slice(BES.length).trim();
+        showHeader = true;
+      }
+      return `${escapeHtml(t)}<span class="ayah-num">${toArabicNum(a.numberInSurah)}</span>`;
+    });
+    let html = '';
+    if(showHeader) html += '<div class="quran-bismillah">' + BES + '</div>';
+    html += '<div class="quran-text" dir="rtl">' + parts.join(' ') + '</div>';
+    body.innerHTML = html;
+  }catch(e){
+    body.innerHTML = '<div class="empty-state">Gagal memuat surah. Cek koneksi lalu coba lagi.</div>';
+  }
 }
 
 function shareApp(){
