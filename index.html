@@ -607,13 +607,28 @@
 
   /* ---- al-quran: bacaan surah ---- */
   .quran-bismillah{ font-family:'Scheherazade New', serif; font-size:27px; text-align:center; color:var(--maqom-deep); margin:6px 0 20px; direction:rtl; }
-  .quran-text{ font-family:'Scheherazade New', serif; font-size:28px; line-height:2.2; text-align:right; color:var(--ink); direction:rtl; }
+  .quran-text{ font-family:'Scheherazade New', serif; font-size:25px; line-height:2.05; text-align:right; color:var(--ink); direction:rtl; }
   .ayah-num{
     display:inline-flex; align-items:center; justify-content:center;
-    min-width:28px; height:28px; margin:0 5px; padding:0 5px;
-    font-family:'Scheherazade New', serif; font-size:15px; font-weight:700;
+    min-width:26px; height:26px; margin:0 5px; padding:0 5px;
+    font-family:'Scheherazade New', serif; font-size:14px; font-weight:700;
     color:var(--maqom); border:1.5px solid var(--gold); border-radius:50%;
     vertical-align:middle; line-height:1;
+  }
+  /* mode lembar: geser horizontal per halaman mushaf */
+  .mushaf-viewport{
+    flex:1; display:flex; overflow-x:auto; overflow-y:hidden;
+    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .mushaf-viewport::-webkit-scrollbar{ display:none; }
+  .mushaf-page{
+    flex:0 0 100%; width:100%; height:100%; box-sizing:border-box;
+    scroll-snap-align:center; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 20px calc(18px + env(safe-area-inset-bottom,0px)) 20px;
+  }
+  .mushaf-pagenum{
+    text-align:center; font-size:11.5px; font-weight:600; color:var(--muted);
+    margin-top:20px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06);
   }
 
   .toast{
@@ -1158,9 +1173,7 @@
     </button>
     <div id="surah-title" class="font-display" style="font-size:19px; font-weight:700; flex:1;">Surah</div>
   </div>
-  <div class="scroll-page" style="padding-top:12px;">
-    <div id="surah-body"></div>
-  </div>
+  <div id="surah-body" class="mushaf-viewport"></div>
 </div>
 
 <!-- ===================== OVERLAY : PANEL ADMIN ===================== -->
@@ -2326,31 +2339,38 @@ async function loadSurahList(){
 async function openSurah(num, title){
   document.getElementById('surah-title').textContent = title || ('Surah ' + num);
   const body = document.getElementById('surah-body');
-  body.innerHTML = '<div class="empty-state">Memuat…</div>';
+  body.innerHTML = '<div class="empty-state" style="margin:auto;">Memuat…</div>';
   document.getElementById('page-surah').classList.add('open');
-  const sc = document.querySelector('#page-surah .scroll-page');
-  if(sc) sc.scrollTop = 0;
   try{
     const res = await fetch('https://api.alquran.cloud/v1/surah/' + num + '/quran-uthmani');
     const json = await res.json();
     const s = json.data;
     if(!s || !s.ayahs) throw new Error('kosong');
     const BES = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
-    let showHeader = false;
-    const parts = s.ayahs.map((a, idx) => {
-      let t = a.text.replace(/^﻿/, '');
-      if(idx === 0 && num !== 1 && num !== 9 && t.startsWith(BES)){
-        t = t.slice(BES.length).trim();
-        showHeader = true;
-      }
-      return `${escapeHtml(t)}<span class="ayah-num">${toArabicNum(a.numberInSurah)}</span>`;
+
+    // kelompokkan ayat per-halaman mushaf (field "page")
+    const pagesMap = {};
+    s.ayahs.forEach(a => { (pagesMap[a.page] = pagesMap[a.page] || []).push(a); });
+    const pageNums = Object.keys(pagesMap).map(Number).sort((x, y) => x - y);
+
+    const pagesHtml = pageNums.map(pn => {
+      const ayahs = pagesMap[pn];
+      let header = '';
+      const parts = ayahs.map(a => {
+        let t = a.text.replace(/^﻿/, '');
+        if(a.numberInSurah === 1 && num !== 1 && num !== 9 && t.startsWith(BES)){
+          t = t.slice(BES.length).trim();
+          header = '<div class="quran-bismillah">' + BES + '</div>';
+        }
+        return `${escapeHtml(t)}<span class="ayah-num">${toArabicNum(a.numberInSurah)}</span>`;
+      });
+      return `<div class="mushaf-page">${header}<div class="quran-text" dir="rtl">${parts.join(' ')}</div><div class="mushaf-pagenum">Halaman ${toArabicNum(pn)}</div></div>`;
     });
-    let html = '';
-    if(showHeader) html += '<div class="quran-bismillah">' + BES + '</div>';
-    html += '<div class="quran-text" dir="rtl">' + parts.join(' ') + '</div>';
-    body.innerHTML = html;
+
+    body.innerHTML = pagesHtml.join('');
+    body.scrollLeft = 0;
   }catch(e){
-    body.innerHTML = '<div class="empty-state">Gagal memuat surah. Cek koneksi lalu coba lagi.</div>';
+    body.innerHTML = '<div class="empty-state" style="margin:auto;">Gagal memuat surah. Cek koneksi lalu coba lagi.</div>';
   }
 }
 
