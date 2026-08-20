@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Nuqto Ã¢â‚¬â€ Peta Titik</title>
+<title>Nuqto — Peta Titik</title>
 
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
@@ -92,7 +92,7 @@
   }
   .page.active{opacity:1; pointer-events:auto;}
 
-  /* status-bar (top safe-area) fill Ã¢â‚¬â€ warna ikut halaman aktif, simetris dgn strip bawah */
+  /* status-bar (top safe-area) fill — warna ikut halaman aktif, simetris dgn strip bawah */
   #statusbar-fill{
     position:fixed; top:0; left:0; right:0;
     height:env(safe-area-inset-top, 0px);
@@ -141,7 +141,7 @@
   }
   .search-row input::placeholder{color:var(--muted);}
 
-  /* bottom nav Ã¢â‚¬â€ floating pill, 5 menu */
+  /* bottom nav — floating pill, 5 menu */
   .bottom-nav{
     position:fixed; left:0; right:0; z-index:600;
     bottom:0;
@@ -812,18 +812,19 @@
   /* ---- home: activity ---- */
   #activity-list{
     background:none; border-radius:0;
-    box-shadow:none; padding:0; overflow:hidden;
+    box-shadow:none; padding:0; margin:0 -20px;
   }
   .activity-item{
     display:flex; gap:14px; align-items:center;
-    min-height:86px; padding:15px 0; border-bottom:1px solid var(--divider);
+    padding:12px 20px;
+    border-bottom:1px solid rgba(0,0,0,0.09);
   }
   .activity-item:last-child{ border-bottom:none; }
   .activity-icon{
     flex-shrink:0; border-radius:10px; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
   }
-  .activity-icon img{ height:48px; width:auto; max-width:96px; display:block; }
+  .activity-icon img{ height:56px; width:auto; max-width:110px; display:block; }
   .activity-title{ font-size:15px; font-weight:600; color:var(--ink-2); letter-spacing:-0.01em; }
   .activity-sub{ font-size:13px; color:var(--muted-2); margin-top:2px; }
   .activity-time{ font-size:13px; font-weight:500; color:var(--muted-2); flex-shrink:0; }
@@ -920,7 +921,7 @@
   </div>
 </div>
 
-<!-- status-bar fill (atas) Ã¢â‚¬â€ warna ikut halaman aktif -->
+<!-- status-bar fill (atas) — warna ikut halaman aktif -->
 <div id="statusbar-fill"></div>
 
 <!-- ===================== PAGE 0 : BERANDA ===================== -->
@@ -991,7 +992,7 @@
     <!-- ACTIVITY -->
     <div class="section-head reveal d4">
       <div class="st">Aktivitas Terbaru</div>
-      <button id="activity-toggle" class="link-btn" onclick="toggleActivityAll()" style="display:none;">Lihat semua Ã¢â€ â€™</button>
+      <button id="activity-toggle" class="link-btn" onclick="toggleActivityAll()" style="display:none;">Lihat semua →</button>
     </div>
     <div id="activity-list" class="reveal d4"></div>
 
@@ -1078,7 +1079,7 @@
   <div class="top-bar">
     <div class="search-row">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--maqom); flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="search-maqom" type="text" placeholder="Cari alamat maqomÃ¢â‚¬Â¦" />
+      <input id="search-maqom" type="text" placeholder="Cari alamat maqom…" />
       <button onclick="doSearch('maqom')" class="text-xs font-bold px-2" style="color:var(--maqom);">CARI</button>
     </div>
   </div>
@@ -1105,7 +1106,7 @@
   <div class="top-bar">
     <div class="search-row">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--rust); flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="search-blacklist" type="text" placeholder="Cari alamat rumahÃ¢â‚¬Â¦" />
+      <input id="search-blacklist" type="text" placeholder="Cari alamat rumah…" />
       <button onclick="doSearch('blacklist')" class="text-xs font-bold px-2" style="color:var(--rust);">CARI</button>
     </div>
   </div>
@@ -1132,7 +1133,7 @@
   <div class="top-bar">
     <div class="search-row">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber); flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="search-razia" type="text" placeholder="Cari lokasi talaqqiÃ¢â‚¬Â¦" />
+      <input id="search-razia" type="text" placeholder="Cari lokasi talaqqi…" />
       <button onclick="doSearch('razia')" class="text-xs font-bold px-2" style="color:var(--amber);">CARI</button>
     </div>
   </div>
@@ -1171,7 +1172,7 @@
       <span class="menu-icon" style="background:rgba(23,80,56,0.1);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
       </span>
-      <span class="menu-label">Panel Admin Ã¢â‚¬â€ Persetujuan Titik</span>
+      <span class="menu-label">Panel Admin — Persetujuan Titik</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
@@ -1191,7 +1192,7 @@
       </span>
       <span style="flex:1; text-align:left; min-width:0;">
         <span class="emergency-label">LAPORAN DARURAT</span>
-        <span class="emergency-desc">Kirim notifikasi lokasi bahaya ke semua user Ã‚Â· tekan untuk konfirmasi</span>
+        <span class="emergency-desc">Kirim notifikasi lokasi bahaya ke semua user · tekan untuk konfirmasi</span>
       </span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
@@ -1221,7 +1222,7 @@
     </button>
 
     <div class="section-title">Lainnya</div>
-    <button class="menu-row" onclick="showToast('Nuqto Ã¢â‚¬â€ peta komunitas Masisir Kairo')">
+    <button class="menu-row" onclick="showToast('Nuqto — peta komunitas Masisir Kairo')">
       <span class="menu-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       </span>
@@ -1297,9 +1298,9 @@
           </svg>
         </div>
       </div>
-      <div id="qibla-info" class="qibla-info">Mengambil lokasiÃ¢â‚¬Â¦</div>
+      <div id="qibla-info" class="qibla-info">Mengambil lokasi…</div>
       <button id="qibla-enable" class="btn-primary maqom" style="display:none; max-width:240px;" onclick="enableCompass()">Aktifkan Kompas</button>
-      <div id="qibla-hint" class="qibla-hint" style="display:none;">Putar HP perlahan hingga Ka'bah tepat di atas Ã¢â‚¬â€ itu arah kiblat.</div>
+      <div id="qibla-hint" class="qibla-hint" style="display:none;">Putar HP perlahan hingga Ka'bah tepat di atas — itu arah kiblat.</div>
     </div>
   </div>
 </div>
@@ -1313,7 +1314,7 @@
     <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Jadwal Sholat</div>
   </div>
   <div class="scroll-page" style="padding-top:16px;">
-    <div id="sholat-loc" class="sholat-loc">Memuat lokasiÃ¢â‚¬Â¦</div>
+    <div id="sholat-loc" class="sholat-loc">Memuat lokasi…</div>
     <div id="sholat-next" class="sholat-next" style="display:none;"></div>
     <div id="sholat-list"></div>
   </div>
@@ -1339,7 +1340,7 @@
     </div>
     <div id="kal-sub" class="kal-sub"></div>
     <div id="kal-grid" class="kal-grid"></div>
-    <div class="kal-legend">Angka besar = Masehi Ã‚Â· angka kecil = Hijriah</div>
+    <div class="kal-legend">Angka besar = Masehi · angka kecil = Hijriah</div>
   </div>
 </div>
 
@@ -1375,9 +1376,9 @@
     <label class="field-label">Tipe</label>
     <input id="job-tag" class="field-input mb-4" type="text" placeholder="cth. Part-time / Freelance" />
     <label class="field-label">Deskripsi</label>
-    <textarea id="job-desc" class="field-input mb-4" rows="3" placeholder="Rincian pekerjaanÃ¢â‚¬Â¦"></textarea>
+    <textarea id="job-desc" class="field-input mb-4" rows="3" placeholder="Rincian pekerjaan…"></textarea>
     <label class="field-label">Kontak (WA / email)</label>
-    <input id="job-contact" class="field-input mb-5" type="text" placeholder="cth. wa.me/62Ã¢â‚¬Â¦" />
+    <input id="job-contact" class="field-input mb-5" type="text" placeholder="cth. wa.me/62…" />
     <button id="job-submit-btn" class="btn-primary maqom" onclick="submitJob()">Pasang Lowongan</button>
     <button class="btn-ghost" onclick="closeAddJob()">Batal</button>
   </div>
@@ -1409,14 +1410,14 @@
   </div>
   <div class="scroll-page" style="padding-top:16px;">
     <label class="field-label">Caption</label>
-    <textarea id="info-caption-input" class="field-input mb-4" rows="3" placeholder="cth. Kehilangan dompet warna coklat di Hay Asher, hubungiÃ¢â‚¬Â¦"></textarea>
+    <textarea id="info-caption-input" class="field-input mb-4" rows="3" placeholder="cth. Kehilangan dompet warna coklat di Hay Asher, hubungi…"></textarea>
     <label class="field-label">Foto (opsional)</label>
     <div class="mb-5">
       <input id="info-photo-input" type="file" accept="image/*" style="display:none;" onchange="handleInfoPhoto(event)">
       <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('info-photo-input').click()">Pilih Foto</button>
       <div id="info-photo-preview-wrap" class="hidden" style="margin-top:10px; position:relative;">
         <img id="info-photo-preview" style="width:100%; max-height:220px; object-fit:cover; border-radius:12px;" />
-        <button type="button" onclick="removeInfoPhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">Ã¢Å“â€¢</button>
+        <button type="button" onclick="removeInfoPhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">✕</button>
       </div>
       <div style="font-size:11px; color:var(--muted); margin-top:8px;">Foto otomatis dikompres agar ringan.</div>
     </div>
@@ -1484,7 +1485,7 @@
     <div class="emg-modal-icon">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
     </div>
-    <div class="emg-modal-title">Ã°Å¸Å¡Â¨ PERINGATAN DARURAT!</div>
+    <div class="emg-modal-title">🚨 PERINGATAN DARURAT!</div>
     <div class="emg-modal-body">Apakah kamu dalam bahaya nyata dan butuh bantuan komunitas? <b>Lokasimu akan disiarkan ke semua pengguna.</b></div>
     <div class="emg-modal-actions">
       <button class="emg-btn cancel" onclick="closeEmergencyConfirm()">Batal</button>
@@ -1499,7 +1500,7 @@
     <div class="emg-modal-icon big">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"/><path d="M12 2v1"/><path d="M21 12h1"/><path d="M2 12h1"/></svg>
     </div>
-    <div class="emg-modal-title">Ã°Å¸Å¡Â¨ ADA YANG DALAM BAHAYA</div>
+    <div class="emg-modal-title">🚨 ADA YANG DALAM BAHAYA</div>
     <div class="emg-modal-body"><b id="emg-in-name">Seseorang</b> menandai dirinya dalam bahaya dan meminta bantuan. Buka lokasinya sekarang.</div>
     <div class="emg-modal-actions col">
       <button class="emg-btn danger" onclick="openLiveTrack()">Lacak Lokasi (Live)</button>
@@ -1512,7 +1513,7 @@
 <div id="danger-banner" class="danger-banner">
   <button class="db-main" onclick="openHelpMap()">
     <span class="db-pulse"></span>
-    <span class="db-text">Ã°Å¸â€œÂ Menyiarkan lokasimu (live)Ã¢â‚¬Â¦<span class="db-sub">Ketuk untuk lihat penolong yang menuju</span></span>
+    <span class="db-text">📍 Menyiarkan lokasimu (live)…<span class="db-sub">Ketuk untuk lihat penolong yang menuju</span></span>
   </button>
   <button class="db-safe" onclick="iAmSafe()">Saya sudah aman</button>
 </div>
@@ -1521,7 +1522,7 @@
 <div id="track-banner" class="danger-banner track-banner">
   <button class="tb-main" onclick="openLiveTrack()">
     <span class="db-pulse"></span>
-    <span class="tb-text">Ã°Å¸Å¡Â¨ Lokasi Darurat<span class="tb-sub">Ketuk untuk lihat pelacakan</span></span>
+    <span class="tb-text">🚨 Lokasi Darurat<span class="tb-sub">Ketuk untuk lihat pelacakan</span></span>
   </button>
   <button class="db-safe" onclick="ignoreTrackBanner()">Abaikan</button>
 </div>
@@ -1534,8 +1535,8 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
     <div class="track-titlecard">
-      <div style="font-weight:800; font-size:15px; color:#DC2626;">Ã°Å¸Å¡Â¨ Pelacakan Darurat</div>
-      <div id="track-status" class="track-status live">Live Ã‚Â· memantau pergerakan</div>
+      <div style="font-weight:800; font-size:15px; color:#DC2626;">🚨 Pelacakan Darurat</div>
+      <div id="track-status" class="track-status live">Live · memantau pergerakan</div>
       <div id="track-dist" class="track-dist" style="display:none;"></div>
     </div>
   </div>
@@ -1551,7 +1552,7 @@
   </div>
 </div>
 
-<!-- ============= OVERLAY : PETA BANTUAN (korban Ã¢â‚¬â€ lihat penolong yang menuju) ============= -->
+<!-- ============= OVERLAY : PETA BANTUAN (korban — lihat penolong yang menuju) ============= -->
 <div id="page-helpmap" class="overlay-page">
   <div id="map-help"></div>
   <div class="track-top">
@@ -1559,8 +1560,8 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
     <div class="track-titlecard">
-      <div style="font-weight:800; font-size:15px; color:#DC2626;">Ã°Å¸Å¡Â¨ Bantuan Menuju Kamu</div>
-      <div id="help-count" class="track-status live">Mencari bantuan terdekatÃ¢â‚¬Â¦</div>
+      <div style="font-weight:800; font-size:15px; color:#DC2626;">🚨 Bantuan Menuju Kamu</div>
+      <div id="help-count" class="track-status live">Mencari bantuan terdekat…</div>
     </div>
   </div>
 </div>
@@ -1813,7 +1814,7 @@
     <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('input-photo').click()">Pilih Foto</button>
     <div id="photo-preview-wrap" class="hidden" style="margin-top:10px; position:relative;">
       <img id="photo-preview" style="width:100%; max-height:160px; object-fit:cover; border-radius:12px;" />
-      <button type="button" onclick="removePhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">Ã¢Å“â€¢</button>
+      <button type="button" onclick="removePhoto()" style="position:absolute; top:6px; right:6px; background:rgba(20,19,16,0.65); color:#fff; border:none; border-radius:99px; width:26px; height:26px; font-size:14px; line-height:1; cursor:pointer;">✕</button>
     </div>
   </div>
 
@@ -1934,19 +1935,19 @@ function onLocationFound(cat, e){
     icon: L.divIcon({ className:'', html:'<div class="user-dot"></div>', iconSize:[16,16], iconAnchor:[8,8] }),
     zIndexOffset: 1000
   }).addTo(maps[cat]);
-  showToast('Ditemukan Ã¢â‚¬â€ posisimu sekarang');
+  showToast('Ditemukan — posisimu sekarang');
 }
 
 function onLocationError(cat, e){
   document.getElementById('locate-' + cat).classList.remove('loading');
-  showToast('Tidak bisa akses lokasi Ã¢â‚¬â€ cek izin lokasi di browser');
+  showToast('Tidak bisa akses lokasi — cek izin lokasi di browser');
 }
 
 /* ---------- safe-area (bottom strip) color per page ---------- */
 const SAFE_BG = { home:'#0E3626', maqom:'#E9E4D7', blacklist:'#E9E4D7', razia:'#E9E4D7', akun:'#FAFAFA' };
 function applySafeBg(cat){
   const c = SAFE_BG[cat] || '#FAFAFA';
-  // strip BAWAH (home-indicator) ikut warna body Ã¢â€ â€™ selalu putih senada bottom bar
+  // strip BAWAH (home-indicator) ikut warna body → selalu putih senada bottom bar
   document.documentElement.style.background = 'var(--card)';
   document.body.style.background = 'var(--card)';
   // strip ATAS (status bar) ikut warna halaman
@@ -2112,19 +2113,19 @@ async function savePin(){
 
   let photo_url = existingPhotoUrl || null;
   if(pendingPhotoFile){
-    btn.textContent = 'Mengunggah fotoÃ¢â‚¬Â¦';
+    btn.textContent = 'Mengunggah foto…';
     try{
       photo_url = await uploadPhoto(pendingPhotoFile);
     } catch(err){
       console.error(err);
       btn.disabled = false;
       btn.textContent = originalLabel;
-      showToast('Gagal upload foto Ã¢â‚¬â€ coba lagi');
+      showToast('Gagal upload foto — coba lagi');
       return;
     }
   }
 
-  btn.textContent = isEdit ? 'Menyimpan perubahanÃ¢â‚¬Â¦' : 'MenyimpanÃ¢â‚¬Â¦';
+  btn.textContent = isEdit ? 'Menyimpan perubahan…' : 'Menyimpan…';
 
   let data, error;
   try{
@@ -2169,7 +2170,7 @@ async function savePin(){
     updateCounts();
     closeSheet();
     if(data.status === 'pending'){
-      showToast('Titik terkirim Ã¢â‚¬â€ menunggu persetujuan admin sebelum tampil untuk umum.');
+      showToast('Titik terkirim — menunggu persetujuan admin sebelum tampil untuk umum.');
     } else {
       showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : cat === 'blacklist' ? 'Titik rumah tersimpan' : 'Titik talaqqi tersimpan');
     }
@@ -2211,12 +2212,12 @@ function buildPopupHtml(cat, pin){
       ${manage ? `<button class="popup-menu-btn" onclick="openPinMenu('${cat}','${pin.id}')" aria-label="Opsi">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>` : ''}
-      ${pending ? `<div class="popup-badge">Ã¢ÂÂ³ Menunggu persetujuan</div>` : ''}
+      ${pending ? `<div class="popup-badge">⏳ Menunggu persetujuan</div>` : ''}
       ${pin.photo_url ? `<img src="${escapeHtml(pin.photo_url)}" onclick="openPinDetail('${cat}','${pin.id}')" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; margin-bottom:8px; cursor:pointer;" />` : ''}
       <div class="popup-title" onclick="openPinDetail('${cat}','${pin.id}')" style="cursor:pointer;">${escapeHtml(pin.name)}</div>
       ${pin.address ? `<div class="popup-note">${escapeHtml(pin.address)}</div>` : ''}
       ${pin.note ? `<div class="popup-note" onclick="openPinDetail('${cat}','${pin.id}')" style="cursor:pointer;">${escapeHtml(pin.note)}</div>` : ''}
-      ${(pin.photo_url || pin.note) ? `<div class="popup-more" onclick="openPinDetail('${cat}','${pin.id}')">Ketuk untuk lihat &amp; baca lengkap Ã¢â€ â€™</div>` : ''}
+      ${(pin.photo_url || pin.note) ? `<div class="popup-more" onclick="openPinDetail('${cat}','${pin.id}')">Ketuk untuk lihat &amp; baca lengkap →</div>` : ''}
       <div class="popup-coord">${pin.lat.toFixed(6)}, ${pin.lng.toFixed(6)}</div>
       ${(isAdmin() && pending) ? `<div class="popup-actions">
         <button class="popup-btn approve" onclick="approvePin('${cat}','${pin.id}')">Setujui</button>
@@ -2277,7 +2278,7 @@ async function drawRouteTo(cat, destLatLng){
     return;
   }
 
-  showToast('Menyusun ruteÃ¢â‚¬Â¦');
+  showToast('Menyusun rute…');
 
   try{
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${destLatLng[1]},${destLatLng[0]}?overview=full&geometries=geojson`;
@@ -2299,10 +2300,10 @@ async function drawRouteTo(cat, destLatLng){
 
     const km = (data.routes[0].distance / 1000).toFixed(1);
     const menit = Math.round(data.routes[0].duration / 60);
-    showToast(`Rute ditemukan Ã¢â‚¬â€ ${km} km, ~${menit} menit jalan kaki`);
+    showToast(`Rute ditemukan — ${km} km, ~${menit} menit jalan kaki`);
   } catch(err){
     console.error(err);
-    showToast('Gagal ambil rute Ã¢â‚¬â€ cek koneksi internet');
+    showToast('Gagal ambil rute — cek koneksi internet');
   }
 }
 
@@ -2346,7 +2347,7 @@ async function doSearch(cat){
     if(data && data.length){
       const { lat, lon } = data[0];
       maps[cat].flyTo([parseFloat(lat), parseFloat(lon)], 16, { duration: 0.9 });
-      showToast('Lokasi ditemukan Ã¢â‚¬â€ tap peta untuk pin titik pasti');
+      showToast('Lokasi ditemukan — tap peta untuk pin titik pasti');
     } else {
       showToast('Alamat tidak ditemukan');
     }
@@ -2410,7 +2411,7 @@ function renderNotifList(){
 }
 function openNotifPanel(){
   renderNotifList();
-  saveNotifs(getNotifs().map(n => ({ ...n, read: true }))); // tandai semua terbaca Ã¢â€ â€™ badge hilang
+  saveNotifs(getNotifs().map(n => ({ ...n, read: true }))); // tandai semua terbaca → badge hilang
   updateNotifBadge();
   document.getElementById('page-notif').classList.add('open');
 }
@@ -2444,7 +2445,7 @@ function renderActivity(){
   if(toggle){
     if(items.length > 5){
       toggle.style.display = '';
-      toggle.textContent = activityExpanded ? 'Tutup Ã¢â€ â€˜' : 'Lihat semua Ã¢â€ â€™';
+      toggle.textContent = activityExpanded ? 'Tutup ↑' : 'Lihat semua →';
     } else {
       toggle.style.display = 'none';
     }
@@ -2475,7 +2476,7 @@ function closeLowongan(){
 }
 
 /* ---------- al-quran (teks, sumber: alquran.cloud) ---------- */
-function toArabicNum(n){ return String(n).replace(/[0-9]/g, d => 'Ã™Â Ã™Â¡Ã™Â¢Ã™Â£Ã™Â¤Ã™Â¥Ã™Â¦Ã™Â§Ã™Â¨Ã™Â©'[d]); }
+function toArabicNum(n){ return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]); }
 
 function openQuran(){
   document.getElementById('page-quran').classList.add('open');
@@ -2487,7 +2488,7 @@ function closeSurah(){ document.getElementById('page-surah').classList.remove('o
 async function loadSurahList(){
   const list = document.getElementById('surah-list');
   if(list.dataset.loaded === '1') return;
-  list.innerHTML = '<div class="empty-state">Memuat daftar surahÃ¢â‚¬Â¦</div>';
+  list.innerHTML = '<div class="empty-state">Memuat daftar surah…</div>';
   try{
     const res = await fetch('https://api.alquran.cloud/v1/surah');
     const json = await res.json();
@@ -2497,7 +2498,7 @@ async function loadSurahList(){
         <span class="qs-num">${s.number}</span>
         <span class="qs-info">
           <span class="qs-name">${escapeHtml(s.englishName)}</span>
-          <span class="qs-meta">${s.revelationType === 'Meccan' ? 'Makkiyah' : 'Madaniyah'} Ã‚Â· ${s.numberOfAyahs} ayat</span>
+          <span class="qs-meta">${s.revelationType === 'Meccan' ? 'Makkiyah' : 'Madaniyah'} · ${s.numberOfAyahs} ayat</span>
         </span>
         <span class="qs-arabic">${escapeHtml(s.name)}</span>
       </button>
@@ -2511,14 +2512,14 @@ async function loadSurahList(){
 async function openSurah(num, title){
   document.getElementById('surah-title').textContent = title || ('Surah ' + num);
   const body = document.getElementById('surah-body');
-  body.innerHTML = '<div class="empty-state" style="margin:auto;">MemuatÃ¢â‚¬Â¦</div>';
+  body.innerHTML = '<div class="empty-state" style="margin:auto;">Memuat…</div>';
   document.getElementById('page-surah').classList.add('open');
   try{
     const res = await fetch('https://api.alquran.cloud/v1/surah/' + num + '/quran-uthmani');
     const json = await res.json();
     const s = json.data;
     if(!s || !s.ayahs) throw new Error('kosong');
-    const BES = 'Ã˜Â¨Ã™ÂÃ˜Â³Ã™â€™Ã™â€¦Ã™Â Ã™Â±Ã™â€žÃ™â€žÃ™Å½Ã™â€˜Ã™â€¡Ã™Â Ã™Â±Ã™â€žÃ˜Â±Ã™Å½Ã™â€˜Ã˜Â­Ã™â€™Ã™â€¦Ã™Å½Ã™Â°Ã™â€ Ã™Â Ã™Â±Ã™â€žÃ˜Â±Ã™Å½Ã™â€˜Ã˜Â­Ã™ÂÃ™Å Ã™â€¦Ã™Â';
+    const BES = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
 
     // kelompokkan ayat per-halaman mushaf (field "page")
     const pagesMap = {};
@@ -2529,7 +2530,7 @@ async function openSurah(num, title){
       const ayahs = pagesMap[pn];
       let header = '';
       const parts = ayahs.map(a => {
-        let t = a.text.replace(/^Ã¯Â»Â¿/, '');
+        let t = a.text.replace(/^﻿/, '');
         if(a.numberInSurah === 1 && num !== 1 && num !== 9 && t.startsWith(BES)){
           t = t.slice(BES.length).trim();
           header = '<div class="quran-bismillah">' + BES + '</div>';
@@ -2569,13 +2570,13 @@ function openQibla(){
   const btn = document.getElementById('qibla-enable');
   document.getElementById('qibla-hint').style.display = 'none';
   btn.style.display = 'none';
-  info.textContent = 'Mengambil lokasiÃ¢â‚¬Â¦';
+  info.textContent = 'Mengambil lokasi…';
   if(!navigator.geolocation){ info.textContent = 'Perangkat tidak mendukung lokasi.'; return; }
   navigator.geolocation.getCurrentPosition(pos => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
     qiblaDeg = qiblaBearing(lat, lng);
     const dist = haversineKm(lat, lng, 21.4225, 39.8262);
-    info.innerHTML = 'Arah kiblat <b>' + Math.round(qiblaDeg) + 'Ã‚Â°</b> dari Utara<br>Ã‚Â± ' + Math.round(dist).toLocaleString('id-ID') + ' km ke Makkah';
+    info.innerHTML = 'Arah kiblat <b>' + Math.round(qiblaDeg) + '°</b> dari Utara<br>± ' + Math.round(dist).toLocaleString('id-ID') + ' km ke Makkah';
     setNeedle(qiblaDeg);
     btn.style.display = '';
   }, () => {
@@ -2648,9 +2649,9 @@ async function loadSholat(){
   const listEl = document.getElementById('sholat-list');
   const nextEl = document.getElementById('sholat-next');
   const locEl = document.getElementById('sholat-loc');
-  listEl.innerHTML = '<div class="empty-state">Menghitung jadwalÃ¢â‚¬Â¦</div>';
+  listEl.innerHTML = '<div class="empty-state">Menghitung jadwal…</div>';
   nextEl.style.display = 'none';
-  locEl.textContent = 'Mengambil lokasiÃ¢â‚¬Â¦';
+  locEl.textContent = 'Mengambil lokasi…';
   const getCoords = () => new Promise(res => {
     if(!navigator.geolocation) return res(null);
     navigator.geolocation.getCurrentPosition(p => res({ lat:p.coords.latitude, lng:p.coords.longitude }), () => res(null), { timeout:6000 });
@@ -2669,7 +2670,7 @@ async function loadSholat(){
       const gp = x => (pp.find(p => p.type === x) || {}).value || '';
       hij = gp('day') + ' ' + gp('month') + ' ' + gp('year') + ' H';
     }catch(e){}
-    locEl.textContent = (c ? 'Lokasi kamu' : 'Kairo, Mesir') + (hij ? ' Ã‚Â· ' + hij : '') + ' Ã‚Â· ' + m.label;
+    locEl.textContent = (c ? 'Lokasi kamu' : 'Kairo, Mesir') + (hij ? ' · ' + hij : '') + ' · ' + m.label;
     const prayers = [
       ['Subuh', t.Fajr], ['Terbit', t.Sunrise], ['Dzuhur', t.Dhuhr], ['Ashar', t.Asr], ['Maghrib', t.Maghrib], ['Isya', t.Isha]
     ].map(p => ({ name:p[0], hm:p[1] }));
@@ -2701,7 +2702,7 @@ function renderSholat(prayers){
     const hh = String(Math.floor(diff/3600)).padStart(2,'0');
     const mi = String(Math.floor((diff%3600)/60)).padStart(2,'0');
     const ss = String(diff%60).padStart(2,'0');
-    nextEl.innerHTML = '<div class="lbl">Menuju ' + next.name + '</div><div class="nm">' + next.hm + '</div><div class="cd">Ã¢Ë†â€™ ' + hh + ':' + mi + ':' + ss + '</div>';
+    nextEl.innerHTML = '<div class="lbl">Menuju ' + next.name + '</div><div class="nm">' + next.hm + '</div><div class="cd">− ' + hh + ':' + mi + ':' + ss + '</div>';
   };
   tick();
   if(sholatTimer) clearInterval(sholatTimer);
@@ -2737,7 +2738,7 @@ function renderKalender(){
   document.getElementById('kal-title').textContent = bulanID[calMonth] + ' ' + calYear;
   const h1 = hijriParts(first), h2 = hijriParts(last);
   document.getElementById('kal-sub').textContent = (h1 && h2)
-    ? (h1.month === h2.month ? h1.month + ' ' + h1.year : h1.month + ' Ã¢â‚¬â€œ ' + h2.month + ' ' + h2.year) + ' H'
+    ? (h1.month === h2.month ? h1.month + ' ' + h1.year : h1.month + ' – ' + h2.month + ' ' + h2.year) + ' H'
     : '';
   const dow = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
   let html = dow.map(d => '<div class="kal-dow">' + d + '</div>').join('');
@@ -2757,7 +2758,7 @@ function renderKalender(){
 }
 
 function shareApp(){
-  const shareData = { title: 'Nuqto', text: 'Peta komunitas Masisir Kairo Ã¢â‚¬â€ Maqom Ulama, info rumah, & jadwal talaqqi.', url: location.href };
+  const shareData = { title: 'Nuqto', text: 'Peta komunitas Masisir Kairo — Maqom Ulama, info rumah, & jadwal talaqqi.', url: location.href };
   if(navigator.share){
     navigator.share(shareData).catch(() => {});
   } else {
@@ -2830,7 +2831,7 @@ function authTab(mode){
   document.getElementById('tab-daftar').classList.toggle('active', mode === 'daftar');
   document.getElementById('auth-msg').textContent = mode === 'masuk'
     ? 'Masuk dengan email & password kamu.'
-    : 'Daftar akun baru Ã¢â‚¬â€ kode verifikasi akan dikirim ke email.';
+    : 'Daftar akun baru — kode verifikasi akan dikirim ke email.';
   document.getElementById('auth-password').setAttribute('autocomplete', mode === 'masuk' ? 'current-password' : 'new-password');
   document.getElementById('auth-submit-btn').textContent = mode === 'masuk' ? 'Masuk' : 'Daftar';
   document.getElementById('auth-name-wrap').style.display = mode === 'daftar' ? '' : 'none';
@@ -2872,12 +2873,12 @@ async function authSubmit(){
   btn.disabled = true; const lbl = btn.textContent;
 
   if(authMode === 'masuk'){
-    btn.textContent = 'MasukÃ¢â‚¬Â¦';
+    btn.textContent = 'Masuk…';
     const { error } = await sb.auth.signInWithPassword({ email, password });
     btn.disabled = false; btn.textContent = lbl;
     if(error){
       const m = (error.message || '').toLowerCase();
-      if(m.includes('not confirmed')){ showToast('Email belum diverifikasi Ã¢â‚¬â€ masukkan kode'); closeAuth(); openOtp(email); return; }
+      if(m.includes('not confirmed')){ showToast('Email belum diverifikasi — masukkan kode'); closeAuth(); openOtp(email); return; }
       showToast('Gagal masuk: email/password salah'); return;
     }
     closeAuth();
@@ -2885,7 +2886,7 @@ async function authSubmit(){
   } else {
     const name = document.getElementById('auth-name').value.trim();
     if(!name){ showToast('Isi nama kamu dulu'); btn.disabled = false; return; }
-    btn.textContent = 'MendaftarÃ¢â‚¬Â¦';
+    btn.textContent = 'Mendaftar…';
     const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
     btn.disabled = false; btn.textContent = lbl;
     if(error){ showToast('Gagal daftar: ' + error.message); return; }
@@ -2939,13 +2940,13 @@ async function verifyOtpCode(){
   const token = collectOtp();
   if(token.length < 6){ showToast('Masukkan 6 digit kode'); return; }
   const btn = document.getElementById('otp-verify-btn');
-  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'MemverifikasiÃ¢â‚¬Â¦';
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Memverifikasi…';
   let { error } = await sb.auth.verifyOtp({ email: authEmail, token, type: 'signup' });
   if(error){ const r = await sb.auth.verifyOtp({ email: authEmail, token, type: 'email' }); error = r.error; }
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Kode salah / kadaluarsa: ' + error.message); return; }
   closeOtp();
-  showToast('Email terverifikasi Ã¢â‚¬â€ kamu sudah masuk');
+  showToast('Email terverifikasi — kamu sudah masuk');
 }
 
 async function resendOtp(){
@@ -2960,7 +2961,7 @@ async function logout(){
 }
 
 /* ============================================================
-   ADMIN Ã¢â‚¬â€ persetujuan titik
+   ADMIN — persetujuan titik
    ============================================================ */
 const CAT_LABEL = { maqom: 'Maqom', blacklist: 'Blacklist', razia: 'Talaqqi' };
 
@@ -2973,14 +2974,14 @@ function closeAdmin(){ document.getElementById('page-admin').classList.remove('o
 
 async function loadPendingAdmin(){
   const list = document.getElementById('admin-list');
-  list.innerHTML = '<div class="empty-state">MemuatÃ¢â‚¬Â¦</div>';
+  list.innerHTML = '<div class="empty-state">Memuat…</div>';
   const cats = ['maqom','blacklist','razia'];
   let items = [];
   for(const cat of cats){
     const { data, error } = await sb.from(TABLE[cat]).select('*').eq('status','pending').order('created_at',{ascending:true});
     if(!error && data) items = items.concat(data.map(r => ({ ...r, _cat: cat })));
   }
-  if(!items.length){ list.innerHTML = '<div class="empty-state">Tidak ada titik menunggu persetujuan. Ã°Å¸Å½â€°</div>'; return; }
+  if(!items.length){ list.innerHTML = '<div class="empty-state">Tidak ada titik menunggu persetujuan. 🎉</div>'; return; }
   list.innerHTML = items.map(i => `
     <div class="job-card" id="pend-${i.id}">
       <div class="job-tag">${CAT_LABEL[i._cat]}</div>
@@ -3049,11 +3050,11 @@ async function deletePin(cat, id){
 }
 
 /* ============================================================
-   LOWONGAN (jobs) Ã¢â‚¬â€ dari Supabase
+   LOWONGAN (jobs) — dari Supabase
    ============================================================ */
 async function loadJobs(){
   const list = document.getElementById('job-list');
-  list.innerHTML = '<div class="empty-state">Memuat lowonganÃ¢â‚¬Â¦</div>';
+  list.innerHTML = '<div class="empty-state">Memuat lowongan…</div>';
   const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
   if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
   if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada lowongan. ' + (currentUser ? 'Tekan + untuk memasang.' : 'Masuk untuk memasang lowongan.') + '</div>'; return; }
@@ -3130,12 +3131,12 @@ async function submitJob(){
   };
   const btn = document.getElementById('job-submit-btn');
   const prevLabel = btn.textContent;
-  btn.disabled = true; btn.textContent = 'MenyimpanÃ¢â‚¬Â¦';
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
   try{
     if(jobEditId){
       const { data, error } = await sb.from('jobs').update(payload).eq('id', jobEditId).select();
       if(error){ showToast('Gagal simpan: ' + error.message); return; }
-      if(!data || !data.length){ showToast('Tidak bisa menyimpan Ã¢â‚¬â€ hanya pemilik/admin yang bisa mengedit lowongan ini'); return; }
+      if(!data || !data.length){ showToast('Tidak bisa menyimpan — hanya pemilik/admin yang bisa mengedit lowongan ini'); return; }
       showToast('Lowongan diperbarui');
     } else {
       const { data, error } = await sb.from('jobs').insert(payload).select();
@@ -3143,7 +3144,7 @@ async function submitJob(){
       showToast('Lowongan berhasil dipasang');
     }
   } catch(e){
-    showToast('Gagal menyimpan Ã¢â‚¬â€ cek koneksi lalu coba lagi');
+    showToast('Gagal menyimpan — cek koneksi lalu coba lagi');
     return;
   } finally {
     btn.disabled = false; btn.textContent = prevLabel;
@@ -3178,13 +3179,13 @@ function jobMenuDelete(){
 async function deleteJob(id){
   const { data, error } = await sb.from('jobs').delete().eq('id', id).select();
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
-  if(!data || !data.length){ showToast('Tidak bisa menghapus Ã¢â‚¬â€ hanya pemilik/admin'); return; }
+  if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
   showToast('Lowongan dihapus');
   loadJobs();
 }
 
 /* ============================================================
-   PUSAT INFORMASI (info posts) Ã¢â‚¬â€ foto + caption
+   PUSAT INFORMASI (info posts) — foto + caption
    ============================================================ */
 let infoPhotoFile = null;
 
@@ -3217,7 +3218,7 @@ function closeInfo(){ document.getElementById('page-info').classList.remove('ope
 
 async function loadInfoPosts(){
   const list = document.getElementById('info-list');
-  list.innerHTML = '<div class="empty-state">MemuatÃ¢â‚¬Â¦</div>';
+  list.innerHTML = '<div class="empty-state">Memuat…</div>';
   const { data, error } = await sb.from('info_posts').select('*').order('created_at', { ascending: false }).limit(100);
   if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
   if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada informasi. ' + (currentUser ? 'Tekan + untuk posting.' : 'Masuk untuk memposting.') + '</div>'; return; }
@@ -3291,12 +3292,12 @@ async function submitInfo(){
   let photo_url = null;
   try{
     if(infoPhotoFile){
-      btn.textContent = 'Mengompres & unggahÃ¢â‚¬Â¦';
+      btn.textContent = 'Mengompres & unggah…';
       const compressed = await compressImage(infoPhotoFile);
       photo_url = await uploadPhoto(compressed);
     }
-  } catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal upload foto Ã¢â‚¬â€ coba lagi'); return; }
-  btn.textContent = 'MempostingÃ¢â‚¬Â¦';
+  } catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal upload foto — coba lagi'); return; }
+  btn.textContent = 'Memposting…';
   const author_name = (currentUser.user_metadata && currentUser.user_metadata.name) || 'Pengguna';
   const { error } = await sb.from('info_posts').insert({ caption: caption || null, photo_url, author_name });
   btn.disabled = false; btn.textContent = lbl;
@@ -3328,10 +3329,10 @@ function closeEmergencyConfirm(){ document.getElementById('emg-confirm').classLi
 async function confirmEmergency(){
   if(!isLoggedIn()){ closeEmergencyConfirm(); openAuth('Masuk dulu untuk mengirim laporan darurat.'); return; }
   const btn = document.getElementById('emg-confirm-btn');
-  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Mengambil lokasiÃ¢â‚¬Â¦';
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Mengambil lokasi…';
   let coords;
   try{ coords = await getUserLatLng(); }
-  catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi Ã¢â‚¬â€ aktifkan izin lokasi di HP'); return; }
+  catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
   // nonaktifkan alert aktif lama milik sendiri (cegah penumpukan; RLS batasi ke baris sendiri)
   await sb.from('emergency_alerts').update({ active: false }).eq('active', true);
   // anonim: jangan simpan/siarkan nama atau email pengirim (privasi). user_id tetap terekam via trigger.
@@ -3347,7 +3348,7 @@ async function confirmEmergency(){
   // broadcast push notification anonim ke semua user (termasuk yang app-nya tertutup)
   sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1], senderEndpoint } }).catch(() => {});
   closeEmergencyConfirm();
-  showToast('Ã°Å¸Å¡Â¨ Laporan terkirim Ã¢â‚¬â€ lokasimu sedang disiarkan live. Biarkan Nuqto terbuka.');
+  showToast('🚨 Laporan terkirim — lokasimu sedang disiarkan live. Biarkan Nuqto terbuka.');
 }
 
 /* ----- sender: siarkan lokasi live lintas-halaman ----- */
@@ -3378,7 +3379,7 @@ async function iAmSafe(){
   myAlertId = null; myLastCoords = null;
   closeHelpMap();
   hideDangerBanner();
-  showToast('Penyiaran lokasi dihentikan. Semoga kamu aman. Ã°Å¸Â¤Â²');
+  showToast('Penyiaran lokasi dihentikan. Semoga kamu aman. 🤲');
 }
 
 function showDangerBanner(){ document.getElementById('danger-banner').classList.add('show'); }
@@ -3443,7 +3444,7 @@ async function enablePush(){
     }
     const ok = await savePushSubscription(sub);
     if(!ok){ showToast('Gagal simpan langganan'); return; }
-    showToast('Ã¢Å“â€¦ Notifikasi darurat aktif di perangkat ini');
+    showToast('✅ Notifikasi darurat aktif di perangkat ini');
     updatePushLabel();
   } catch(e){ showToast('Gagal aktifkan notifikasi: ' + (e.message || e)); }
 }
@@ -3454,7 +3455,7 @@ async function updatePushLabel(){
     if(('Notification' in window) && Notification.permission === 'granted' && ('serviceWorker' in navigator)){
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
-      label.textContent = sub ? 'Notifikasi darurat: Aktif Ã¢Å“â€œ' : 'Aktifkan Notifikasi Darurat';
+      label.textContent = sub ? 'Notifikasi darurat: Aktif ✓' : 'Aktifkan Notifikasi Darurat';
     } else {
       label.textContent = 'Aktifkan Notifikasi Darurat';
     }
@@ -3469,7 +3470,7 @@ function showIncomingEmergency(a){
   if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]);
 }
 function closeEmergencyIncoming(){
-  if(incomingAlert) addDismissedAlert(incomingAlert.id); // klik "Tutup" Ã¢â€ â€™ jangan munculkan popup ini lagi
+  if(incomingAlert) addDismissedAlert(incomingAlert.id); // klik "Tutup" → jangan munculkan popup ini lagi
   document.getElementById('emg-incoming').classList.remove('open');
 }
 function openEmergencyMaps(){
@@ -3496,7 +3497,7 @@ function openLiveTrack(){
   placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
   trackMap.setView([incomingAlert.lat, incomingAlert.lng], 16);
   const st = document.getElementById('track-status');
-  st.textContent = 'Live Ã‚Â· memantau pergerakan'; st.className = 'track-status live';
+  st.textContent = 'Live · memantau pergerakan'; st.className = 'track-status live';
   lastRouteTs = Date.now();
   drawTrackRoute();
 
@@ -3509,7 +3510,7 @@ function openLiveTrack(){
       const now = Date.now();
       if(a.lat != null && now - lastRouteTs > 20000){ lastRouteTs = now; drawTrackRoute(); } // perbarui rute mengikuti pergerakan
       if(a.active === false){
-        st.textContent = 'Selesai Ã‚Â· user menandai sudah aman Ã¢Å“â€œ'; st.className = 'track-status done';
+        st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done';
         addDismissedAlert(a.id);
         if(respondState.active && respondState.alertId === a.id) stopRespond();
       }
@@ -3537,7 +3538,7 @@ async function drawTrackRoute(){
     const km = (data.routes[0].distance / 1000).toFixed(1);
     const menit = Math.round(data.routes[0].duration / 60);
     const dist = document.getElementById('track-dist');
-    if(dist){ dist.textContent = `Rute ~${km} km Ã‚Â· ${menit} menit jalan kaki`; dist.style.display = ''; }
+    if(dist){ dist.textContent = `Rute ~${km} km · ${menit} menit jalan kaki`; dist.style.display = ''; }
   } catch(e){ /* koneksi */ }
 }
 
@@ -3577,7 +3578,7 @@ function addDismissedAlert(id){ if(!id) return; const d = getDismissedAlerts(); 
 function ignoreTrackBanner(){ if(incomingAlert) addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
 
 /* ============================================================
-   PENOLONG: tombol "Saya menuju ke sana" Ã¢â‚¬â€ siarkan lokasi live ke korban
+   PENOLONG: tombol "Saya menuju ke sana" — siarkan lokasi live ke korban
    ============================================================ */
 let respondState = { active:false, alertId:null, watchId:null, lastSent:0 };
 
@@ -3585,7 +3586,7 @@ function setRespondBtn(going){
   const btn = document.getElementById('track-respond-btn');
   const lbl = document.getElementById('track-respond-label');
   if(!btn || !lbl) return;
-  if(going){ btn.classList.add('going'); lbl.textContent = 'Sedang menuju Ã‚Â· batal'; }
+  if(going){ btn.classList.add('going'); lbl.textContent = 'Sedang menuju · batal'; }
   else { btn.classList.remove('going'); lbl.textContent = 'Saya menuju ke sana'; }
 }
 
@@ -3597,7 +3598,7 @@ async function toggleRespond(){
   const btn = document.getElementById('track-respond-btn');
   const lbl = document.getElementById('track-respond-label');
   if(btn) btn.disabled = true;
-  if(lbl) lbl.textContent = 'Mengambil lokasiÃ¢â‚¬Â¦';
+  if(lbl) lbl.textContent = 'Mengambil lokasi…';
   let coords;
   try{ coords = await getUserLatLng(); }
   catch(e){ if(btn) btn.disabled = false; setRespondBtn(false); showToast('Aktifkan izin lokasi untuk membantu'); return; }
@@ -3609,7 +3610,7 @@ async function toggleRespond(){
   if(error){ setRespondBtn(false); showToast('Gagal: ' + error.message); return; }
   respondState.active = true; respondState.alertId = alertId; respondState.lastSent = Date.now();
   setRespondBtn(true);
-  showToast('Kamu menuju lokasi Ã¢â‚¬â€ posisimu dibagikan ke korban');
+  showToast('Kamu menuju lokasi — posisimu dibagikan ke korban');
   if(navigator.geolocation){
     if(respondState.watchId != null) navigator.geolocation.clearWatch(respondState.watchId);
     respondState.watchId = navigator.geolocation.watchPosition(async (pos) => {
@@ -3635,7 +3636,7 @@ async function stopRespond(){
 }
 
 /* ============================================================
-   KORBAN: peta bantuan Ã¢â‚¬â€ lihat penolong yang menuju (live). Hanya korban yang bisa lihat.
+   KORBAN: peta bantuan — lihat penolong yang menuju (live). Hanya korban yang bisa lihat.
    ============================================================ */
 let helpMap = null, helpVictimMarker = null, helpChannel = null;
 let helpResponderMarkers = {}; // user_id -> marker
@@ -3686,7 +3687,7 @@ async function loadResponders(){
   const el = document.getElementById('help-count');
   if(el){
     el.className = 'track-status live';
-    el.textContent = n > 0 ? (n + ' orang sedang menuju ke kamu') : 'Mencari bantuan terdekatÃ¢â‚¬Â¦';
+    el.textContent = n > 0 ? (n + ' orang sedang menuju ke kamu') : 'Mencari bantuan terdekat…';
   }
 }
 
@@ -3730,7 +3731,7 @@ function initEmergencyRealtime(){
       if(safeNotified.has(a.id)) return;   // cegah pemrosesan/notif ganda
       safeNotified.add(a.id);
       addDismissedAlert(a.id);
-      // penerima: kalau banner/modal yang tampil untuk alert ini Ã¢â€ â€™ hilangkan secara real time
+      // penerima: kalau banner/modal yang tampil untuk alert ini → hilangkan secara real time
       if(incomingAlert && incomingAlert.id === a.id){
         hideTrackBanner();
         closeEmergencyIncoming();
@@ -3764,7 +3765,7 @@ async function initAuth(){
     currentUser = (data && data.session && data.session.user) || null;
   } catch(e){ currentUser = null; }
   updateAuthUI();
-  checkActiveEmergency(new URLSearchParams(location.search).has('emg')); // dibuka dari notifikasi darurat Ã¢â€ â€™ paksa tampilkan popup
+  checkActiveEmergency(new URLSearchParams(location.search).has('emg')); // dibuka dari notifikasi darurat → paksa tampilkan popup
   sb.auth.onAuthStateChange((_event, session) => {
     const prev = currentUser ? currentUser.id : null;
     currentUser = (session && session.user) || null;
@@ -3795,12 +3796,12 @@ window.addEventListener('load', () => {
 
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('/sw.js').then(reg => { try{ reg.update(); }catch(e){} }).catch(err => console.warn('SW gagal daftar:', err));
-    // saat notifikasi darurat diklik, SW mengirim pesan ini Ã¢â€ â€™ tampilkan popup di dalam app
+    // saat notifikasi darurat diklik, SW mengirim pesan ini → tampilkan popup di dalam app
     navigator.serviceWorker.addEventListener('message', (event) => {
       if(event.data && event.data.type === 'show-emergency'){ checkActiveEmergency(true); }
     });
   }
-  // iOS PWA sering menahan realtime saat app di belakang Ã¢â€ â€™ segarkan badge & cek darurat tiap app kembali ke depan
+  // iOS PWA sering menahan realtime saat app di belakang → segarkan badge & cek darurat tiap app kembali ke depan
   document.addEventListener('visibilitychange', () => {
     if(document.visibilityState === 'visible'){ updateNotifBadge(); checkActiveEmergency(); refreshJobBadge(); }
   });
