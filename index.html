@@ -617,7 +617,7 @@
   }
   /* mode lembar: geser horizontal per halaman mushaf */
   .mushaf-viewport{
-    flex:1; display:flex; overflow-x:auto; overflow-y:hidden;
+    flex:1; display:flex; direction:rtl; overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;
   }
   .mushaf-viewport::-webkit-scrollbar{ display:none; }
@@ -630,6 +630,33 @@
     text-align:center; font-size:11.5px; font-weight:600; color:var(--muted);
     margin-top:20px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06);
   }
+
+  /* ---- arah kiblat ---- */
+  .qibla-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:24px 20px; }
+  .qibla-compass{ position:relative; width:240px; height:240px; margin:6px auto 22px; }
+  .qibla-dial{ position:absolute; inset:0; border-radius:50%; background:#fff; border:2px solid var(--line); box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+  .qibla-dial .dir{ position:absolute; font-size:13px; font-weight:800; color:var(--muted-2); }
+  .qibla-dial .dir.n{ top:9px; left:50%; transform:translateX(-50%); color:var(--rust); }
+  .qibla-dial .dir.s{ bottom:9px; left:50%; transform:translateX(-50%); }
+  .qibla-dial .dir.e{ right:11px; top:50%; transform:translateY(-50%); }
+  .qibla-dial .dir.w{ left:11px; top:50%; transform:translateY(-50%); }
+  .qibla-needle{ position:absolute; inset:0; transition:transform .12s ease-out; transform-origin:50% 50%; }
+  .qibla-info{ font-size:14px; line-height:1.6; color:var(--ink-2); max-width:280px; margin-bottom:16px; }
+  .qibla-info b{ color:var(--maqom-deep); }
+  .qibla-hint{ font-size:12.5px; color:var(--muted); margin-top:4px; }
+
+  /* ---- jadwal sholat ---- */
+  .sholat-loc{ font-size:13px; color:var(--muted); text-align:center; margin-bottom:14px; }
+  .sholat-next{ border-radius:18px; padding:18px; text-align:center; margin-bottom:16px;
+    background:linear-gradient(120deg,#1C5C42,#0E3626); color:#fff; box-shadow:0 10px 26px rgba(14,54,38,0.22); }
+  .sholat-next .lbl{ font-size:12px; opacity:.8; }
+  .sholat-next .nm{ font-size:24px; font-weight:800; margin-top:2px; }
+  .sholat-next .cd{ font-family:'JetBrains Mono',monospace; font-size:15px; margin-top:4px; color:#EAD9A6; }
+  .sholat-row{ display:flex; align-items:center; justify-content:space-between; padding:15px 6px; border-bottom:1px solid rgba(0,0,0,0.06); }
+  .sholat-row.active{ background:var(--soft-green); border-radius:12px; padding-left:14px; padding-right:14px; border-bottom-color:transparent; }
+  .sholat-name{ font-size:15px; font-weight:600; color:var(--ink); }
+  .sholat-row.active .sholat-name{ color:var(--maqom-deep); font-weight:800; }
+  .sholat-time{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:var(--maqom); }
 
   .toast{
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%) translateY(10px);
@@ -971,6 +998,41 @@
         <span class="lib-card-sub">30 Juz</span>
       </button>
     </div>
+
+    <!-- IBADAH -->
+    <div class="section-head reveal d4" style="margin-top:22px; margin-bottom:10px;">
+      <div class="st">Ibadah</div>
+    </div>
+    <div class="lib-row reveal d4">
+      <button class="lib-card" onclick="openQibla()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="23" fill="#0E3626"/>
+            <circle cx="32" cy="32" r="23" fill="none" stroke="#BE9A46" stroke-width="1.4"/>
+            <polygon points="32,14 38,34 32,29 26,34" fill="#BE9A46"/>
+            <polygon points="32,50 26,30 32,35 38,30" fill="#E9E4D7"/>
+            <circle cx="32" cy="32" r="2.6" fill="#fff"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Arah Kiblat</span>
+        <span class="lib-card-sub">Kompas</span>
+      </button>
+      <button class="lib-card" onclick="openSholat()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="13" y="21" width="3" height="33" fill="#0E3626"/>
+            <rect x="48" y="21" width="3" height="33" fill="#0E3626"/>
+            <path d="M18 34 Q32 15 46 34 Z" fill="#0E3626"/>
+            <line x1="32" y1="14" x2="32" y2="19" stroke="#BE9A46" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="32" cy="12.5" r="1.6" fill="#BE9A46"/>
+            <rect x="18" y="33" width="28" height="21" rx="2" fill="#0E3626"/>
+            <path d="M28 54 V44 a4 4 0 0 1 8 0 V54 Z" fill="#BE9A46"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Jadwal Sholat</span>
+        <span class="lib-card-sub">Hari ini</span>
+      </button>
+    </div>
     </div>
   </div>
 </div>
@@ -1174,6 +1236,52 @@
     <div id="surah-title" class="font-display" style="font-size:19px; font-weight:700; flex:1;">Surah</div>
   </div>
   <div id="surah-body" class="mushaf-viewport"></div>
+</div>
+
+<!-- ===================== OVERLAY : ARAH KIBLAT ===================== -->
+<div id="page-qibla" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeQibla()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Arah Kiblat</div>
+  </div>
+  <div class="scroll-page" style="padding-top:10px;">
+    <div class="qibla-wrap">
+      <div class="qibla-compass">
+        <div class="qibla-dial">
+          <span class="dir n">U</span><span class="dir e">T</span><span class="dir s">S</span><span class="dir w">B</span>
+        </div>
+        <div id="qibla-needle" class="qibla-needle">
+          <svg width="240" height="240" viewBox="0 0 240 240">
+            <line x1="120" y1="120" x2="120" y2="46" stroke="#0E3626" stroke-width="4" stroke-linecap="round"/>
+            <polygon points="120,30 111,50 129,50" fill="#0E3626"/>
+            <rect x="112" y="26" width="16" height="13" rx="2" fill="#0E3626"/>
+            <rect x="115" y="29" width="10" height="7" fill="#BE9A46"/>
+            <circle cx="120" cy="120" r="7" fill="#BE9A46"/>
+          </svg>
+        </div>
+      </div>
+      <div id="qibla-info" class="qibla-info">Mengambil lokasi…</div>
+      <button id="qibla-enable" class="btn-primary maqom" style="display:none; max-width:240px;" onclick="enableCompass()">Aktifkan Kompas</button>
+      <div id="qibla-hint" class="qibla-hint" style="display:none;">Putar HP perlahan hingga Ka'bah tepat di atas — itu arah kiblat.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : JADWAL SHOLAT ===================== -->
+<div id="page-sholat" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeSholat()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Jadwal Sholat</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <div id="sholat-loc" class="sholat-loc">Memuat lokasi…</div>
+    <div id="sholat-next" class="sholat-next" style="display:none;"></div>
+    <div id="sholat-list"></div>
+  </div>
 </div>
 
 <!-- ===================== OVERLAY : PANEL ADMIN ===================== -->
@@ -2372,6 +2480,138 @@ async function openSurah(num, title){
   }catch(e){
     body.innerHTML = '<div class="empty-state" style="margin:auto;">Gagal memuat surah. Cek koneksi lalu coba lagi.</div>';
   }
+}
+
+/* ---------- arah kiblat ---------- */
+let qiblaDeg = null, qiblaOrientHandler = null;
+function qiblaBearing(lat, lng){
+  const toR = Math.PI/180;
+  const kLat = 21.4225 * toR, kLng = 39.8262 * toR;
+  const p1 = lat * toR, dL = kLng - lng * toR;
+  const y = Math.sin(dL);
+  const x = Math.cos(p1) * Math.tan(kLat) - Math.sin(p1) * Math.cos(dL);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+function haversineKm(lat1, lng1, lat2, lng2){
+  const toR = Math.PI/180, R = 6371;
+  const dLat = (lat2-lat1)*toR, dLng = (lng2-lng1)*toR;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function setNeedle(deg){ const n = document.getElementById('qibla-needle'); if(n) n.style.transform = 'rotate(' + deg + 'deg)'; }
+function openQibla(){
+  document.getElementById('page-qibla').classList.add('open');
+  const info = document.getElementById('qibla-info');
+  const btn = document.getElementById('qibla-enable');
+  document.getElementById('qibla-hint').style.display = 'none';
+  btn.style.display = 'none';
+  info.textContent = 'Mengambil lokasi…';
+  if(!navigator.geolocation){ info.textContent = 'Perangkat tidak mendukung lokasi.'; return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    qiblaDeg = qiblaBearing(lat, lng);
+    const dist = haversineKm(lat, lng, 21.4225, 39.8262);
+    info.innerHTML = 'Arah kiblat <b>' + Math.round(qiblaDeg) + '°</b> dari Utara<br>± ' + Math.round(dist).toLocaleString('id-ID') + ' km ke Makkah';
+    setNeedle(qiblaDeg);
+    btn.style.display = '';
+  }, () => {
+    info.textContent = 'Gagal ambil lokasi. Izinkan akses lokasi lalu buka lagi.';
+  }, { enableHighAccuracy:true, timeout:10000 });
+}
+function closeQibla(){
+  document.getElementById('page-qibla').classList.remove('open');
+  if(qiblaOrientHandler){
+    window.removeEventListener('deviceorientationabsolute', qiblaOrientHandler, true);
+    window.removeEventListener('deviceorientation', qiblaOrientHandler, true);
+    qiblaOrientHandler = null;
+  }
+}
+function enableCompass(){
+  const start = () => {
+    qiblaOrientHandler = (e) => {
+      let heading = null;
+      if(typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
+      else if(typeof e.alpha === 'number') heading = 360 - e.alpha;
+      if(heading == null || qiblaDeg == null) return;
+      setNeedle(qiblaDeg - heading);
+    };
+    window.addEventListener('deviceorientationabsolute', qiblaOrientHandler, true);
+    window.addEventListener('deviceorientation', qiblaOrientHandler, true);
+    document.getElementById('qibla-enable').style.display = 'none';
+    document.getElementById('qibla-hint').style.display = '';
+  };
+  if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+    DeviceOrientationEvent.requestPermission()
+      .then(res => { if(res === 'granted') start(); else showToast('Izin kompas ditolak'); })
+      .catch(() => showToast('Kompas tidak tersedia di perangkat ini'));
+  } else { start(); }
+}
+
+/* ---------- jadwal sholat ---------- */
+let sholatTimer = null;
+function openSholat(){ document.getElementById('page-sholat').classList.add('open'); loadSholat(); }
+function closeSholat(){
+  document.getElementById('page-sholat').classList.remove('open');
+  if(sholatTimer){ clearInterval(sholatTimer); sholatTimer = null; }
+}
+async function loadSholat(){
+  const listEl = document.getElementById('sholat-list');
+  const nextEl = document.getElementById('sholat-next');
+  const locEl = document.getElementById('sholat-loc');
+  listEl.innerHTML = '<div class="empty-state">Memuat jadwal…</div>';
+  nextEl.style.display = 'none';
+  locEl.textContent = 'Memuat lokasi…';
+  const getCoords = () => new Promise(res => {
+    if(!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(p => res({ lat:p.coords.latitude, lng:p.coords.longitude }), () => res(null), { timeout:6000 });
+  });
+  const c = await getCoords();
+  const lat = c ? c.lat : 30.0444, lng = c ? c.lng : 31.2357;
+  try{
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2,'0'), mm = String(d.getMonth()+1).padStart(2,'0'), yy = d.getFullYear();
+    const url = 'https://api.aladhan.com/v1/timings/' + dd + '-' + mm + '-' + yy + '?latitude=' + lat + '&longitude=' + lng + '&method=5';
+    const res = await fetch(url);
+    const json = await res.json();
+    const t = json.data.timings;
+    const h = json.data.date.hijri;
+    locEl.textContent = (c ? 'Lokasi kamu' : 'Kairo, Mesir') + (h ? ' · ' + h.day + ' ' + h.month.en + ' ' + h.year + ' H' : '');
+    const prayers = [
+      ['Subuh', t.Fajr], ['Terbit', t.Sunrise], ['Dzuhur', t.Dhuhr], ['Ashar', t.Asr], ['Maghrib', t.Maghrib], ['Isya', t.Isha]
+    ].map(p => ({ name:p[0], hm:String(p[1]).slice(0,5) }));
+    renderSholat(prayers);
+  }catch(e){
+    listEl.innerHTML = '<div class="empty-state">Gagal memuat jadwal. Cek koneksi lalu coba lagi.</div>';
+  }
+}
+function renderSholat(prayers){
+  const listEl = document.getElementById('sholat-list');
+  const nextEl = document.getElementById('sholat-next');
+  const toMin = hm => { const a = hm.split(':'); return (+a[0])*60 + (+a[1]); };
+  const now = new Date();
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const sched = prayers.filter(p => p.name !== 'Terbit');
+  const next = sched.find(p => toMin(p.hm) > nowMin) || sched[0];
+  listEl.innerHTML = prayers.map(p =>
+    '<div class="sholat-row ' + (p.name === next.name ? 'active' : '') + '">' +
+      '<span class="sholat-name">' + p.name + '</span>' +
+      '<span class="sholat-time">' + p.hm + '</span></div>'
+  ).join('');
+  nextEl.style.display = '';
+  const tick = () => {
+    const n2 = new Date();
+    const a = next.hm.split(':');
+    const target = new Date(); target.setHours(+a[0], +a[1], 0, 0);
+    if(target <= n2) target.setDate(target.getDate() + 1);
+    let diff = Math.max(0, Math.floor((target - n2) / 1000));
+    const hh = String(Math.floor(diff/3600)).padStart(2,'0');
+    const mi = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+    const ss = String(diff%60).padStart(2,'0');
+    nextEl.innerHTML = '<div class="lbl">Menuju ' + next.name + '</div><div class="nm">' + next.hm + '</div><div class="cd">− ' + hh + ':' + mi + ':' + ss + '</div>';
+  };
+  tick();
+  if(sholatTimer) clearInterval(sholatTimer);
+  sholatTimer = setInterval(tick, 1000);
 }
 
 function shareApp(){
