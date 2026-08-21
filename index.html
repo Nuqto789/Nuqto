@@ -2653,7 +2653,15 @@ async function quickDisableAd(){
 
 /* ---------- rute jalan ke titik ---------- */
 function getUserLatLng(){
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    // app native: pakai plugin Geolocation Capacitor (lebih andal di WebView)
+    if(isNativeApp() && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation){
+      try{
+        await ensureNativeGeoPermission();
+        const pos = await window.Capacitor.Plugins.Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 8000 });
+        resolve([pos.coords.latitude, pos.coords.longitude]); return;
+      }catch(e){ reject(new Error('denied')); return; }
+    }
     if(!navigator.geolocation){ reject(new Error('no-geo')); return; }
     navigator.geolocation.getCurrentPosition(
       pos => resolve([pos.coords.latitude, pos.coords.longitude]),
@@ -4446,6 +4454,18 @@ async function registerNativePush(){
   }catch(e){ console.warn('registerNativePush gagal', e); return false; }
 }
 
+// minta izin lokasi di app native (Capacitor Geolocation) — memunculkan dialog izin Android
+async function ensureNativeGeoPermission(){
+  if(!isNativeApp()) return true;
+  const Geo = window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
+  if(!Geo) return true;
+  try{
+    let p = await Geo.checkPermissions();
+    if(p.location !== 'granted' && p.coarseLocation !== 'granted'){ p = await Geo.requestPermissions(); }
+    return (p.location === 'granted' || p.coarseLocation === 'granted');
+  }catch(e){ return false; }
+}
+
 window.addEventListener('load', () => {
   initMaps();
   initAuth();
@@ -4454,6 +4474,7 @@ window.addEventListener('load', () => {
   refreshJobBadge();
   setTimeout(updatePushLabel, 1500);
   setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
+  if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
