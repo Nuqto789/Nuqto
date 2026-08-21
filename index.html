@@ -631,6 +631,14 @@
   .about-dev-name{ font-size:17px; font-weight:800; }
   .about-dev-role{ font-size:12.5px; color:rgba(233,242,236,0.85); margin-top:3px; }
 
+  /* ---- iklan pop-up ---- */
+  .ad-backdrop{ position:fixed; inset:0; z-index:1100; display:none; align-items:center; justify-content:center; padding:28px; background:rgba(15,14,11,0.62); }
+  .ad-backdrop.open{ display:flex; }
+  .ad-card{ position:relative; width:100%; max-width:320px; }
+  .ad-card img{ width:100%; display:block; border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,0.45); }
+  .ad-close{ position:absolute; top:10px; right:10px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.55); border:none; color:#fff; font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
+  .ad-badge{ position:absolute; top:10px; left:10px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.45); padding:3px 8px; border-radius:6px; letter-spacing:.04em; z-index:2; }
+
   /* ---- pustaka (kartu horizontal: Al-Quran, dst) ---- */
   .lib-row{ display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:2px 0 6px; margin-bottom:22px; scrollbar-width:none; }
   .lib-row::-webkit-scrollbar{ display:none; }
@@ -1232,6 +1240,14 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
+    <button id="akun-ad-btn" class="menu-row" style="display:none;" onclick="openAdAdmin()">
+      <span class="menu-icon" style="background:rgba(190,154,70,0.16);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BE9A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+      </span>
+      <span class="menu-label">Iklan Pop-up</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <div class="section-title">Layanan</div>
     <button class="menu-row" onclick="openLowongan()">
       <span class="menu-icon" style="position:relative;">
@@ -1477,6 +1493,64 @@
         <div class="about-dev-role">Developer &amp; Creator of Nuqto</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===================== POP-UP IKLAN ===================== -->
+<div id="ad-popup" class="ad-backdrop" onclick="adBackdrop(event)">
+  <div class="ad-card">
+    <span class="ad-badge">Iklan</span>
+    <button class="ad-close" onclick="closeAd()" aria-label="Tutup">✕</button>
+    <a id="ad-link" href="#" target="_blank" rel="noopener" onclick="onAdClick(event)">
+      <img id="ad-img" src="" alt="Iklan" />
+    </a>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : IKLAN POP-UP (admin) ===================== -->
+<div id="page-ad-admin" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeAdAdmin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Iklan Pop-up</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <label class="field-label">Foto Iklan</label>
+    <div class="mb-4">
+      <input id="ad-photo-input" type="file" accept="image/*" style="display:none;" onchange="handleAdPhoto(event)">
+      <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('ad-photo-input').click()">Pilih Foto</button>
+      <div id="ad-photo-preview-wrap" class="hidden" style="margin-top:10px;">
+        <img id="ad-photo-preview" style="width:100%; max-height:300px; object-fit:contain; border-radius:12px; background:#f1f0ea;" />
+      </div>
+    </div>
+
+    <label class="field-label">Alamat Tujuan (URL)</label>
+    <input id="ad-target-input" class="field-input mb-1" type="text" placeholder="cth. instagram.com/tokomu atau wa.me/2010xxxxxxx">
+    <div style="font-size:11px; color:var(--muted); margin-bottom:16px;">Ke mana pengguna diarahkan saat mengetuk iklan. Boleh dikosongkan (iklan tidak bisa diklik).</div>
+
+    <label class="field-label">Tampil per hari (kali)</label>
+    <input id="ad-max-input" class="field-input mb-4" type="number" min="1" max="20" value="1">
+
+    <label class="field-label">Jadwal Tayang (opsional)</label>
+    <div style="display:flex; gap:10px; margin-bottom:4px;">
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:11px; color:var(--muted); margin-bottom:4px;">Mulai</div>
+        <input id="ad-start-input" class="field-input" type="date">
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:11px; color:var(--muted); margin-bottom:4px;">Berhenti</div>
+        <input id="ad-end-input" class="field-input" type="date">
+      </div>
+    </div>
+    <div style="font-size:11px; color:var(--muted); margin-bottom:16px;">Kosongkan jika ingin iklan tayang terus (selama status aktif).</div>
+
+    <label style="display:flex; align-items:center; gap:10px; margin:4px 0 22px; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer;">
+      <input id="ad-active-input" type="checkbox" style="width:18px; height:18px; accent-color:var(--maqom);"> Iklan aktif (tampilkan ke pengguna)
+    </label>
+
+    <button id="ad-save-btn" class="btn-primary maqom" onclick="saveAdConfig()">Simpan Iklan</button>
+    <button class="btn-ghost" onclick="quickDisableAd()" style="color:#DC2626;">Nonaktifkan iklan sekarang</button>
   </div>
 </div>
 
@@ -2398,6 +2472,93 @@ function openAbout(){
 }
 function closeAbout(){ document.getElementById('page-about').classList.remove('open'); }
 
+/* ---------- iklan pop-up ---------- */
+let adPhotoFile = null, adExistingImageUrl = null;
+function closeAdAdmin(){ document.getElementById('page-ad-admin').classList.remove('open'); }
+async function openAdAdmin(){
+  if(!isAdmin()){ showToast('Khusus admin'); return; }
+  adPhotoFile = null;
+  document.getElementById('ad-photo-input').value = '';
+  document.getElementById('page-ad-admin').classList.add('open');
+  const sc = document.querySelector('#page-ad-admin .scroll-page'); if(sc) sc.scrollTop = 0;
+  try{
+    const { data } = await sb.from('popup_ad').select('*').eq('id', 1).maybeSingle();
+    adExistingImageUrl = (data && data.image_url) || null;
+    document.getElementById('ad-target-input').value = (data && data.target_url) || '';
+    document.getElementById('ad-max-input').value = (data && data.max_per_day) || 1;
+    document.getElementById('ad-start-input').value = (data && data.start_date) || '';
+    document.getElementById('ad-end-input').value = (data && data.end_date) || '';
+    document.getElementById('ad-active-input').checked = !!(data && data.active);
+    const wrap = document.getElementById('ad-photo-preview-wrap');
+    const img = document.getElementById('ad-photo-preview');
+    if(adExistingImageUrl){ img.src = adExistingImageUrl; wrap.classList.remove('hidden'); }
+    else { img.src = ''; wrap.classList.add('hidden'); }
+  }catch(e){}
+}
+function handleAdPhoto(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  adPhotoFile = file;
+  document.getElementById('ad-photo-preview').src = URL.createObjectURL(file);
+  document.getElementById('ad-photo-preview-wrap').classList.remove('hidden');
+}
+async function saveAdConfig(){
+  const btn = document.getElementById('ad-save-btn');
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Menyimpan…';
+  try{
+    let imageUrl = adExistingImageUrl;
+    if(adPhotoFile){ imageUrl = await uploadPhoto(adPhotoFile); }
+    let target = document.getElementById('ad-target-input').value.trim();
+    if(target && !/^https?:\/\//i.test(target)) target = 'https://' + target;
+    const max = Math.max(1, Math.min(20, parseInt(document.getElementById('ad-max-input').value, 10) || 1));
+    const active = document.getElementById('ad-active-input').checked;
+    const startDate = document.getElementById('ad-start-input').value || null;
+    const endDate = document.getElementById('ad-end-input').value || null;
+    if(active && !imageUrl){ showToast('Pilih foto iklan dulu'); btn.disabled = false; btn.textContent = lbl; return; }
+    if(startDate && endDate && endDate < startDate){ showToast('Tanggal berhenti tidak boleh sebelum tanggal mulai'); btn.disabled = false; btn.textContent = lbl; return; }
+    const { error } = await sb.from('popup_ad').update({ image_url: imageUrl, target_url: target || null, max_per_day: max, active, start_date: startDate, end_date: endDate, updated_at: new Date().toISOString() }).eq('id', 1);
+    if(error) throw error;
+    adExistingImageUrl = imageUrl; adPhotoFile = null;
+    showToast('Iklan tersimpan ✓');
+    closeAdAdmin();
+  }catch(e){ showToast('Gagal menyimpan: ' + (e.message || e)); }
+  finally{ btn.disabled = false; btn.textContent = lbl; }
+}
+async function showAdOnce(){
+  try{
+    const { data } = await sb.from('popup_ad').select('image_url,target_url,max_per_day,active,start_date,end_date').eq('id', 1).maybeSingle();
+    if(!data || !data.active || !data.image_url) return;
+    const today = new Date().toISOString().slice(0, 10);
+    if(data.start_date && today < data.start_date) return;
+    if(data.end_date && today > data.end_date) return;
+    const key = 'nuqto_ad_' + today;
+    const shown = parseInt(localStorage.getItem(key) || '0', 10);
+    if(shown >= (data.max_per_day || 1)) return;
+    document.getElementById('ad-img').src = data.image_url;
+    const link = document.getElementById('ad-link');
+    const t = data.target_url || '';
+    link.dataset.target = t;
+    link.href = t || '#';
+    document.getElementById('ad-popup').classList.add('open');
+    localStorage.setItem(key, String(shown + 1));
+  }catch(e){}
+}
+function closeAd(){ document.getElementById('ad-popup').classList.remove('open'); }
+function onAdClick(e){
+  const t = document.getElementById('ad-link').dataset.target;
+  if(!t){ e.preventDefault(); return; }
+  setTimeout(closeAd, 150);
+}
+function adBackdrop(e){ if(e.target === e.currentTarget) closeAd(); }
+async function quickDisableAd(){
+  try{
+    const { error } = await sb.from('popup_ad').update({ active: false, updated_at: new Date().toISOString() }).eq('id', 1);
+    if(error) throw error;
+    const cb = document.getElementById('ad-active-input'); if(cb) cb.checked = false;
+    showToast('Iklan dinonaktifkan');
+  }catch(e){ showToast('Gagal: ' + (e.message || e)); }
+}
+
 /* ---------- rute jalan ke titik ---------- */
 function getUserLatLng(){
   return new Promise((resolve, reject) => {
@@ -2960,6 +3121,7 @@ function updateAuthUI(){
   const sub = document.getElementById('akun-sub');
   const authBtn = document.getElementById('akun-auth-btn');
   const adminBtn = document.getElementById('akun-admin-btn');
+  const adBtn = document.getElementById('akun-ad-btn');
   const addJobBtn = document.getElementById('addjob-btn');
   if(currentUser){
     const uname = (currentUser.user_metadata && currentUser.user_metadata.name) || '';
@@ -2968,11 +3130,13 @@ function updateAuthUI(){
     if(sub) sub.textContent = currentUser.email || 'Terdaftar';
     if(authBtn) authBtn.textContent = 'Keluar';
     if(adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
+    if(adBtn) adBtn.style.display = isAdmin() ? '' : 'none';
   } else {
     if(name) name.textContent = 'Tamu';
     if(sub) sub.textContent = 'Belum masuk';
     if(authBtn) authBtn.textContent = 'Masuk / Daftar';
     if(adminBtn) adminBtn.style.display = 'none';
+    if(adBtn) adBtn.style.display = 'none';
   }
   if(addJobBtn) addJobBtn.style.display = currentUser ? '' : 'none';
 }
@@ -3980,7 +4144,7 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     splash.classList.add('fade-out');
     applySafeBg(currentPage || 'home');
-    setTimeout(() => { splash.style.display = 'none'; }, 650);
+    setTimeout(() => { splash.style.display = 'none'; showAdOnce(); }, 650);
   }, 2200);
 });
 </script>
