@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuqto-shell-v4';
+const CACHE_NAME = 'nuqto-shell-v5';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -74,11 +74,13 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil((async () => {
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of clientList) {
+      // ada tab Nuqto terbuka → fokuskan & minta app menampilkan popup darurat
       if ('focus' in client) {
         try { client.postMessage({ type: 'show-emergency' }); } catch (e) { /* ignore */ }
         return client.focus();
       }
     }
+    // tidak ada tab terbuka → buka app dengan penanda ?emg=1 supaya popup langsung muncul
     if (clients.openWindow) return clients.openWindow('/?emg=1');
   })());
 });
