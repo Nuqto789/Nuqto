@@ -575,6 +575,62 @@
   .g-hotline .hl-num{ font-size:16px; font-weight:800; color:#fff; letter-spacing:0.01em; margin-top:2px; }
   .g-hotline a{ color:#fff; text-decoration:none; }
 
+  /* ---- tentang nuqto (fullscreen) ---- */
+  .about-hero{
+    flex-shrink:0; position:relative; color:#fff;
+    background-color:#0E3626; background-image:var(--starpat); background-size:80px 80px;
+    padding:calc(env(safe-area-inset-top,0px) + 18px) 22px 34px;
+  }
+  .about-back{
+    position:absolute; top:calc(env(safe-area-inset-top,0px) + 14px); left:14px;
+    width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.15);
+    border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .about-back:active{ background:rgba(255,255,255,0.28); }
+  .about-hero-inner{ text-align:center; padding-top:30px; }
+  .about-logo{
+    width:64px; height:64px; border-radius:18px; margin:0 auto 14px; overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,0.28);
+  }
+  .about-logo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .about-hero-title{ font-size:30px; font-weight:800; letter-spacing:-0.02em; }
+  .about-hero-tag{ font-size:13.5px; color:rgba(233,242,236,0.82); margin-top:5px; }
+  .about-scroll{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; background:#FAFAFA;
+    padding:26px 22px calc(48px + env(safe-area-inset-bottom,0px));
+  }
+  .about-lead{ font-size:16px; line-height:1.75; color:var(--ink); font-weight:500; margin:0 0 4px; }
+  .about-p{ font-size:14.5px; line-height:1.8; color:var(--ink-2); margin:14px 0; }
+  .about-em{ font-size:15.5px; font-weight:800; color:var(--maqom-deep); text-align:center; margin:22px 0; letter-spacing:-0.01em; }
+  .about-callout{
+    background:#fff; border-left:4px solid #DC2626; border-radius:0 14px 14px 0;
+    padding:16px 18px; margin:24px 0; box-shadow:0 6px 18px rgba(0,0,0,0.05);
+  }
+  .about-callout .ttl{ font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#DC2626; margin-bottom:6px; }
+  .about-callout .about-p{ margin:8px 0; }
+  .about-callout .about-p:first-of-type{ margin-top:2px; }
+  .about-features{ display:flex; flex-wrap:wrap; gap:8px; margin:20px 0; }
+  .about-chip{ font-size:12.5px; font-weight:600; color:var(--maqom-deep); background:var(--soft-green); border-radius:99px; padding:7px 13px; }
+  .about-quote{
+    font-size:16px; line-height:1.8; font-style:italic; color:var(--maqom-deep);
+    text-align:center; padding:24px 6px; margin:28px 0;
+    border-top:1px solid var(--divider); border-bottom:1px solid var(--divider);
+  }
+  .about-quote b{ display:block; font-style:normal; font-weight:800; font-size:19px; color:var(--maqom); margin-top:14px; letter-spacing:-0.01em; }
+  .about-h{ font-size:19px; font-weight:800; color:var(--ink); letter-spacing:-0.01em; margin:34px 0 6px; }
+  .about-dev{
+    display:flex; align-items:center; gap:14px; margin-top:16px; padding:20px;
+    border-radius:18px; color:#fff; box-shadow:0 12px 26px rgba(14,54,38,0.22);
+    background-color:#0E3626; background-image:var(--starpat); background-size:80px 80px;
+  }
+  .about-dev-avatar{
+    width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#D4AC5A,#BE9A46); color:#0E3626;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px;
+  }
+  .about-dev-name{ font-size:17px; font-weight:800; }
+  .about-dev-role{ font-size:12.5px; color:rgba(233,242,236,0.85); margin-top:3px; }
+
   /* ---- pustaka (kartu horizontal: Al-Quran, dst) ---- */
   .lib-row{ display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:2px 0 6px; margin-bottom:22px; scrollbar-width:none; }
   .lib-row::-webkit-scrollbar{ display:none; }
@@ -1186,7 +1242,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
-    <button class="menu-row emergency-row" onclick="openEmergencyConfirm()">
+    <button id="emergency-menu-btn" class="menu-row emergency-row" onclick="openEmergencyConfirm()">
       <span class="menu-icon emergency-icon">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"/><path d="M21 12h1"/><path d="M18.5 4.5 18 5"/><path d="M2 12h1"/><path d="M12 2v1"/><path d="m4.929 4.929.707.707"/></svg>
       </span>
@@ -1222,7 +1278,7 @@
     </button>
 
     <div class="section-title">Lainnya</div>
-    <button class="menu-row" onclick="showToast('Nuqto — peta komunitas Masisir Kairo')">
+    <button class="menu-row" onclick="openAbout()">
       <span class="menu-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       </span>
@@ -1341,6 +1397,86 @@
     <div id="kal-sub" class="kal-sub"></div>
     <div id="kal-grid" class="kal-grid"></div>
     <div class="kal-legend">Angka besar = Masehi · angka kecil = Hijriah</div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : TENTANG NUQTO ===================== -->
+<div id="page-about" class="overlay-page">
+  <div class="about-hero">
+    <button class="about-back" onclick="closeAbout()" aria-label="Tutup">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="about-hero-inner">
+      <div class="about-logo">
+        <img src="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg" alt="Nuqto" />
+      </div>
+      <div class="about-hero-title">Nuqto</div>
+      <div class="about-hero-tag">Satu titik, banyak cerita.</div>
+    </div>
+  </div>
+  <div class="about-scroll">
+    <p class="about-lead">Nuqto hadir dari sebuah keresahan sederhana: ketika berada di tempat baru, sering kali kita membutuhkan banyak informasi, tetapi tidak selalu tahu harus mencarinya ke mana.</p>
+
+    <p class="about-p">Di Mesir, khususnya bagi para pelajar dan mahasiswa, ada banyak hal yang mungkin terlihat sederhana tetapi cukup menyulitkan ketika belum mengetahuinya. Mencari tempat talaqqi, menemukan alamat imaroh, mengetahui lokasi maqam ulama, mencari informasi kehilangan barang, hingga menemukan berbagai kebutuhan lainnya sering kali membutuhkan informasi dari orang ke orang.</p>
+
+    <p class="about-em">Dari keresahan itulah Nuqto dibuat.</p>
+
+    <p class="about-p">Nuqto dirancang sebagai ruang yang menghubungkan lokasi, informasi, dan kebutuhan sehari-hari dalam satu tempat. Bukan hanya menunjukkan sebuah titik di peta, tetapi juga menghadirkan informasi yang ada di balik titik tersebut.</p>
+
+    <p class="about-p">Di dalam Nuqto, pengguna dapat menemukan berbagai maqam ulama yang tersebar di berbagai wilayah Mesir. Setiap titik dilengkapi dengan informasi mengenai lokasi, foto maqam, serta kilas sejarah kehidupan ulama yang bersangkutan.</p>
+
+    <p class="about-p">Nuqto juga menyediakan informasi mengenai imaroh atau tempat tinggal. Informasi tersebut dapat membantu pengguna lebih berhati-hati sebelum memilih tempat tinggal, terutama ketika terdapat pengalaman atau kejadian yang perlu diketahui oleh orang lain. Setiap informasi dilengkapi dengan foto dan kronologi agar pengguna dapat memahami latar belakangnya dengan lebih jelas.</p>
+
+    <p class="about-p">Bagi para pelajar yang sedang mencari tempat belajar, Nuqto menyediakan titik-titik talaqqi dan tempat pembelajaran. Dengan informasi alamat dan foto lokasi, diharapkan mahasiswa baru maupun pengguna lainnya dapat lebih mudah menemukan tempat yang mereka cari.</p>
+
+    <p class="about-p">Selain itu, Nuqto juga menyediakan pusat informasi yang memungkinkan pengguna berbagi informasi seperti kehilangan dan menemukan barang, serta berbagai informasi lain yang bermanfaat bagi sesama.</p>
+
+    <p class="about-p">Nuqto juga membuka ruang untuk informasi lowongan kerja, sehingga pengguna dapat menemukan maupun membagikan kesempatan kerja kepada orang lain.</p>
+
+    <p class="about-p">Namun, Nuqto tidak hanya dibuat untuk membantu pengguna menemukan suatu tempat. Ada hal lain yang juga menjadi perhatian penting: keamanan.</p>
+
+    <div class="about-callout">
+      <div class="ttl">🚨 Laporan Darurat</div>
+      <p class="about-p">Salah satu fitur yang lahir dari keresahan terhadap gangguan dan pelecehan yang dialami sebagian masisir wati adalah Laporan Darurat.</p>
+      <p class="about-p">Melalui fitur ini, pengguna yang sedang berada dalam kondisi berbahaya dapat mengirimkan laporan darurat. Pengguna lain akan menerima pemberitahuan dan dapat melihat titik lokasi pengguna yang sedang membutuhkan bantuan. Dengan begitu, diharapkan orang-orang yang berada di sekitar dapat segera mengetahui keadaan tersebut dan memberikan pertolongan yang diperlukan.</p>
+      <p class="about-p">Ketika keadaan sudah aman, pengguna dapat menekan tombol "Saya Sudah Aman", sehingga penyebaran titik lokasi darurat tersebut dihentikan.</p>
+    </div>
+
+    <p class="about-p">Kami memahami bahwa teknologi tidak dapat menyelesaikan semua persoalan. Namun, kami percaya bahwa teknologi dapat menjadi salah satu jalan untuk membuat informasi lebih mudah ditemukan, bantuan lebih cepat diberikan, dan kepedulian antar sesama menjadi lebih dekat.</p>
+
+    <p class="about-p">Selain berbagai fitur tersebut, Nuqto juga dilengkapi dengan Al-Qur'an, arah kiblat, jadwal shalat, dan kalender Hijriah, sehingga beberapa kebutuhan penting dapat diakses dalam satu aplikasi.</p>
+
+    <div class="about-features">
+      <span class="about-chip">Maqam Ulama</span>
+      <span class="about-chip">Imaroh / Rumah</span>
+      <span class="about-chip">Talaqqi</span>
+      <span class="about-chip">Pusat Informasi</span>
+      <span class="about-chip">Lowongan Kerja</span>
+      <span class="about-chip">Laporan Darurat</span>
+      <span class="about-chip">Al-Qur'an</span>
+      <span class="about-chip">Arah Kiblat</span>
+      <span class="about-chip">Jadwal Sholat</span>
+      <span class="about-chip">Kalender Hijriah</span>
+    </div>
+
+    <p class="about-p">Pada akhirnya, Nuqto dibangun dengan satu harapan sederhana: agar tidak ada lagi orang yang merasa sendirian ketika mencari informasi, membutuhkan arah, atau membutuhkan pertolongan.</p>
+
+    <div class="about-quote">
+      Satu titik mungkin hanya terlihat seperti sebuah tanda di peta. Tetapi di balik setiap titik, ada tempat, ada cerita, ada informasi, dan terkadang ada seseorang yang membutuhkan perhatian.
+      <b>Itulah Nuqto.</b>
+    </div>
+
+    <div class="about-h">Tentang Pengembang</div>
+    <p class="about-p">Nuqto dikembangkan oleh Syakir Pabeta, berangkat dari keresahan terhadap berbagai kebutuhan yang dihadapi para pelajar dan mahasiswa di Mesir.</p>
+    <p class="about-p">Nuqto merupakan sebuah ikhtiar untuk mengubah keresahan tersebut menjadi sesuatu yang bermanfaat—menghubungkan orang dengan tempat, informasi dengan mereka yang membutuhkan, dan semoga dapat menjadi bagian kecil dari kebaikan bagi banyak orang.</p>
+
+    <div class="about-dev">
+      <div class="about-dev-avatar">S</div>
+      <div>
+        <div class="about-dev-name">Syakir Pabeta</div>
+        <div class="about-dev-role">Developer &amp; Creator of Nuqto</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2253,6 +2389,14 @@ function openGuide(){
   g.classList.add('open');
 }
 function closeGuide(){ document.getElementById('guide-view').classList.remove('open'); }
+
+function openAbout(){
+  const p = document.getElementById('page-about');
+  const sc = p.querySelector('.about-scroll');
+  if(sc) sc.scrollTop = 0;
+  p.classList.add('open');
+}
+function closeAbout(){ document.getElementById('page-about').classList.remove('open'); }
 
 /* ---------- rute jalan ke titik ---------- */
 function getUserLatLng(){
@@ -3334,7 +3478,19 @@ let safeNotified = new Set();
 
 function openEmergencyConfirm(){
   if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengirim laporan darurat.'); return; }
+  if(myAlertId){ showToast('Kamu sedang menyiarkan lokasi darurat. Tekan "Saya sudah aman" dulu.'); return; }
   document.getElementById('emg-confirm').classList.add('open');
+}
+function setEmergencyDisabled(on){
+  const btn = document.getElementById('emergency-menu-btn');
+  if(!btn) return;
+  btn.disabled = on;
+  btn.style.opacity = on ? '0.45' : '';
+  btn.style.pointerEvents = on ? 'none' : '';
+  const desc = btn.querySelector('.emergency-desc');
+  if(desc) desc.textContent = on
+    ? 'Sedang menyiarkan lokasimu — tekan "Saya sudah aman" untuk berhenti'
+    : 'Kirim notifikasi lokasi bahaya ke semua user · tekan untuk konfirmasi';
 }
 function closeEmergencyConfirm(){ document.getElementById('emg-confirm').classList.remove('open'); }
 
@@ -3371,6 +3527,7 @@ let myLastCoords = null;
 
 function startDangerBroadcast(id){
   showDangerBanner();
+  setEmergencyDisabled(true);
   if(!navigator.geolocation) return;
   if(myWatchId != null) navigator.geolocation.clearWatch(myWatchId);
   myWatchId = navigator.geolocation.watchPosition(async (pos) => {
@@ -3391,6 +3548,7 @@ async function iAmSafe(){
   myAlertId = null; myLastCoords = null;
   closeHelpMap();
   hideDangerBanner();
+  setEmergencyDisabled(false);
   showToast('Penyiaran lokasi dihentikan. Semoga kamu aman. 🤲');
 }
 
