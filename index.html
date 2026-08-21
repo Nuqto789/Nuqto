@@ -3358,7 +3358,7 @@ async function confirmEmergency(){
   let senderEndpoint = null;
   try{ if('serviceWorker' in navigator){ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) senderEndpoint = sub.endpoint; } }catch(e){}
   // broadcast push notification anonim ke semua user (termasuk yang app-nya tertutup)
-  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1], senderEndpoint } }).catch(() => {});
+  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1], senderEndpoint, alertId: myAlertId } }).catch(() => {});
   closeEmergencyConfirm();
   showToast('🚨 Laporan terkirim — lokasimu sedang disiarkan live. Biarkan Nuqto terbuka.');
 }
