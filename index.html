@@ -577,28 +577,28 @@
 
   /* ---- tentang nuqto (fullscreen) ---- */
   .about-hero{
-    flex-shrink:0; position:relative; color:#fff;
+    position:relative; color:#fff;
     background-color:#0E3626; background-image:var(--starpat); background-size:80px 80px;
-    padding:calc(env(safe-area-inset-top,0px) + 18px) 22px 34px;
+    padding:calc(env(safe-area-inset-top,0px) + 16px) 22px 22px;
   }
   .about-back{
-    position:absolute; top:calc(env(safe-area-inset-top,0px) + 14px); left:14px;
-    width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.15);
+    position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); left:14px; z-index:5;
+    width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,0.32);
     border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
   }
-  .about-back:active{ background:rgba(255,255,255,0.28); }
-  .about-hero-inner{ text-align:center; padding-top:30px; }
+  .about-back:active{ background:rgba(0,0,0,0.5); }
+  .about-hero-inner{ text-align:center; padding-top:6px; }
   .about-logo{
-    width:64px; height:64px; border-radius:18px; margin:0 auto 14px; overflow:hidden;
+    width:56px; height:56px; border-radius:16px; margin:0 auto 12px; overflow:hidden;
     box-shadow:0 8px 20px rgba(0,0,0,0.28);
   }
   .about-logo img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .about-hero-title{ font-size:30px; font-weight:800; letter-spacing:-0.02em; }
-  .about-hero-tag{ font-size:13.5px; color:rgba(233,242,236,0.82); margin-top:5px; }
+  .about-hero-title{ font-size:26px; font-weight:800; letter-spacing:-0.02em; }
+  .about-hero-tag{ font-size:13px; color:rgba(233,242,236,0.82); margin-top:4px; }
   .about-scroll{
     flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; background:#FAFAFA;
-    padding:26px 22px calc(48px + env(safe-area-inset-bottom,0px));
   }
+  .about-body{ padding:24px 22px calc(48px + env(safe-area-inset-bottom,0px)); }
   .about-lead{ font-size:16px; line-height:1.75; color:var(--ink); font-weight:500; margin:0 0 4px; }
   .about-p{ font-size:14.5px; line-height:1.8; color:var(--ink-2); margin:14px 0; }
   .about-em{ font-size:15.5px; font-weight:800; color:var(--maqom-deep); text-align:center; margin:22px 0; letter-spacing:-0.01em; }
@@ -694,6 +694,20 @@
     text-align:center; font-size:11.5px; font-weight:600; color:var(--muted);
     margin-top:20px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06);
   }
+
+  /* ---- doa harian ---- */
+  .doa-chev{ flex-shrink:0; }
+  .doa-arab{ font-family:'Scheherazade New', serif; font-size:27px; line-height:2.05; text-align:center; color:var(--ink); direction:rtl; }
+  .doa-arti-label{ font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--maqom); margin-top:26px; padding-top:18px; border-top:1px solid var(--divider); }
+  .doa-arti{ font-size:15px; line-height:1.78; color:var(--ink-2); margin-top:10px; }
+
+  /* ---- frasa 'amiyah ---- */
+  .frasa-cat{ font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--maqom); margin:24px 0 10px; }
+  .frasa-cat:first-child{ margin-top:6px; }
+  .frasa-item{ background:#fff; border-radius:14px; padding:12px 15px; margin-bottom:10px; box-shadow:0 3px 12px rgba(16,18,16,0.05); }
+  .frasa-idn{ font-size:13px; font-weight:600; color:var(--muted-2); }
+  .frasa-ar{ font-family:'Scheherazade New', serif; font-size:23px; color:var(--ink); direction:rtl; text-align:right; margin:5px 0 3px; line-height:1.55; }
+  .frasa-lt{ font-size:13px; font-style:italic; color:var(--maqom); }
 
   /* ---- arah kiblat ---- */
   .qibla-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:24px 20px; }
@@ -1080,6 +1094,28 @@
         <span class="lib-card-title">Al-Qur'an</span>
         <span class="lib-card-sub">30 Juz</span>
       </button>
+      <button class="lib-card" onclick="openDoa()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="8" width="48" height="48" rx="14" fill="#0E3626"/>
+            <path d="M40 32a10 10 0 1 1-7-9.5A8 8 0 1 0 40 32Z" fill="#BE9A46"/>
+            <path d="M44 20l1.4 3 3.3.3-2.5 2.2.8 3.2-2.9-1.7-2.9 1.7.8-3.2-2.5-2.2 3.3-.3Z" fill="#D4AC5A"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Doa Harian</span>
+        <span class="lib-card-sub">Kumpulan doa</span>
+      </button>
+      <button class="lib-card" onclick="openFrasa()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="8" width="48" height="48" rx="14" fill="#0E3626"/>
+            <path d="M32 22c-3.5-2.2-8.5-3-13-2v20c4.5-1 9.5-.2 13 2 3.5-2.2 8.5-3 13-2V20c-4.5-1-9.5-.2-13 2Z" fill="none" stroke="#D4AC5A" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M32 22v20" stroke="#BE9A46" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Jago 'Amiyah</span>
+        <span class="lib-card-sub">Bahasa Mesir</span>
+      </button>
     </div>
 
     <!-- IBADAH -->
@@ -1346,6 +1382,60 @@
   <div id="surah-body" class="mushaf-viewport"></div>
 </div>
 
+<!-- ===================== OVERLAY : DOA HARIAN (daftar) ===================== -->
+<!-- ===================== OVERLAY : FRASA 'AMIYAH ===================== -->
+<div id="page-frasa" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeFrasa()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:18px; font-weight:700; flex:1;">Jago 'Amiyah</div>
+  </div>
+  <div class="scroll-page" style="padding-top:12px;">
+    <div id="frasa-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : FRASA (per kategori) ===================== -->
+<div id="page-frasa-cat" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeFrasaCat()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div id="frasa-cat-title" class="font-display" style="font-size:18px; font-weight:700; flex:1;">Frasa</div>
+  </div>
+  <div class="scroll-page" style="padding-top:14px;">
+    <div id="frasa-cat-list"></div>
+  </div>
+</div>
+
+<div id="page-doa" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeDoa()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Doa Harian</div>
+  </div>
+  <div class="scroll-page" style="padding-top:8px;">
+    <div id="doa-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : BACA DOA ===================== -->
+<div id="page-doa-read" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeDoaRead()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div id="doa-title" class="font-display" style="font-size:17px; font-weight:700; flex:1;">Doa</div>
+  </div>
+  <div class="scroll-page" style="padding-top:22px;">
+    <div id="doa-arab" class="doa-arab" dir="rtl"></div>
+    <div class="doa-arti-label">Artinya</div>
+    <div id="doa-arti" class="doa-arti"></div>
+  </div>
+</div>
+
 <!-- ===================== OVERLAY : ARAH KIBLAT ===================== -->
 <div id="page-qibla" class="overlay-page">
   <div class="overlay-header">
@@ -1418,19 +1508,20 @@
 
 <!-- ===================== OVERLAY : TENTANG NUQTO ===================== -->
 <div id="page-about" class="overlay-page">
-  <div class="about-hero">
-    <button class="about-back" onclick="closeAbout()" aria-label="Tutup">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <div class="about-hero-inner">
-      <div class="about-logo">
-        <img src="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg" alt="Nuqto" />
-      </div>
-      <div class="about-hero-title">Nuqto</div>
-      <div class="about-hero-tag">Satu titik, banyak cerita.</div>
-    </div>
-  </div>
+  <button class="about-back" onclick="closeAbout()" aria-label="Tutup">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+  </button>
   <div class="about-scroll">
+    <div class="about-hero">
+      <div class="about-hero-inner">
+        <div class="about-logo">
+          <img src="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg" alt="Nuqto" />
+        </div>
+        <div class="about-hero-title">Nuqto</div>
+        <div class="about-hero-tag">Satu titik, banyak cerita.</div>
+      </div>
+    </div>
+    <div class="about-body">
     <p class="about-lead">Nuqto hadir dari sebuah keresahan sederhana: ketika berada di tempat baru, sering kali kita membutuhkan banyak informasi, tetapi tidak selalu tahu harus mencarinya ke mana.</p>
 
     <p class="about-p">Di Mesir, khususnya bagi para pelajar dan mahasiswa, ada banyak hal yang mungkin terlihat sederhana tetapi cukup menyulitkan ketika belum mengetahuinya. Mencari tempat talaqqi, menemukan alamat imaroh, mengetahui lokasi maqam ulama, mencari informasi kehilangan barang, hingga menemukan berbagai kebutuhan lainnya sering kali membutuhkan informasi dari orang ke orang.</p>
@@ -1492,6 +1583,7 @@
         <div class="about-dev-name">Syakir Pabeta</div>
         <div class="about-dev-role">Developer &amp; Creator of Nuqto</div>
       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -2801,6 +2893,203 @@ function openQuran(){
 }
 function closeQuran(){ document.getElementById('page-quran').classList.remove('open'); }
 function closeSurah(){ document.getElementById('page-surah').classList.remove('open'); }
+
+/* ---------- doa harian (offline) ---------- */
+const DOA_LIST = [{"id":"1","doa":"Doa sebelum tidur","ayat":"بِسْمِكَ االلّٰهُمَّ اَحْيَا وَبِاسْمِكَ اَمُوْتُ","latin":"Bismikallaahumma ahyaa wa ammuut","artinya":"Dengan menyebut nama Allah, aku hidup dan aku mati"},{"id":"2","doa":"Doa bangun tidur","ayat":"اَلْحَمْدُ ِللهِ الَّذِىْ اَحْيَانَا بَعْدَمَآ اَمَاتَنَا وَاِلَيْهِ النُّشُوْرُ","latin":"Alhamdu lillahil ladzii ahyaanaa ba’da maa amaa tanaa wa ilahin nusyuuru","artinya":"Segala puji bagi Allah yang telah menghidupkan kami sesudah kami mati (membangunkan dari tidur) dan hanya kepada-Nya kami dikembalikan"},{"id":"3","doa":"Doa masuk kamar mandi","ayat":"اَللّٰهُمَّ اِنّىْ اَعُوْذُبِكَ مِنَ الْخُبُثِ وَالْخَبَآئِثِ","latin":"Allahumma Innii a'uudzubika minal khubutsi wal khoaaitsi","artinya":"Ya Allah, aku berlindung pada-Mu dari godaan setan laki-laki dan setan perempuan"},{"id":"4","doa":"Doa ketika bercermin","ayat":"اَلْحَمْدُ ِللهِ كَمَا حَسَّنْتَ خَلْقِىْ فَحَسِّـنْ خُلُقِىْ","latin":"Alhamdulillaahi kamaa hassanta kholqii fahassin khuluqii","artinya":"Segala puji bagi Allah, baguskanlah budi pekertiku sebagaimana Engkau telah membaguskan rupa wajahku"},{"id":"5","doa":"Doa keluar rumah","ayat":"بِسْمِ اللهِ تَوَكَّلْتُ عَلَى اللهِ لاَحَوْلَ وَلاَقُوَّةَ اِلاَّ بِالله","latin":"Bismillaahi tawakkaltu 'alalloohi laa hawlaa walaa quwwata illaa bilaahi","artinya":"Dengan menyebut nama Allah aku bertawakal kepada Allah, tiada daya kekuatan melainkan dengan pertolongan Allah."},{"id":"6","doa":"Doa masuk rumah","ayat":"اَللّٰهُمَّ اِنّىْ اَسْأَلُكَ خَيْرَالْمَوْلِجِ وَخَيْرَالْمَخْرَجِ بِسْمِ اللهِ وَلَجْنَا وَبِسْمِ اللهِ خَرَجْنَا وَعَلَى اللهِ رَبّنَا تَوَكَّلْنَا","latin":"Allahumma innii as-aluka khoirol mauliji wa khoirol makhroji bismillaahi wa lajnaa wa bismillaahi khorojnaa wa'alallohi robbina tawakkalnaa","artinya":"Ya Allah, sesungguhnya aku mohon kepada-Mu baiknya tempat masuk dan baiknya tempat keluar dengan menyebut nama Allah kami masuk, dan dengan menyebut nama Allah kami keluar dan kepada Allah Tuhan kami, kami bertawakkal"},{"id":"7","doa":"Doa memohon ilmu yang bermanfaat","ayat":"اَللّٰهُمَّ اِنِّى اَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلاً مُتَقَبَّلاً","latin":"Allahumma innii as-aluka 'ilmaan naafi'aan wa rizqoon thoyyibaan wa 'amalaan mutaqobbalaan","artinya":"Ya Allah, sesungguhnya aku mohon kepada-Mu ilmu yang berguna, rezki yang baik dan amal yang baik Diterima. (H.R. Ibnu Majah)"},{"id":"8","doa":"Doa sebelum belajar","ayat":"يَارَبِّ زِدْنِىْ عِلْمًا وَارْزُقْنِىْ فَهْمًا","latin":"Yaa robbi zidnii 'ilman warzuqnii fahmaa","artinya":"Ya Allah, tambahkanlah aku ilmu dan berikanlah aku rizqi akan kepahaman"},{"id":"9","doa":"Doa sesudah belajar","ayat":"اَللّٰهُمَّ اِنِّى اِسْتَوْدِعُكَ مَاعَلَّمْتَنِيْهِ فَارْدُدْهُ اِلَىَّ عِنْدَ حَاجَتِىْ وَلاَ تَنْسَنِيْهِ يَارَبَّ الْعَالَمِيْنَ","latin":"Allaahumma innii astaudi'uka maa 'allamtaniihi fardud-hu ilayya 'inda haajatii wa laa tansaniihi yaa robbal 'alamiin","artinya":"Ya Allah, sesungguhnya aku menitipkan kepada Engkau ilmu-ilmu yang telah Engkau ajarkan kepadaku, dan kembalikanlah kepadaku sewaktu aku butuh kembali dan janganlah Engkau lupakan aku kepada ilmu itu wahai Tuhan seru sekalian alam."},{"id":"10","doa":"Doa sebelum wudhu","ayat":"نَوَيْتُ الْوُضُوْءَ لِرَفْعِ الْحَدَثِ اْلاَصْغَرِ فَرْضًا لِلّٰهِ تَعَالَى","latin":"Nawaitul whudu-a lirof'il hadatsii ashghori fardhon lillaahi ta'aalaa","artinya":"Saya niat berwudhu untuk menghilangkan hadast kecil fardu (wajib) karena Allah ta'ala"},{"id":"11","doa":"Doa setelah wudhu","ayat":"اَشْهَدُ اَنْ لاَّاِلَهَ اِلاَّاللهُ وَحْدَهُ لاَشَرِيْكَ لَهُ وَاَشْهَدُ اَنَّ مُحَمَّدًاعَبْدُهُ وَرَسُوْلُهُ. اَللّٰهُمَّ اجْعَلْنِىْ مِنَ التَّوَّابِيْنَ وَاجْعَلْنِىْ مِنَ الْمُتَطَهِّرِيْنَ، وَجْعَلْنِيْ مِنْ عِبَادِكَ الصَّالِحِيْنَ","latin":"Asyhadu allaa ilaaha illalloohu wahdahuu laa syariika lahu wa asyhadu anna muhammadan ‘abduhuuwa rosuuluhuu, alloohummaj’alnii minat tawwaabiina waj’alnii minal mutathohhiriina, waj'alnii min 'ibadikash shaalihiina.","artinya":"Aku bersaksi, tidak ada Tuhan selain Allah Yang Maha Esa, tidak ada sekutu bagi-Nya, dan aku mengaku bahwa Nabi Muhammad itu adalah hamba dan Utusan Allah. Ya Allah, jadikanlah aku dari golongan orang-orang yang bertaubat dan jadikanlah aku dari golongan orang-orang yang suci dan jadikanlah aku dari golongan hamba-hamba Mu yang shaleh"},{"id":"12","doa":"Doa sebelum membaca al-qur'an","ayat":"اَللّٰهُمَّ افْتَحْ عَلَىَّ حِكْمَتَكَ وَانْشُرْ عَلَىَّ رَحْمَتَكَ وَذَكِّرْنِىْ مَانَسِيْتُ يَاذَاالْجَلاَلِ وَاْلاِكْرَامِ","latin":"Allahummaftah 'alayya hikmataka wansyur 'alayya rohmataka wa dzakkirnii maanasiitu yaa dzal jalaali wal ikhroomi","artinya":"Ya Allah bukakanlah hikmahMu padaku, bentangkanlah rahmatMu padaku dan ingatkanlah aku terhadap apa yang aku lupa, wahai Dzat yang memiliki keagungan dan kemuliaan"},{"id":"13","doa":"Doa setelah membaca al-qur'an","ayat":"اَللّٰهُمَّ ارْحَمْنِىْ بِالْقُرْآنِ. وَاجْعَلْهُ لِىْ اِمَامًا وَنُوْرًا وَّهُدًى وَّرَحْمَةً. اَللّٰهُمَّ ذَكِّرْنِىْ مِنْهُ مَانَسِيْتُ وَعَلِّمْنِىْ مِنْهُ مَاجَهِلْتُ. وَارْزُقْنِىْ تِلاَ وَتَهُ آنَآءَ اللَّيْلِ وَاَطْرَافَ النَّهَارٍ. وَاجْعَلْهُ لِىْ حُجَّةً يَارَبَّ الْعَالَمِيْنَ","latin":"Allahummarhamnii bil qur'aani. waj'alhu lii imaaman wa nuuran wa hudan wa rohman. Allahumma dzakkirnii minhu maa nasiitu wa'allimnii minhu maa jahiltu. wazuqnii tilaa watahu aanaa-al laili wa athroofan nahaari. waj'alhu lii hujjatan yaa robbal 'aalamiina.","artinya":"Ya Allah, rahmatilah aku dengan Al-Quran yang agung, jadikanlah ia bagiku ikutan cahaya petunjuk rahmat. Ya Allah, ingatkanlah apa yang telah aku lupa dan ajarkan kepadaku apa yang tidak aku ketahui darinya, anugerahkanlah padaku kesempatan membacanya pada sebagian malam dan siang, jadikanlah ia hujjah yang kuat bagiku, wahai Tuhan seru sekalian alam."},{"id":"14","doa":"Doa sebelum mandi","ayat":"اَللّٰهُمَّ اغْفِرْلِى ذَنْبِى وَوَسِّعْ لِى فِىْ دَارِىْ وَبَارِكْ لِىْ فِىْ رِزْقِىْ","latin":"Allahummaghfirlii dzambii wa wassi'lii fii daarii wa baarik lii fii rizqii","artinya":"Ya Allah ampunilah dosa kesalahanku dan berilah keluasaan di rumahku serta berkahilah pada rezekiku"},{"id":"15","doa":"Doa hendak berpergian","ayat":"اَللّٰهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا وَاطْوِعَنَّابُعْدَهُ اَللّٰهُمَّ اَنْتَ الصَّاحِبُ فِى السَّفَرِوَالْخَلِيْفَةُفِى الْاَهْلِ","latin":"Allahumma hawwin 'alainaa safaranaa hadzaa waatwi 'annaa bu'dahu. Alloohumma antashookhibu fiissafari walkholiifatu fiil ahli","artinya":"Ya Allah, mudahkanlah kami berpergian ini, dan dekatkanlah kejauhannya. Ya Allah yang menemani dalam berpergian, dan Engkau pula yang melindungi keluarga."},{"id":"16","doa":"Doa ketika sampai di tempat tujuan","ayat":"اَلْحَمْدُ ِللهِ الَّذِى سَلَمَنِى وَالَّذِى اَوَنِى وَالَّذِى جَمَعَ الشَّمْلَ بِ","latin":"Alhamdulillahil ladzi sallamani wal ladzi awani wal ladzi jama’asy syamla bi","artinya":"Segala puji bagi Allah, yang telah menyelamatkan akau dan yang telah melindungiku dan yang mengumpulkanku dengan keluargaku."},{"id":"17","doa":"Doa memakai pakaian","ayat":"بِسْمِ اللهِ اَللّٰهُمَّ اِنِّى اَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَاهُوَ لَهُ وَاَعُوْذُبِكَ مِنْ شَرِّهِ وَشَرِّمَا هُوَلَهُ","latin":"Bismillaahi, Alloohumma innii as-aluka min khoirihi wa khoiri maa huwa lahuu wa'a'uu dzubika min syarrihi wa syarri maa huwa lahuu","artinya":"Dengan nama-Mu yaa Allah akku minta kepada Engkau kebaikan pakaian ini dan kebaikan apa yang ada padanya, dan aku berlindung kepada Engkau dari kejahatan pakaian ini dan kejahatan yang ada padanya"},{"id":"18","doa":"Doa memakai pakaian baru","ayat":" اَلْحَمْدُ لِلّٰهِ الَّذِىْ كَسَانِىْ هَذَا وَرَزَقَنِيْهِ مِنْ غَيْرِ حَوْلٍ مِنِّىْ وَلاَقُوَّةٍ","latin":"Alhamdu lillaahil ladzii kasaanii haadzaa wa rozaqoniihi min ghoiri hawlim minni wa laa quwwatin","artinya":"Segala puji bagi Allah yang memberi aku pakaian ini dan memberi rizeki dengan tiada upaya dan kekuatan dariku"},{"id":"19","doa":"Doa melepas pakaian","ayat":"بِسْمِ اللهِ الَّذِيْ لاَ إِلَهَ إِلَّا هُوَ","latin":"Bismillaahil ladzii laa ilaaha illaa huwa","artinya":"Dengan nama Allah yang tiada Tuhan selain-Nya"},{"id":"20","doa":"Doa menjelang sholat subuh","ayat":"اَللّٰهُمَّ اِنِّى اَعُوْذُ بِكَ مِنْ ضِيْقِ الدُّنْيَا وَضِيْقِ يَوْمِ الْقِيَامَةِ","latin":"Allaahumma inni a'udzubika min dzhiiqid-dunyaa wa dzhiiqi yaumal-qiyaamati","artinya":"Ya Allah! Sesungguhnya aku berlindung kepada-Mu dari kesempitan dunia dan kesempitan hari kiamat. (HR. Abu Daud)"},{"id":"21","doa":"Doa menyambut pagi hari","ayat":"اَللّٰهُمَّ بِكَ اَصْبَحْنَا وَبِكَ اَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوْتُ وَاِلَيْكَ النُّشُوْرُ","latin":"Alloohumma bika ashbahnaa wa bika amsainaa wa bika nahyaa wa bika namuutu wa ilaikan nusyuuru","artinya":"Ya Allah, karena Engkau kami mengalami waktu pagi dan waktu petang, dan karena Engkau kami hidup dan mati dan kepada-Mu juga kami akan kembali."},{"id":"22","doa":"Doa menyambut sore hari","ayat":"اَللّٰهُمَّ بِكَ اَمْسَيْنَا وَبِكَ اَصْبَحْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوْتُ وَاِلَيْكَ الْمَصِيْرُ","latin":"Allahumma bika amsainaa wa bika ashbahnaa wa bika nahyaa wa bika namuutu wa ilaikal mashiir","artinya":"Ya Allah, karena Engkau kami mengalami waktu petang dan waktu pagi, karena Engkau kami hidup dan mati dan kepada-Mu juga kami akan kembali."},{"id":"23","doa":"Doa bercermin","ayat":"اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي","latin":"Alloohumma kamaa hassanta kholqii fahassin khuluqi","artinya":"Ya Allah, sebagaimana Engkau baguskan tubuhku, maka baguskanlah akhlaqku"},{"id":"24","doa":"Doa pergi ke masjid","ayat":"اللَّهُمَّ اجْعَلْ فِى قَلْبِى نُورًا . وَفِى بَصَرِى نُورًا . وَفِى سَمْعِى نُورًا . وَعَنْ يَمِينِى نُورًا . وَعَنْ يَسَارِى نُورًا . وَفَوْقِى نُورًا . وَتَحْتِى نُورًا . وَأَمَامِى نُورًا . وَخَلْفِى نُورًا . وَاجْعَلْ لِى نُورًا","latin":"Alloohummaj’al fii qolbi nuuron. Wa fii bashori nuuron. Wa fii sam’i nuuron. Wa ‘an yamiinii nuuron. Wa ‘ay yasaarii nuuron. Wa fauqi nuuron. Wa tahti nuuron. Wa amaamii nuuron. Wakholqi nuuron. Waj’al lii nuuron","artinya":"Ya Allah, jadikanlah di dalam hatiku cahaya. Dalam penglihatanku cahaya. Pada pendengaranku cahaya. Sebelah kananku cahaya. Sebelah kiriku cahaya. Atasku cahaya. Bawahku cahaya. Depanku cahaya. Belakangku cahaya. Dan berikanlah cahaya kepadaku."},{"id":"25","doa":"Doa masuk masjid","ayat":"اللَّهُمَّ افْتَحْ لِى أَبْوَابَ رَحْمَتِكَ","latin":"Alloohummaf tahlii abwaaba rohmatik","artinya":"Ya Allah, bukakanlah pintu-pintu rahmatMu untukku"},{"id":"26","doa":"Doa keluar masjid","ayat":"اللَّهُمَّ إِنِّى أَسْأَلُكَ مِنْ فَضْلِكَ","latin":"Alloohumma innii as-aluka min fadllik","artinya":"Ya Allah, sesungguhnya aku memohon keutamaan kepadaMu"},{"id":"27","doa":"Doa setelah adzan","ayat":"اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ وَالصَّلاَةِ الْقَائِمَةِ آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِى وَعَدْتَهُ","latin":"Alloohumma robba haadzihid da’watit taammah washsholaatil qoo-imah. Aati Muhammadanil wasiilata wal fadliilah. Wab’atshu maqooman mahmuudanil ladzii wa ‘adtah","artinya":"Ya Allah, Tuhan panggilan yang sempurna dan shalat yang akan didirikan ini. Berikanlah wasilah dan keutamaan kepada Muhammad. Bangkitkanlah dia pada kedudukan yang terpuji seperti yang Engkau janjikan kepadanya."},{"id":"28","doa":"Doa naik kendaraan","ayat":"سُبْحَانَ الَّذِى سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ","latin":"Subhaanal ladzii sakhkhoro lanaa haadzaa wamaa kunnaa lahuu muqriniin. Wa innaa ilaa robbinaa lamunqolibuun","artinya":"Mahasuci Dia yang telah menundukkan semua ini bagi kami padahal sebelumnya kami tidak mampu menguasainya. Dan sesungguhnya kami akan kembali kepada Tuhan kami."},{"id":"29","doa":"Doa masuk pasar","ayat":"لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكُ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِى وَيُمِيتُ وَهُوَ حَىٌّ لاَ يَمُوتُ بِيَدِهِ الْخَيْرُ وَهُوَ عَلَى كُلِّ شَىْءٍ قَدِيرٌ","latin":"Laa ilaaha illalloohu wahdahu laa syariikalah. Lahul mulku walahul hamdu. Yuhyii wa yumiitu wahuwa hayyun laa yamuut. Biyadihil khoir wahuwa ‘alaa kulli syai-in qodiir","artinya":"Tiada tuhan selain Allah Yang Maha Esa, tiada sekutu bagiNya. Dia yang mempunyai kerajaan dan segala pujian. Dialah yang menghidupkan dan mematikan, dan Dia Mahahidup yang tidak mati. Di tangan-Nya segala kebaikan dan Dia Mahakuasa atas segala sesuatu."},{"id":"30","doa":"Doa sebelum makan","ayat":"اَللّٰهُمَّ بَارِكْ لَنَا فِيْمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ","latin":"Allahumma baarik lanaa fiimaa rozaqtanaa wa qinaa 'adzaa bannaar.","artinya":"Ya Allah, berkahilah kami dalam rezeki yang telah Engkau berikan kepada kami dan peliharalah kami dari siksa api neraka"},{"id":"31","doa":"Doa sesudah makan","ayat":"اَلْحَمْدُ ِللهِ الَّذِىْ اَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِيْنَ","latin":"Alhamdulillahilladzi ath-amanaa wa saqoonaa wa ja'alanaa minal muslimiin.","artinya":"Segala puji bagi Allah yang telah memberi kami makan dan minum serta menjadikan kami termasuk dari kaum muslimin."},{"id":"32","doa":"Doa ketika turun hujan","ayat":"اللَّهُمَّ صَيِّبًا نَافِعًا","latin":"Allahumma shayyiban nafi’an.","artinya":"Ya Allah, curahkanlah air hujan yang bermanfaat. (HR Bukhar dari Aisyah RA)"},{"id":"33","doa":"Doa ketika takut bahaya hujan lebat","ayat":"اللَّهُمَّ حَوَالَيْنَا وَلاَ عَلَيْنَا ، اللَّهُمَّ عَلَى الآكَامِ وَالظِّرَابِ ، وَبُطُونِ الأَوْدِيَةِ ، وَمَنَابِتِ الشَّجَرِ","latin":"Allahumma hawalaina wala ‘alaina. Allahumma ‘alal akami wa adhirabi, wa buthunil auwdiyati, wamanabitisyajari.","artinya":"Ya Allah turunkan hujan ini di sekitar kami jangan di atas kami. Ya Allah curahkanlah hujan ini di atas bukit-bukit, di hutan-hutan lebat, di gunung-gunung kecil, di lembah-lembah, dan tempat-tempat tumbuhnya pepohonan. (HR Bukhari Muslim)"},{"id":"34","doa":"Doa setelah turun hujan","ayat":"مُطِرْنَا بِفَضْلِ اللـهِ ورَحْمَتِهِ","latin":"Muthirnaa bifadhlillahi wa rahmatihi.","artinya":"Diturunkan kepada kami hujan berkat anugerah Allah dan rahmat-Nya. (HR Bukhari)"},{"id":"35","doa":"Doa bertemu binatang buas","ayat":"إِنَّهُۥ مِن سُلَيْمَٰنَ وَإِنَّهُۥ بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ","latin":"Innahụ min sulaimāna wa innahụ bismillāhir-raḥmānir-raḥīm","artinya":"Sesungguhnya surat itu, dari SuIaiman dan sesungguhnya (isi)nya: Dengan menyebut nama Allah Yang Maha Pemurah lagi Maha Penyayang. (Qs. An Naml: 30 )"},{"id":"36","doa":"Doa agar selalu dicukupkan rezeki","ayat":"اَللّٰهُمَّ اَكْفِنِيْ بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِيْ بِفَضْلِكَ عَمَّنْ سِوَاكَ","latin":"Allahummakfini bihalalika ‘an haramik wa aghnini bifadhlika amman siwak","artinya":"Ya Allah, berilah aku kecukupan dengan rezeki yang halal, sehingga aku tidak memerlukan yang haram, dan berilah aku kekayaan dengan karuniamu, sehingga aku tidak memerlukan bantuan orang lain, selain diri-mu. (HR. Ahmad)"},{"id":"37","doa":"Doa ketika menyisir rambut","ayat":"اَللّهُمَّ حَرِّمْ شَعْرِى وَبَشَرِى عَلىَ النَّار","latin":"ALLAHUMMA HARRIM SYA'RII WA BASYARII 'ALAN NAAR","artinya":"Ya Allah, halangilah rambut dan kulitku dari api neraka"}];
+function openDoa(){ document.getElementById('page-doa').classList.add('open'); renderDoaList(); }
+function closeDoa(){ document.getElementById('page-doa').classList.remove('open'); }
+function renderDoaList(){
+  const list = document.getElementById('doa-list');
+  if(!list || list.dataset.loaded === '1') return;
+  if(typeof DOA_LIST === 'undefined' || !DOA_LIST.length){ list.innerHTML = '<div class="empty-state">Daftar doa belum tersedia.</div>'; return; }
+  list.innerHTML = DOA_LIST.map((d, i) =>
+    '<button class="surah-row" onclick="openDoaRead(' + i + ')">' +
+      '<span class="qs-num">' + (i + 1) + '</span>' +
+      '<span class="qs-info"><span class="qs-name">' + escapeHtml(d.doa) + '</span></span>' +
+      '<svg class="doa-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>' +
+    '</button>'
+  ).join('');
+  list.dataset.loaded = '1';
+}
+function openDoaRead(i){
+  const d = DOA_LIST[i];
+  if(!d) return;
+  document.getElementById('doa-title').textContent = d.doa;
+  document.getElementById('doa-arab').textContent = d.ayat;
+  document.getElementById('doa-arti').textContent = d.artinya;
+  const sc = document.querySelector('#page-doa-read .scroll-page'); if(sc) sc.scrollTop = 0;
+  document.getElementById('page-doa-read').classList.add('open');
+}
+function closeDoaRead(){ document.getElementById('page-doa-read').classList.remove('open'); }
+
+/* ---------- frasa 'amiyah mesir (offline) ---------- */
+const FRASA_LIST = [
+  { cat:"Sapaan & Basa-basi", items:[
+    { idn:"Selamat pagi", ar:"صباح الخير", lt:"Sabah el-kheir" },
+    { idn:"Balasan: selamat pagi", ar:"صباح النور", lt:"Sabah en-nur" },
+    { idn:"Apa kabar? (ke laki-laki)", ar:"إزيّك؟", lt:"Izzayyak?" },
+    { idn:"Apa kabar? (ke perempuan)", ar:"إزيّك؟", lt:"Izzayyik?" },
+    { idn:"Baik, alhamdulillah", ar:"كويّس، الحمد لله", lt:"Kwayyis, el-hamdulillah" },
+    { idn:"Halo / hai", ar:"أهلاً", lt:"Ahlan" },
+    { idn:"Selamat datang", ar:"أهلاً وسهلاً", lt:"Ahlan wa sahlan" },
+    { idn:"Terima kasih", ar:"شكراً", lt:"Shukran" },
+    { idn:"Sama-sama", ar:"العفو", lt:"El-'afw" },
+    { idn:"Maaf", ar:"آسف", lt:"Aasef" },
+    { idn:"Permisi / tolong (minta izin)", ar:"لو سمحت", lt:"Law samaht" },
+    { idn:"Iya", ar:"أيوه", lt:"Aywa" },
+    { idn:"Tidak", ar:"لأ", lt:"La'" },
+    { idn:"Tidak apa-apa", ar:"مفيش مشكلة", lt:"Mafiish mushkila" },
+    { idn:"Insya Allah", ar:"إن شاء الله", lt:"In shaa Allah" },
+    { idn:"Siapa namamu? (ke laki-laki)", ar:"اسمك إيه؟", lt:"Ismak eh?" },
+    { idn:"Nama saya ...", ar:"أنا اسمي ...", lt:"Ana ismi ..." },
+    { idn:"Saya tidak paham", ar:"أنا مش فاهم", lt:"Ana mish faahem" },
+    { idn:"Bisa bahasa Inggris?", ar:"بتتكلّم إنجليزي؟", lt:"Bititkallim ingliizi?" },
+    { idn:"Tolong pelan-pelan", ar:"على مهلك", lt:"'ala mahlak" },
+    { idn:"Sampai jumpa", ar:"مع السلامة", lt:"Ma'a as-salaama" }
+  ]},
+  { cat:"Transport & Taksi", items:[
+    { idn:"Saya mau ke ...", ar:"أنا عايز أروح ...", lt:"Ana 'aayez aruuh ..." },
+    { idn:"Berapa ongkosnya?", ar:"الأجرة بكام؟", lt:"El-ugra bikam?" },
+    { idn:"Mahal!", ar:"غالي!", lt:"Ghaali!" },
+    { idn:"Kurangi sedikit", ar:"نقّص شويّة", lt:"Na''as shwayya" },
+    { idn:"Ke kanan", ar:"على اليمين", lt:"'ala el-yimiin" },
+    { idn:"Ke kiri", ar:"على الشمال", lt:"'ala esh-shimaal" },
+    { idn:"Lurus terus", ar:"على طول", lt:"'ala tuul" },
+    { idn:"Berhenti di sini", ar:"وقّف هنا", lt:"Wa''af hena" },
+    { idn:"Tunggu sebentar", ar:"استنى شويّة", lt:"Istanna shwayya" },
+    { idn:"Di sini cukup", ar:"هنا كفاية", lt:"Hena kifaaya" }
+  ]},
+  { cat:"Belanja & Tawar-menawar", items:[
+    { idn:"Ini berapa?", ar:"ده بكام؟", lt:"Da bikam?" },
+    { idn:"Ini mahal banget", ar:"ده غالي أوي", lt:"Da ghaali awi" },
+    { idn:"Ada yang lebih murah?", ar:"فيه أرخص؟", lt:"Fih arkhas?" },
+    { idn:"Saya mau yang ini", ar:"أنا عايز ده", lt:"Ana 'aayez da" },
+    { idn:"Cuma lihat-lihat", ar:"بتفرّج بس", lt:"Batfarrag bas" },
+    { idn:"Boleh kurang harganya?", ar:"ينفع نقّص؟", lt:"Yinfa' na''as?" },
+    { idn:"Harga terakhir berapa?", ar:"آخر كلام بكام؟", lt:"Aakher kalaam bikam?" },
+    { idn:"Saya tidak jadi", ar:"أنا مش عايز", lt:"Ana mish 'aayez" }
+  ]},
+  { cat:"Makanan & Minuman", items:[
+    { idn:"Saya lapar", ar:"أنا جعان", lt:"Ana ga'aan" },
+    { idn:"Saya haus", ar:"أنا عطشان", lt:"Ana 'atshaan" },
+    { idn:"Enak banget", ar:"لذيذ أوي", lt:"Laziiz awi" },
+    { idn:"Tanpa gula", ar:"من غير سكر", lt:"Min gheir sukkar" },
+    { idn:"Pedas", ar:"حرّاق", lt:"Harraa'" },
+    { idn:"Dibungkus (bawa pulang)", ar:"سفري", lt:"Safari" },
+    { idn:"Air", ar:"ميّة", lt:"Mayya" },
+    { idn:"Minta bonnya", ar:"الحساب لو سمحت", lt:"El-hisaab law samaht" },
+    { idn:"Saya kenyang", ar:"أنا شبعان", lt:"Ana shab'aan" }
+  ]},
+  { cat:"Arah & Lokasi", items:[
+    { idn:"Di mana ...?", ar:"فين ...؟", lt:"Fein ...?" },
+    { idn:"Jauh dari sini?", ar:"بعيد من هنا؟", lt:"Ba'iid min hena?" },
+    { idn:"Dekat", ar:"قريّب", lt:"'urayyib" },
+    { idn:"Toilet di mana?", ar:"الحمّام فين؟", lt:"El-hammaam fein?" },
+    { idn:"Saya tersesat", ar:"أنا تُهت", lt:"Ana tuht" },
+    { idn:"Alamat ini di mana?", ar:"العنوان ده فين؟", lt:"El-'inwaan da fein?" }
+  ]},
+  { cat:"Dokter & Apotek", items:[
+    { idn:"Saya sakit", ar:"أنا عيّان", lt:"Ana 'ayyaan" },
+    { idn:"Kepala saya sakit", ar:"راسي بتوجعني", lt:"Raasi bituwga'ni" },
+    { idn:"Saya butuh obat", ar:"أنا محتاج دوا", lt:"Ana mehtaag dawa" },
+    { idn:"Apotek di mana?", ar:"الصيدليّة فين؟", lt:"Es-saydaliyya fein?" },
+    { idn:"Perut saya sakit", ar:"بطني بتوجعني", lt:"Batni bituwga'ni" },
+    { idn:"Saya demam", ar:"عندي سخونيّة", lt:"'andi sukhuniyya" }
+  ]},
+  { cat:"Angka & Waktu", items:[
+    { idn:"Satu", ar:"واحد", lt:"Waahid" },
+    { idn:"Dua", ar:"اتنين", lt:"Itnein" },
+    { idn:"Tiga", ar:"تلاتة", lt:"Talaata" },
+    { idn:"Empat", ar:"أربعة", lt:"Arba'a" },
+    { idn:"Lima", ar:"خمسة", lt:"Khamsa" },
+    { idn:"Sepuluh", ar:"عشرة", lt:"'ashara" },
+    { idn:"Jam berapa?", ar:"الساعة كام؟", lt:"Es-saa'a kam?" },
+    { idn:"Sekarang", ar:"دلوقتي", lt:"Dilwa'ti" },
+    { idn:"Besok", ar:"بكرة", lt:"Bukra" },
+    { idn:"Kemarin", ar:"إمبارح", lt:"Embaarih" }
+  ]},
+  { cat:"Darurat & Penting", items:[
+    { idn:"Tolong!", ar:"إلحقوني!", lt:"Ilha'uuni!" },
+    { idn:"Panggil polisi", ar:"اتّصل بالبوليس", lt:"Ittasel bel-buliis" },
+    { idn:"Saya butuh bantuan", ar:"أنا محتاج مساعدة", lt:"Ana mehtaag musa'da" },
+    { idn:"Ada bahaya", ar:"فيه خطر", lt:"Fih khatar" },
+    { idn:"Jangan ganggu saya!", ar:"سيبني في حالي!", lt:"Siibni fi haali!" },
+    { idn:"Rumah sakit di mana?", ar:"المستشفى فين؟", lt:"El-mustashfa fein?" }
+  ]},
+  { cat:"Buah-buahan", items:[
+    { idn:"Apel", ar:"تفّاح", lt:"Tuffaah" },
+    { idn:"Pisang", ar:"موز", lt:"Mooz" },
+    { idn:"Jeruk", ar:"برتقان", lt:"Burtu'aan" },
+    { idn:"Anggur", ar:"عنب", lt:"'inab" },
+    { idn:"Mangga", ar:"مانجا", lt:"Manga" },
+    { idn:"Semangka", ar:"بطّيخ", lt:"Battiikh" },
+    { idn:"Melon", ar:"كانتالوب", lt:"Kantaloob" },
+    { idn:"Stroberi", ar:"فراولة", lt:"Farawla" },
+    { idn:"Kurma", ar:"بلح", lt:"Balah" },
+    { idn:"Delima", ar:"رمّان", lt:"Rummaan" },
+    { idn:"Buah tin (ara)", ar:"تين", lt:"Tiin" },
+    { idn:"Persik", ar:"خوخ", lt:"Khookh" },
+    { idn:"Aprikot", ar:"مشمش", lt:"Mishmish" },
+    { idn:"Pir", ar:"كمّثرى", lt:"Kummitra" },
+    { idn:"Lemon", ar:"لمون", lt:"Lamoon" },
+    { idn:"Jambu biji", ar:"جوافة", lt:"Gawaafa" },
+    { idn:"Nanas", ar:"أناناس", lt:"Ananaas" },
+    { idn:"Plum", ar:"برقوق", lt:"Bar'uu'" },
+    { idn:"Ceri", ar:"كريز", lt:"Kereez" }
+  ]},
+  { cat:"Sayur-sayuran", items:[
+    { idn:"Tomat", ar:"طماطم", lt:"Tamaatim" },
+    { idn:"Kentang", ar:"بطاطس", lt:"Bataatis" },
+    { idn:"Bawang bombay", ar:"بصل", lt:"Basal" },
+    { idn:"Bawang putih", ar:"توم", lt:"Toom" },
+    { idn:"Wortel", ar:"جزر", lt:"Gazar" },
+    { idn:"Timun", ar:"خيار", lt:"Khiyaar" },
+    { idn:"Terong", ar:"باذنجان", lt:"Bitingaan" },
+    { idn:"Cabai", ar:"فلفل", lt:"Filfil" },
+    { idn:"Paprika", ar:"فلفل رومي", lt:"Filfil rumi" },
+    { idn:"Selada", ar:"خس", lt:"Khass" },
+    { idn:"Kubis", ar:"كرنب", lt:"Koronb" },
+    { idn:"Bayam", ar:"سبانخ", lt:"Sabaanikh" },
+    { idn:"Molokhia", ar:"ملوخيّة", lt:"Molokhiyya" },
+    { idn:"Okra", ar:"بامية", lt:"Bamya" },
+    { idn:"Kacang polong", ar:"بسلّة", lt:"Bisilla" },
+    { idn:"Buncis", ar:"فاصوليا", lt:"Fasoolya" },
+    { idn:"Labu", ar:"قرع عسل", lt:"Ar' 'asal" },
+    { idn:"Zukini (kousa)", ar:"كوسة", lt:"Kousa" },
+    { idn:"Peterseli", ar:"بقدونس", lt:"Ba'dunis" },
+    { idn:"Lobak", ar:"فجل", lt:"Figl" }
+  ]}
+];
+function openFrasa(){ document.getElementById('page-frasa').classList.add('open'); renderFrasaCats(); }
+function closeFrasa(){ document.getElementById('page-frasa').classList.remove('open'); }
+function renderFrasaCats(){
+  const el = document.getElementById('frasa-list');
+  if(!el || el.dataset.loaded === '1') return;
+  el.innerHTML = FRASA_LIST.map((g, i) =>
+    '<button class="surah-row" onclick="openFrasaCat(' + i + ')">' +
+      '<span class="qs-num">' + (i + 1) + '</span>' +
+      '<span class="qs-info"><span class="qs-name">' + escapeHtml(g.cat) + '</span>' +
+      '<span class="qs-meta">' + g.items.length + ' frasa</span></span>' +
+      '<svg class="doa-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>' +
+    '</button>'
+  ).join('');
+  el.dataset.loaded = '1';
+}
+function openFrasaCat(i){
+  const g = FRASA_LIST[i];
+  if(!g) return;
+  document.getElementById('frasa-cat-title').textContent = g.cat;
+  document.getElementById('frasa-cat-list').innerHTML = g.items.map(p =>
+    '<div class="frasa-item">' +
+      '<div class="frasa-idn">' + escapeHtml(p.idn) + '</div>' +
+      '<div class="frasa-ar" dir="rtl">' + escapeHtml(p.ar) + '</div>' +
+      '<div class="frasa-lt">' + escapeHtml(p.lt) + '</div>' +
+    '</div>'
+  ).join('');
+  const sc = document.querySelector('#page-frasa-cat .scroll-page'); if(sc) sc.scrollTop = 0;
+  document.getElementById('page-frasa-cat').classList.add('open');
+}
+function closeFrasaCat(){ document.getElementById('page-frasa-cat').classList.remove('open'); }
 
 async function loadSurahList(){
   const list = document.getElementById('surah-list');
