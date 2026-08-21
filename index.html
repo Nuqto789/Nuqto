@@ -4067,7 +4067,22 @@ async function ensurePushSubscription(silent){
 
 async function enablePush(){
   if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengaktifkan notifikasi.'); return; }
-  if(isNativeApp()){ const ok = await registerNativePush(); showToast(ok ? '✅ Notifikasi darurat aktif di perangkat ini' : 'Izin notifikasi ditolak'); updatePushLabel(); return; }
+  if(isNativeApp()){
+    const PN = window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+    if(!PN){ showToast('DIAG: plugin Push tidak tersedia'); return; }
+    if(!_nativePushInited){
+      _nativePushInited = true;
+      PN.addListener('registration', (t) => { saveFcmToken(t && t.value); });
+      PN.addListener('registrationError', (e) => { showToast('DIAG: FCM reg error: ' + JSON.stringify(e)); });
+      PN.addListener('pushNotificationActionPerformed', () => { checkActiveEmergency(true); });
+    }
+    let perm;
+    try{ perm = await PN.checkPermissions(); }catch(e){ showToast('DIAG: checkPermissions error: ' + (e.message||e)); return; }
+    if(perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale'){ try{ perm = await PN.requestPermissions(); }catch(e){ showToast('DIAG: requestPermissions error'); return; } }
+    if(perm.receive !== 'granted'){ showToast('DIAG: izin notif = ' + perm.receive); return; }
+    try{ await PN.register(); showToast('DIAG: register() dipanggil (izin granted) — menunggu token…'); }catch(e){ showToast('DIAG: register() error: ' + (e.message||e)); }
+    updatePushLabel(); return;
+  }
   if(!('serviceWorker' in navigator) || !('PushManager' in window)){ showToast('Browser/perangkat ini belum mendukung push. Di iPhone: pasang app ke Home Screen dulu.'); return; }
   try{
     const perm = await Notification.requestPermission();
@@ -4423,15 +4438,17 @@ let _nativeFcmToken = null;
 let _nativePushInited = false;
 
 async function saveFcmToken(token){
-  if(!token) return;
+  if(!token){ if(isNativeApp()) showToast('DIAG: token FCM kosong'); return; }
   _nativeFcmToken = token;
-  if(!isLoggedIn() || !currentUser) return; // simpan nanti setelah user login
+  if(!isLoggedIn() || !currentUser){ showToast('DIAG: dapat token, tunggu login'); return; }
   try{
-    await sb.from('fcm_tokens').upsert(
+    const { error } = await sb.from('fcm_tokens').upsert(
       { user_id: currentUser.id, token: token, platform: 'android', updated_at: new Date().toISOString() },
       { onConflict: 'token' }
     );
-  }catch(e){ console.warn('simpan fcm token gagal', e); }
+    if(error){ showToast('DIAG: simpan token GAGAL: ' + error.message); }
+    else { showToast('✅ DIAG: token FCM tersimpan'); }
+  }catch(e){ showToast('DIAG: simpan token error: ' + (e.message||e)); }
 }
 
 async function registerNativePush(){
@@ -4441,7 +4458,7 @@ async function registerNativePush(){
   if(!_nativePushInited){
     _nativePushInited = true;
     PN.addListener('registration', (t) => { saveFcmToken(t && t.value); });
-    PN.addListener('registrationError', (e) => { console.warn('FCM reg error', e); });
+    PN.addListener('registrationError', (e) => { showToast('DIAG: FCM reg error: ' + JSON.stringify(e)); });
     // notifikasi darurat ditekan → tampilkan popup darurat di dalam app
     PN.addListener('pushNotificationActionPerformed', () => { checkActiveEmergency(true); });
   }
