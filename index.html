@@ -3963,11 +3963,14 @@ async function confirmEmergency(){
   myAlertId = data.id;
   myLastCoords = [coords[0], coords[1]];
   startDangerBroadcast(myAlertId);
-  // ambil endpoint push perangkat ini agar server tidak mengirim notif balik ke pengirim
-  let senderEndpoint = null;
-  try{ if('serviceWorker' in navigator){ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) senderEndpoint = sub.endpoint; } }catch(e){}
+  // ambil token/endpoint push perangkat ini agar server tidak mengirim notif balik ke pengirim
+  let senderEndpoint = null, senderFcmToken = null;
+  try{
+    if(isNativeApp()){ senderFcmToken = _nativeFcmToken; }
+    else if('serviceWorker' in navigator){ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) senderEndpoint = sub.endpoint; }
+  }catch(e){}
   // broadcast push notification anonim ke semua user (termasuk yang app-nya tertutup)
-  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1], senderEndpoint, alertId: myAlertId } }).catch(() => {});
+  sb.functions.invoke('emergency-push', { body: { lat: coords[0], lng: coords[1], senderEndpoint, senderFcmToken, alertId: myAlertId } }).catch(() => {});
   closeEmergencyConfirm();
   showToast('🚨 Laporan terkirim — lokasimu sedang disiarkan live. Biarkan Nuqto terbuka.');
 }
@@ -4056,6 +4059,7 @@ async function ensurePushSubscription(silent){
 
 async function enablePush(){
   if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengaktifkan notifikasi.'); return; }
+  if(isNativeApp()){ const ok = await registerNativePush(); showToast(ok ? '✅ Notifikasi darurat aktif di perangkat ini' : 'Izin notifikasi ditolak'); updatePushLabel(); return; }
   if(!('serviceWorker' in navigator) || !('PushManager' in window)){ showToast('Browser/perangkat ini belum mendukung push. Di iPhone: pasang app ke Home Screen dulu.'); return; }
   try{
     const perm = await Notification.requestPermission();
@@ -4074,6 +4078,10 @@ async function enablePush(){
 async function updatePushLabel(){
   const label = document.getElementById('push-label');
   if(!label) return;
+  if(isNativeApp()){
+    try{ const PN = window.Capacitor.Plugins.PushNotifications; const p = await PN.checkPermissions(); label.textContent = (p && p.receive === 'granted') ? 'Notifikasi darurat: Aktif ✓' : 'Aktifkan Notifikasi Darurat'; }catch(e){}
+    return;
+  }
   try{
     if(('Notification' in window) && Notification.permission === 'granted' && ('serviceWorker' in navigator)){
       const reg = await navigator.serviceWorker.ready;
@@ -4396,7 +4404,46 @@ async function initAuth(){
     if((currentUser ? currentUser.id : null) !== prev){
       loadPins('maqom'); loadPins('blacklist'); loadPins('razia');
     }
+    if(isNativeApp() && currentUser){ if(_nativeFcmToken) saveFcmToken(_nativeFcmToken); else registerNativePush(); }
   });
+}
+
+/* ===== Push NATIVE (Capacitor / FCM) — untuk app Android (Play Store) =====
+   Di dalam app native pakai FCM; di browser biasa tetap pakai Web Push. */
+function isNativeApp(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
+let _nativeFcmToken = null;
+let _nativePushInited = false;
+
+async function saveFcmToken(token){
+  if(!token) return;
+  _nativeFcmToken = token;
+  if(!isLoggedIn() || !currentUser) return; // simpan nanti setelah user login
+  try{
+    await sb.from('fcm_tokens').upsert(
+      { user_id: currentUser.id, token: token, platform: 'android', updated_at: new Date().toISOString() },
+      { onConflict: 'token' }
+    );
+  }catch(e){ console.warn('simpan fcm token gagal', e); }
+}
+
+async function registerNativePush(){
+  if(!isNativeApp()) return false;
+  const PN = window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+  if(!PN) return false;
+  if(!_nativePushInited){
+    _nativePushInited = true;
+    PN.addListener('registration', (t) => { saveFcmToken(t && t.value); });
+    PN.addListener('registrationError', (e) => { console.warn('FCM reg error', e); });
+    // notifikasi darurat ditekan → tampilkan popup darurat di dalam app
+    PN.addListener('pushNotificationActionPerformed', () => { checkActiveEmergency(true); });
+  }
+  try{
+    let perm = await PN.checkPermissions();
+    if(perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale'){ perm = await PN.requestPermissions(); }
+    if(perm.receive !== 'granted') return false;
+    await PN.register(); // memicu event 'registration' dengan token FCM
+    return true;
+  }catch(e){ console.warn('registerNativePush gagal', e); return false; }
 }
 
 window.addEventListener('load', () => {
@@ -4406,7 +4453,7 @@ window.addEventListener('load', () => {
   updateNotifBadge();
   refreshJobBadge();
   setTimeout(updatePushLabel, 1500);
-  setTimeout(() => ensurePushSubscription(true), 2000); // buat ulang langganan otomatis jika hilang (mis. sesudah reinstall)
+  setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
