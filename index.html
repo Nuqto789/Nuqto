@@ -1169,6 +1169,28 @@
         <span class="lib-card-sub">Hijriah</span>
       </button>
     </div>
+
+    <!-- BACAAN -->
+    <div class="section-head reveal d4" style="margin-top:22px; margin-bottom:10px;">
+      <div class="st">Bacaan</div>
+    </div>
+    <div class="lib-row reveal d4">
+      <button class="lib-card" onclick="openBuku()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 18 C26 14 18 14 14 15 V49 C18 48 26 48 32 51 Z" fill="#0E3626"/>
+            <path d="M32 18 C38 14 46 14 50 15 V49 C46 48 38 48 32 51 Z" fill="#0A2A1E"/>
+            <line x1="32" y1="19" x2="32" y2="50" stroke="#BE9A46" stroke-width="1.4"/>
+            <rect x="18" y="23" width="10" height="2.3" rx="1.15" fill="#BE9A46"/>
+            <rect x="18" y="29" width="10" height="2.3" rx="1.15" fill="#E9E4D7"/>
+            <rect x="36" y="23" width="10" height="2.3" rx="1.15" fill="#BE9A46"/>
+            <rect x="36" y="29" width="10" height="2.3" rx="1.15" fill="#E9E4D7"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Buku Bacaan</span>
+        <span class="lib-card-sub">Kitab Hadits</span>
+      </button>
+    </div>
     </div>
   </div>
 </div>
@@ -1269,8 +1291,9 @@
     </div>
 
     <button id="akun-admin-btn" class="menu-row" style="display:none;" onclick="openAdmin()">
-      <span class="menu-icon" style="background:rgba(23,80,56,0.1);">
+      <span class="menu-icon" style="background:rgba(23,80,56,0.1); position:relative;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+        <span id="admin-badge" class="menu-badge" style="display:none;">0</span>
       </span>
       <span class="menu-label">Panel Admin — Persetujuan Titik</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
@@ -1586,6 +1609,34 @@
       </div>
     </div>
     </div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : BUKU BACAAN (daftar kitab) ===================== -->
+<div id="page-buku" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeBuku()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Buku Bacaan</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <div style="font-size:12.5px; color:var(--muted); margin-bottom:12px;">Kitab hadits — dimuat bertahap agar ringan.</div>
+    <div id="buku-list"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : BACA KITAB HADITS ===================== -->
+<div id="page-buku-read" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeBukuRead()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div id="buku-read-title" class="font-display" style="font-size:18px; font-weight:700; flex:1;">Kitab</div>
+  </div>
+  <div id="buku-read-scroll" class="scroll-page" style="padding-top:16px;">
+    <div id="buku-hadith-list"></div>
+    <div id="buku-load-more" style="text-align:center; padding:18px; font-size:13px; color:var(--muted);"></div>
   </div>
 </div>
 
@@ -3226,6 +3277,93 @@ function enableCompass(){
 /* ---------- jadwal sholat ---------- */
 let sholatTimer = null;
 function openSholat(){ document.getElementById('page-sholat').classList.add('open'); loadSholat(); if(isNativeApp()) scheduleSholatNotifications(); }
+
+/* ===================== BUKU BACAAN (kitab hadits — API gratis, muat bertahap) ===================== */
+const HADITH_BASE = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions';
+const KITAB_HADITS = [
+  { key:'bukhari',  nama:'Shahih Bukhari',    pengarang:'Imam al-Bukhari' },
+  { key:'muslim',   nama:'Shahih Muslim',     pengarang:'Imam Muslim' },
+  { key:'abudawud', nama:'Sunan Abu Dawud',   pengarang:'Imam Abu Dawud' },
+  { key:'tirmidhi', nama:"Jami' at-Tirmidzi", pengarang:'Imam at-Tirmidzi' },
+  { key:'nasai',    nama:"Sunan an-Nasa'i",   pengarang:"Imam an-Nasa'i" },
+  { key:'ibnmajah', nama:'Sunan Ibnu Majah',  pengarang:'Imam Ibnu Majah' },
+  { key:'malik',    nama:'Muwatha Malik',     pengarang:'Imam Malik' },
+];
+
+function openBuku(){
+  document.getElementById('page-buku').classList.add('open');
+  const list = document.getElementById('buku-list');
+  list.innerHTML = KITAB_HADITS.map(k => `
+    <button class="job-card" style="width:100%; text-align:left; display:flex; align-items:center; gap:12px; cursor:pointer; background:#fff;" onclick="openKitab('${k.key}')">
+      <span style="width:40px; height:40px; border-radius:10px; background:rgba(23,80,56,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </span>
+      <span style="flex:1; min-width:0;">
+        <span style="display:block; font-weight:700; font-size:14.5px; color:var(--ink);">${k.nama}</span>
+        <span style="display:block; font-size:12px; color:var(--muted);">${k.pengarang}</span>
+      </span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>`).join('');
+}
+function closeBuku(){ document.getElementById('page-buku').classList.remove('open'); }
+
+let _bukuState = null, _bukuScrollBound = false;
+function openKitab(key){
+  const kitab = KITAB_HADITS.find(k => k.key === key);
+  if(!kitab) return;
+  _bukuState = { key, nama: kitab.nama, section: 1, loading: false, done: false };
+  document.getElementById('buku-read-title').textContent = kitab.nama;
+  document.getElementById('buku-hadith-list').innerHTML = '';
+  document.getElementById('buku-load-more').textContent = 'Memuat…';
+  document.getElementById('page-buku-read').classList.add('open');
+  document.getElementById('buku-read-scroll').scrollTop = 0;
+  if(!_bukuScrollBound){
+    _bukuScrollBound = true;
+    const sc = document.getElementById('buku-read-scroll');
+    sc.addEventListener('scroll', () => { if(sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 140) loadNextHadithSection(); }, { passive: true });
+  }
+  loadNextHadithSection();
+}
+function closeBukuRead(){ document.getElementById('page-buku-read').classList.remove('open'); }
+
+async function loadNextHadithSection(){
+  const st = _bukuState;
+  if(!st || st.loading || st.done) return;
+  st.loading = true;
+  const more = document.getElementById('buku-load-more');
+  more.textContent = 'Memuat…';
+  try{
+    const [rInd, rAra] = await Promise.all([
+      fetch(`${HADITH_BASE}/ind-${st.key}/sections/${st.section}.json`),
+      fetch(`${HADITH_BASE}/ara-${st.key}/sections/${st.section}.json`).catch(() => null)
+    ]);
+    if(!rInd || !rInd.ok){
+      st.done = true; st.loading = false;
+      more.textContent = st.section > 1 ? '— selesai —' : 'Gagal memuat kitab. Cek koneksi lalu coba lagi.';
+      return;
+    }
+    const dInd = await rInd.json();
+    let araMap = {};
+    try{ if(rAra && rAra.ok){ const dAra = await rAra.json(); (dAra.hadiths || []).forEach(h => { araMap[h.hadithnumber] = h.text; }); } }catch(e){}
+    const secName = (dInd.metadata && dInd.metadata.sections && dInd.metadata.sections[st.section]) || '';
+    const hadiths = (dInd.hadiths || []).filter(h => h.text && h.text.trim());
+    let html = '';
+    if(secName){ html += `<div style="font-weight:800; font-size:12.5px; color:var(--maqom-deep); margin:12px 2px 8px; letter-spacing:.03em;">Bab ${st.section} · ${escapeHtml(secName)}</div>`; }
+    html += hadiths.map(h => `
+      <div class="job-card">
+        <div style="font-size:11px; font-weight:700; color:var(--maqom); margin-bottom:8px;">${escapeHtml(st.nama)} No. ${h.hadithnumber}</div>
+        ${araMap[h.hadithnumber] ? `<div style="font-family:'Scheherazade New', serif; font-size:20px; line-height:2; direction:rtl; text-align:right; color:var(--maqom-deep); margin-bottom:10px;">${escapeHtml(araMap[h.hadithnumber])}</div>` : ''}
+        <div style="font-size:13.5px; color:#333; line-height:1.75;">${escapeHtml(h.text)}</div>
+      </div>`).join('');
+    document.getElementById('buku-hadith-list').insertAdjacentHTML('beforeend', html);
+    st.section++;
+    st.loading = false;
+    more.textContent = 'Scroll untuk memuat lanjutan…';
+  }catch(e){
+    st.loading = false;
+    more.textContent = 'Gagal memuat. Coba lagi.';
+  }
+}
 function closeSholat(){
   document.getElementById('page-sholat').classList.remove('open');
   if(sholatTimer){ clearInterval(sholatTimer); sholatTimer = null; }
@@ -3425,6 +3563,7 @@ function updateAuthUI(){
     if(authBtn) authBtn.textContent = 'Keluar';
     if(adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
     if(adBtn) adBtn.style.display = isAdmin() ? '' : 'none';
+    if(isAdmin()) refreshAdminBadge();
   } else {
     if(name) name.textContent = 'Tamu';
     if(sub) sub.textContent = 'Belum masuk';
@@ -3595,13 +3734,14 @@ async function loadPendingAdmin(){
     const { data, error } = await sb.from(TABLE[cat]).select('*').eq('status','pending').order('created_at',{ascending:true});
     if(!error && data) items = items.concat(data.map(r => ({ ...r, _cat: cat })));
   }
-  if(!items.length){ list.innerHTML = '<div class="empty-state">Tidak ada titik menunggu persetujuan. 🎉</div>'; return; }
+  if(!items.length){ list.innerHTML = '<div class="empty-state">Tidak ada titik menunggu persetujuan. 🎉</div>'; setAdminBadge(0); return; }
   list.innerHTML = items.map(i => `
     <div class="job-card" id="pend-${i.id}">
       <div class="job-tag">${CAT_LABEL[i._cat]}</div>
       <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(i.name || '(tanpa nama)')}</div>
       ${i.address ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(i.address)}</div>` : ''}
       ${i.note ? `<div style="font-size:12.5px; color:#555; margin-bottom:6px;">${escapeHtml(i.note)}</div>` : ''}
+      ${i.photo_url ? `<img src="${escapeHtml(i.photo_url)}" style="width:100%; border-radius:10px; margin:6px 0 8px; display:block;" loading="lazy" />` : ''}
       <div class="popup-coord" style="margin-bottom:10px;">${(i.lat||0).toFixed(6)}, ${(i.lng||0).toFixed(6)}</div>
       <div style="display:flex; gap:8px;">
         <button class="popup-btn approve" style="flex:1;" onclick="approvePin('${i._cat}','${i.id}')">Setujui</button>
@@ -3609,6 +3749,7 @@ async function loadPendingAdmin(){
       </div>
     </div>
   `).join('');
+  setAdminBadge(items.length);
 }
 
 async function approvePin(cat, id){
@@ -3617,6 +3758,7 @@ async function approvePin(cat, id){
   showToast('Titik disetujui & kini tampil untuk umum');
   await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
+  refreshAdminBadge();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
 }
 
@@ -3626,6 +3768,7 @@ async function rejectPin(cat, id){
   showToast('Titik ditolak & dihapus');
   await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
+  refreshAdminBadge();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
 }
 
@@ -3729,6 +3872,25 @@ async function refreshInfoBadge(){
 function markInfoSeen(newestCreatedAt){
   if(newestCreatedAt) localStorage.setItem('nuqto_info_seen', newestCreatedAt);
   setInfoBadge(0);
+}
+
+/* ---- badge Panel Admin (titik menunggu persetujuan) — realtime ---- */
+function setAdminBadge(n){
+  const b = document.getElementById('admin-badge');
+  if(!b) return;
+  if(n && n > 0){ b.textContent = n > 9 ? '9+' : String(n); b.style.display = 'flex'; }
+  else { b.style.display = 'none'; }
+}
+async function refreshAdminBadge(){
+  if(!isAdmin()){ setAdminBadge(0); return; }
+  try{
+    let total = 0;
+    for(const cat of ['maqom','blacklist','razia']){
+      const { count, error } = await sb.from(TABLE[cat]).select('id', { count:'exact', head:true }).eq('status','pending');
+      if(!error) total += count || 0;
+    }
+    setAdminBadge(total);
+  }catch(e){}
 }
 
 let jobEditId = null;
@@ -4388,6 +4550,7 @@ const PIN_NOTIF_TEXT = {
 const _pinNotified = new Set();
 function handlePinRealtime(payload){
   const p = payload.new;
+  if(isAdmin()) refreshAdminBadge(); // admin: hitung ulang titik menunggu persetujuan secara realtime
   if(!p || p.status !== 'approved') return;
   if(_pinNotified.has(p.id)) return; // cegah ganda (mis. edit setelah approved)
   _pinNotified.add(p.id);
@@ -4691,6 +4854,7 @@ window.addEventListener('load', () => {
   updateNotifBadge();
   refreshJobBadge();
   refreshInfoBadge();
+  refreshAdminBadge();
   setTimeout(updatePushLabel, 1500);
   setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
   if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
@@ -4722,7 +4886,7 @@ window.addEventListener('load', () => {
   }
   // iOS PWA sering menahan realtime saat app di belakang → segarkan badge & cek darurat tiap app kembali ke depan
   document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'visible'){ updateNotifBadge(); checkActiveEmergency(); refreshJobBadge(); refreshInfoBadge(); }
+    if(document.visibilityState === 'visible'){ updateNotifBadge(); checkActiveEmergency(); refreshJobBadge(); refreshInfoBadge(); refreshAdminBadge(); }
   });
 
   const splash = document.getElementById('splash-screen');
