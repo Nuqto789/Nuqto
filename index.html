@@ -1285,15 +1285,6 @@
     </button>
 
     <div class="section-title">Layanan</div>
-    <button class="menu-row" onclick="openLowongan()">
-      <span class="menu-icon" style="position:relative;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        <span id="job-badge" class="menu-badge" style="display:none;">0</span>
-      </span>
-      <span class="menu-label">Lowongan Kerja</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-    </button>
-
     <button id="emergency-menu-btn" class="menu-row emergency-row" onclick="openEmergencyConfirm()">
       <span class="menu-icon emergency-icon">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"/><path d="M21 12h1"/><path d="M18.5 4.5 18 5"/><path d="M2 12h1"/><path d="M12 2v1"/><path d="m4.929 4.929.707.707"/></svg>
@@ -1306,10 +1297,20 @@
     </button>
 
     <button class="menu-row" onclick="openInfo()">
-      <span class="menu-icon" style="background:var(--soft-blue);">
+      <span class="menu-icon" style="background:var(--soft-blue); position:relative;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+        <span id="info-badge" class="menu-badge" style="display:none;">0</span>
       </span>
       <span class="menu-label">Pusat Informasi</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
+    <button class="menu-row" onclick="openLowongan()">
+      <span class="menu-icon" style="position:relative;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span id="job-badge" class="menu-badge" style="display:none;">0</span>
+      </span>
+      <span class="menu-label">Info Jadwal Talaqqi</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
@@ -1348,8 +1349,8 @@
     <button class="back-btn" onclick="closeLowongan()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
-    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Lowongan Kerja</div>
-    <button id="addjob-btn" class="back-btn" style="display:none;" onclick="openAddJob()" aria-label="Pasang lowongan">
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Info Jadwal Talaqqi</div>
+    <button id="addjob-btn" class="back-btn" style="display:none;" onclick="openAddJob()" aria-label="Bagikan jadwal talaqqi">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </div>
@@ -1538,7 +1539,7 @@
 
     <p class="about-p">Selain itu, Nuqto juga menyediakan pusat informasi yang memungkinkan pengguna berbagi informasi seperti kehilangan dan menemukan barang, serta berbagai informasi lain yang bermanfaat bagi sesama.</p>
 
-    <p class="about-p">Nuqto juga membuka ruang untuk informasi lowongan kerja, sehingga pengguna dapat menemukan maupun membagikan kesempatan kerja kepada orang lain.</p>
+    <p class="about-p">Nuqto juga membuka ruang untuk informasi jadwal talaqqi, sehingga pengguna dapat menemukan maupun membagikan jadwal talaqqi/pengajian kepada orang lain.</p>
 
     <p class="about-p">Namun, Nuqto tidak hanya dibuat untuk membantu pengguna menemukan suatu tempat. Ada hal lain yang juga menjadi perhatian penting: keamanan.</p>
 
@@ -1558,7 +1559,7 @@
       <span class="about-chip">Imaroh / Rumah</span>
       <span class="about-chip">Talaqqi</span>
       <span class="about-chip">Pusat Informasi</span>
-      <span class="about-chip">Lowongan Kerja</span>
+      <span class="about-chip">Jadwal Talaqqi</span>
       <span class="about-chip">Laporan Darurat</span>
       <span class="about-chip">Al-Qur'an</span>
       <span class="about-chip">Arah Kiblat</span>
@@ -1668,20 +1669,20 @@
     <button class="back-btn" onclick="closeAddJob()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
-    <div id="addjob-title" class="font-display" style="font-size:19px; font-weight:700;">Pasang Lowongan</div>
+    <div id="addjob-title" class="font-display" style="font-size:19px; font-weight:700;">Bagikan Jadwal Talaqqi</div>
   </div>
   <div class="scroll-page" style="padding-top:16px;">
-    <label class="field-label">Judul Pekerjaan</label>
-    <input id="job-title" class="field-input mb-4" type="text" placeholder="cth. Admin Toko Online" />
+    <label class="field-label">Nama Talaqqi / Pengajar</label>
+    <input id="job-title" class="field-input mb-4" type="text" placeholder="cth. Talaqqi Tajwid — Syaikh Fulan" />
     <label class="field-label">Lokasi</label>
-    <input id="job-location" class="field-input mb-4" type="text" placeholder="cth. Nasr City / kerja dari rumah" />
-    <label class="field-label">Tipe</label>
-    <input id="job-tag" class="field-input mb-4" type="text" placeholder="cth. Part-time / Freelance" />
-    <label class="field-label">Deskripsi</label>
-    <textarea id="job-desc" class="field-input mb-4" rows="3" placeholder="Rincian pekerjaan…"></textarea>
+    <input id="job-location" class="field-input mb-4" type="text" placeholder="cth. Masjid Al-Azhar / online" />
+    <label class="field-label">Kitab</label>
+    <input id="job-tag" class="field-input mb-4" type="text" placeholder="cth. Matan Al-Jazariyah" />
+    <label class="field-label">Jadwal (hari & jam)</label>
+    <textarea id="job-desc" class="field-input mb-4" rows="3" placeholder="cth. Senin & Kamis, ba'da Maghrib…"></textarea>
     <label class="field-label">Kontak (WA / email)</label>
     <input id="job-contact" class="field-input mb-5" type="text" placeholder="cth. wa.me/62…" />
-    <button id="job-submit-btn" class="btn-primary maqom" onclick="submitJob()">Pasang Lowongan</button>
+    <button id="job-submit-btn" class="btn-primary maqom" onclick="submitJob()">Bagikan Jadwal</button>
     <button class="btn-ghost" onclick="closeAddJob()">Batal</button>
   </div>
 </div>
@@ -1964,24 +1965,18 @@
 
     <hr class="g-div">
 
-    <div class="g-h2">3. Lowongan Kerja</div>
-    <p class="g-p">Fitur Lowongan Kerja dapat digunakan untuk membagikan informasi pekerjaan kepada pengguna Nuqto.</p>
-    <p class="g-p">Cara menambahkan lowongan kerja:</p>
+    <div class="g-h2">3. Info Jadwal Talaqqi</div>
+    <p class="g-p">Fitur Info Jadwal Talaqqi dapat digunakan untuk membagikan informasi jadwal talaqqi/pengajian kepada pengguna Nuqto.</p>
+    <p class="g-p">Cara membagikan jadwal talaqqi:</p>
     <ol class="g-ol">
-      <li>Klik menu Lowongan Kerja.</li>
-      <li>Klik ikon + di pojok kanan atas untuk membuat lowongan baru.</li>
-      <li>Pada bagian Judul Pekerjaan, masukkan posisi yang sedang dibutuhkan, misalnya Pramusaji.</li>
-      <li>Pada bagian Lokasi, masukkan alamat lengkap tempat pekerjaan.</li>
-      <li>Pada bagian Tipe/Jam Kerja, jelaskan waktu kerja, misalnya:
-        <ul class="g-ul sub">
-          <li>Pagi sampai malam.</li>
-          <li>Sore sampai malam.</li>
-          <li>Malam sampai pagi.</li>
-        </ul>
-      </li>
-      <li>Pada bagian Deskripsi, jelaskan pekerjaan secara lengkap, termasuk tugas dan persyaratan jika ada.</li>
-      <li>Pada bagian Kontak, masukkan nomor WhatsApp atau telepon aktif yang dapat dihubungi oleh calon pelamar.</li>
-      <li>Periksa kembali informasi yang sudah dimasukkan sebelum memposting lowongan.</li>
+      <li>Klik menu Info Jadwal Talaqqi.</li>
+      <li>Klik ikon + di pojok kanan atas untuk menambah jadwal baru.</li>
+      <li>Pada bagian Nama Talaqqi / Pengajar, masukkan nama talaqqi atau pengajarnya, misalnya Talaqqi Tajwid — Syaikh Fulan.</li>
+      <li>Pada bagian Lokasi, masukkan tempat talaqqi (mis. Masjid Al-Azhar) atau tulis "online".</li>
+      <li>Pada bagian Kitab, masukkan kitab yang dikaji, misalnya Matan Al-Jazariyah.</li>
+      <li>Pada bagian Jadwal (hari &amp; jam), jelaskan waktunya, misalnya Senin &amp; Kamis, ba'da Maghrib.</li>
+      <li>Pada bagian Kontak, masukkan nomor WhatsApp atau kontak aktif yang dapat dihubungi.</li>
+      <li>Periksa kembali informasi sebelum membagikannya.</li>
     </ol>
 
     <hr class="g-div">
@@ -2264,7 +2259,7 @@ function switchPage(cat){
   document.getElementById('page-' + cat).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applySafeBg(cat);
-  if(cat === 'akun') refreshJobBadge();
+  if(cat === 'akun'){ refreshJobBadge(); refreshInfoBadge(); }
   if(maps[cat]) setTimeout(() => maps[cat].invalidateSize(), 220);
 }
 
@@ -3671,18 +3666,22 @@ async function deletePin(cat, id){
    ============================================================ */
 async function loadJobs(){
   const list = document.getElementById('job-list');
-  list.innerHTML = '<div class="empty-state">Memuat lowongan…</div>';
+  list.innerHTML = '<div class="empty-state">Memuat jadwal…</div>';
   const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
   if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
-  if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada lowongan. ' + (currentUser ? 'Tekan + untuk memasang.' : 'Masuk untuk memasang lowongan.') + '</div>'; return; }
+  if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada jadwal talaqqi. ' + (currentUser ? 'Tekan + untuk membagikan.' : 'Masuk untuk membagikan jadwal.') + '</div>'; return; }
   const canManage = (j) => isAdmin() || (currentUser && j.user_id === currentUser.id);
   list.innerHTML = data.map(j => `
     <div class="job-card">
       ${canManage(j) ? `<button class="job-more" onclick="openJobMenu('${j.id}')" aria-label="Opsi">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>` : ''}
+      <div class="info-head" style="margin-bottom:10px;${canManage(j) ? ' padding-right:30px;' : ''}">
+        <div class="info-avatar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="info-name">${escapeHtml(j.author_name || 'Pengguna')}<span class="info-time">${timeAgo(j.created_at)}</span></div>
+      </div>
       ${j.tag ? `<div class="job-tag">${escapeHtml(j.tag)}</div>` : ''}
-      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px; padding-right:${canManage(j) ? '30px' : '0'};">${escapeHtml(j.title)}</div>
+      <div style="font-weight:700; font-size:14.5px; margin-bottom:2px;">${escapeHtml(j.title)}</div>
       ${j.location ? `<div class="popup-note" style="margin-bottom:4px;">${escapeHtml(j.location)}</div>` : ''}
       ${j.description ? `<div style="font-size:12.5px; color:#555; margin-bottom:6px;">${escapeHtml(j.description)}</div>` : ''}
       ${j.contact ? `<div style="font-size:12.5px; font-weight:600; color:var(--maqom);">${escapeHtml(j.contact)}</div>` : ''}
@@ -3710,35 +3709,55 @@ function markJobsSeen(newestCreatedAt){
   setJobBadge(0);
 }
 
+/* ---- badge Pusat Informasi (info_posts) — realtime ---- */
+function setInfoBadge(n){
+  const b = document.getElementById('info-badge');
+  if(!b) return;
+  if(n && n > 0){ b.textContent = n > 9 ? '9+' : String(n); b.style.display = 'flex'; }
+  else { b.style.display = 'none'; }
+}
+async function refreshInfoBadge(){
+  try{
+    const seen = localStorage.getItem('nuqto_info_seen') || '1970-01-01T00:00:00Z';
+    const { count, error } = await sb.from('info_posts').select('id', { count:'exact', head:true }).gt('created_at', seen);
+    if(error) return;
+    setInfoBadge(count || 0);
+  }catch(e){}
+}
+function markInfoSeen(newestCreatedAt){
+  if(newestCreatedAt) localStorage.setItem('nuqto_info_seen', newestCreatedAt);
+  setInfoBadge(0);
+}
+
 let jobEditId = null;
 
 function openAddJob(){
-  if(!isLoggedIn()){ openAuth('Masuk / daftar dulu untuk memasang lowongan.'); return; }
+  if(!isLoggedIn()){ openAuth('Masuk / daftar dulu untuk berbagi jadwal talaqqi.'); return; }
   jobEditId = null;
   ['job-title','job-location','job-tag','job-desc','job-contact'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('addjob-title').textContent = 'Pasang Lowongan';
-  document.getElementById('job-submit-btn').textContent = 'Pasang Lowongan';
+  document.getElementById('addjob-title').textContent = 'Bagikan Jadwal Talaqqi';
+  document.getElementById('job-submit-btn').textContent = 'Bagikan Jadwal';
   document.getElementById('page-addjob').classList.add('open');
 }
 function closeAddJob(){ document.getElementById('page-addjob').classList.remove('open'); }
 
 async function openEditJob(id){
   const { data, error } = await sb.from('jobs').select('*').eq('id', id).single();
-  if(error || !data){ showToast('Gagal memuat lowongan'); return; }
+  if(error || !data){ showToast('Gagal memuat jadwal'); return; }
   jobEditId = id;
   document.getElementById('job-title').value = data.title || '';
   document.getElementById('job-location').value = data.location || '';
   document.getElementById('job-tag').value = data.tag || '';
   document.getElementById('job-desc').value = data.description || '';
   document.getElementById('job-contact').value = data.contact || '';
-  document.getElementById('addjob-title').textContent = 'Edit Lowongan';
+  document.getElementById('addjob-title').textContent = 'Edit Jadwal Talaqqi';
   document.getElementById('job-submit-btn').textContent = 'Simpan Perubahan';
   document.getElementById('page-addjob').classList.add('open');
 }
 
 async function submitJob(){
   const title = document.getElementById('job-title').value.trim();
-  if(!title){ showToast('Judul pekerjaan wajib diisi'); return; }
+  if(!title){ showToast('Nama talaqqi wajib diisi'); return; }
   const payload = {
     title,
     location: document.getElementById('job-location').value.trim() || null,
@@ -3753,12 +3772,13 @@ async function submitJob(){
     if(jobEditId){
       const { data, error } = await sb.from('jobs').update(payload).eq('id', jobEditId).select();
       if(error){ showToast('Gagal simpan: ' + error.message); return; }
-      if(!data || !data.length){ showToast('Tidak bisa menyimpan — hanya pemilik/admin yang bisa mengedit lowongan ini'); return; }
-      showToast('Lowongan diperbarui');
+      if(!data || !data.length){ showToast('Tidak bisa menyimpan — hanya pemilik/admin yang bisa mengedit jadwal ini'); return; }
+      showToast('Jadwal talaqqi diperbarui');
     } else {
-      const { data, error } = await sb.from('jobs').insert(payload).select();
+      const author_name = (currentUser && currentUser.user_metadata && currentUser.user_metadata.name) || 'Pengguna';
+      const { data, error } = await sb.from('jobs').insert({ ...payload, author_name }).select();
       if(error){ showToast('Gagal pasang: ' + error.message); return; }
-      showToast('Lowongan berhasil dipasang');
+      showToast('Jadwal talaqqi berhasil dibagikan');
     }
   } catch(e){
     showToast('Gagal menyimpan — cek koneksi lalu coba lagi');
@@ -3797,7 +3817,7 @@ async function deleteJob(id){
   const { data, error } = await sb.from('jobs').delete().eq('id', id).select();
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
-  showToast('Lowongan dihapus');
+  showToast('Jadwal talaqqi dihapus');
   loadJobs();
 }
 
@@ -3858,6 +3878,7 @@ async function loadInfoPosts(){
       ${p.caption ? `<div class="info-caption">${escapeHtml(p.caption)}</div>` : ''}
     </div>`;
   }).join('');
+  markInfoSeen(data[0].created_at); // dibuka → badge Pusat Informasi hilang
 }
 
 let actionToastTimer = null;
@@ -4408,6 +4429,10 @@ function initEmergencyRealtime(){
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'jobs' }, () => { refreshJobBadge(); })
     .subscribe();
 
+  sb.channel('info-feed')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'info_posts' }, () => { refreshInfoBadge(); })
+    .subscribe();
+
   sb.channel('pins-feed')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'maqom_pins' }, handlePinRealtime)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'maqom_pins' }, handlePinRealtime)
@@ -4589,6 +4614,7 @@ window.addEventListener('load', () => {
   initEmergencyRealtime();
   updateNotifBadge();
   refreshJobBadge();
+  refreshInfoBadge();
   setTimeout(updatePushLabel, 1500);
   setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
   if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
@@ -4613,7 +4639,7 @@ window.addEventListener('load', () => {
   }
   // iOS PWA sering menahan realtime saat app di belakang → segarkan badge & cek darurat tiap app kembali ke depan
   document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'visible'){ updateNotifBadge(); checkActiveEmergency(); refreshJobBadge(); }
+    if(document.visibilityState === 'visible'){ updateNotifBadge(); checkActiveEmergency(); refreshJobBadge(); refreshInfoBadge(); }
   });
 
   const splash = document.getElementById('splash-screen');
