@@ -1191,6 +1191,32 @@
         <span class="lib-card-sub">Kitab Hadits</span>
       </button>
     </div>
+
+    <!-- NIAGA -->
+    <div class="section-head reveal d4" style="margin-top:22px; margin-bottom:10px;">
+      <div class="st">Niaga</div>
+    </div>
+    <div class="lib-row reveal d4">
+      <button class="lib-card" onclick="openNiaga()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="14" y="8" width="36" height="48" rx="7" fill="#0E3626"/>
+            <rect x="20" y="14" width="24" height="10" rx="3" fill="#E9E4D7"/>
+            <circle cx="23" cy="32" r="2.6" fill="#BE9A46"/>
+            <circle cx="32" cy="32" r="2.6" fill="#E9E4D7"/>
+            <circle cx="41" cy="32" r="2.6" fill="#E9E4D7"/>
+            <circle cx="23" cy="41" r="2.6" fill="#E9E4D7"/>
+            <circle cx="32" cy="41" r="2.6" fill="#E9E4D7"/>
+            <circle cx="41" cy="41" r="2.6" fill="#E9E4D7"/>
+            <circle cx="23" cy="50" r="2.6" fill="#E9E4D7"/>
+            <circle cx="32" cy="50" r="2.6" fill="#E9E4D7"/>
+            <circle cx="41" cy="50" r="2.6" fill="#BE9A46"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Kurs</span>
+        <span class="lib-card-sub">Mata uang</span>
+      </button>
+    </div>
     </div>
   </div>
 </div>
@@ -1637,6 +1663,31 @@
   <div id="buku-read-scroll" class="scroll-page" style="padding-top:16px;">
     <div id="buku-hadith-list"></div>
     <div id="buku-load-more" style="text-align:center; padding:18px; font-size:13px; color:var(--muted);"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : KURS MATA UANG (Niaga) ===================== -->
+<div id="page-niaga" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeNiaga()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Kurs Mata Uang</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <label class="field-label">Jumlah</label>
+    <input id="kurs-amount" class="field-input mb-4" type="number" inputmode="decimal" value="1" oninput="hitungKurs()" />
+    <label class="field-label">Dari</label>
+    <select id="kurs-from" class="field-input mb-3" onchange="hitungKurs()"></select>
+    <div style="text-align:center; margin:2px 0 8px;">
+      <button onclick="tukarKurs()" aria-label="Tukar arah" style="background:rgba(23,80,56,0.1); border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l0-5 3 3M7 5l-3 3"/><path d="M17 14l0 5-3-3M17 19l3-3"/></svg>
+      </button>
+    </div>
+    <label class="field-label">Ke</label>
+    <select id="kurs-to" class="field-input mb-4" onchange="hitungKurs()"></select>
+    <div id="kurs-result" style="text-align:center; font-size:24px; font-weight:800; color:var(--maqom-deep); background:var(--soft-green); border-radius:14px; padding:18px 12px; margin-top:6px;">—</div>
+    <div id="kurs-note" style="font-size:11.5px; color:var(--muted); text-align:center; margin-top:10px;"></div>
   </div>
 </div>
 
@@ -3363,6 +3414,63 @@ async function loadNextHadithSection(){
     st.loading = false;
     more.textContent = 'Gagal memuat. Coba lagi.';
   }
+}
+
+/* ===================== NIAGA — KURS MATA UANG (API gratis, tanpa key) ===================== */
+const KURS_API = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/';
+const KURS_LIST = [
+  ['idr','Rupiah Indonesia (IDR)'], ['egp','Pound Mesir (EGP)'], ['sar','Riyal Saudi (SAR)'],
+  ['usd','Dolar AS (USD)'], ['eur','Euro (EUR)'], ['myr','Ringgit Malaysia (MYR)'],
+  ['aed','Dirham UEA (AED)'], ['try','Lira Turki (TRY)'], ['gbp','Pound Inggris (GBP)'],
+  ['sgd','Dolar Singapura (SGD)'], ['jpy','Yen Jepang (JPY)'], ['qar','Riyal Qatar (QAR)'],
+  ['kwd','Dinar Kuwait (KWD)'], ['cny','Yuan Tiongkok (CNY)']
+];
+let _kursRates = null, _kursBase = null, _kursDate = '';
+
+function openNiaga(){
+  document.getElementById('page-niaga').classList.add('open');
+  const from = document.getElementById('kurs-from'), to = document.getElementById('kurs-to');
+  if(!from.options.length){
+    const opts = KURS_LIST.map(c => `<option value="${c[0]}">${c[1]}</option>`).join('');
+    from.innerHTML = opts; to.innerHTML = opts;
+    from.value = 'idr'; to.value = 'egp';
+  }
+  hitungKurs();
+}
+function closeNiaga(){ document.getElementById('page-niaga').classList.remove('open'); }
+function tukarKurs(){
+  const f = document.getElementById('kurs-from'), t = document.getElementById('kurs-to');
+  const tmp = f.value; f.value = t.value; t.value = tmp; hitungKurs();
+}
+function formatKurs(n){
+  if(!isFinite(n)) return '-';
+  if(n >= 100) return n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+  return n.toLocaleString('id-ID', { maximumFractionDigits: 4 });
+}
+async function loadKursBase(base){
+  if(_kursBase === base && _kursRates) return _kursRates;
+  const res = await fetch(KURS_API + base + '.json');
+  if(!res.ok) throw new Error('kurs');
+  const data = await res.json();
+  _kursRates = data[base] || {};
+  _kursBase = base;
+  _kursDate = data.date || '';
+  return _kursRates;
+}
+async function hitungKurs(){
+  const from = document.getElementById('kurs-from').value;
+  const to = document.getElementById('kurs-to').value;
+  const amount = parseFloat(document.getElementById('kurs-amount').value) || 0;
+  const resEl = document.getElementById('kurs-result');
+  const noteEl = document.getElementById('kurs-note');
+  resEl.textContent = 'Menghitung…';
+  try{
+    const rates = await loadKursBase(from);
+    const rate = rates[to];
+    if(rate == null){ resEl.textContent = 'Kurs tidak tersedia'; noteEl.textContent = ''; return; }
+    resEl.textContent = formatKurs(amount * rate) + ' ' + to.toUpperCase();
+    noteEl.textContent = '1 ' + from.toUpperCase() + ' = ' + formatKurs(rate) + ' ' + to.toUpperCase() + (_kursDate ? ' · diperbarui ' + _kursDate : '');
+  }catch(e){ resEl.textContent = 'Gagal memuat kurs'; noteEl.textContent = 'Cek koneksi lalu coba lagi.'; }
 }
 function closeSholat(){
   document.getElementById('page-sholat').classList.remove('open');
