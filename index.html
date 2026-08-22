@@ -4368,7 +4368,12 @@ function handlePinRealtime(payload){
   if(!p || p.status !== 'approved') return;
   if(_pinNotified.has(p.id)) return; // cegah ganda (mis. edit setelah approved)
   _pinNotified.add(p.id);
-  if(currentUser && p.user_id === currentUser.id) return; // jangan notif ke pembuat titik sendiri
+  const isMine = currentUser && p.user_id === currentUser.id;
+  if(isMine){
+    // titikku disetujui admin (UPDATE dari pending) → beri tahu; kalau aku admin menambah langsung (INSERT) → lewati
+    if(payload.eventType === 'UPDATE') addNotif('Titikmu telah disetujui & kini tampil di peta Nuqto. 🎉');
+    return;
+  }
   const txt = PIN_NOTIF_TEXT[payload.table];
   if(txt) addNotif(txt);
 }
