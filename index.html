@@ -2395,16 +2395,6 @@ async function uploadPhoto(file){
   return result.url;
 }
 
-// notif "lokasi baru ditambahkan" ke semua user (hanya admin yang memicu: tambah langsung / setujui)
-async function notifyNewPin(cat){
-  let senderEndpoint = null, senderFcmToken = null;
-  try{
-    if(typeof isNativeApp === 'function' && isNativeApp()){ senderFcmToken = _nativeFcmToken; }
-    else if('serviceWorker' in navigator){ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) senderEndpoint = sub.endpoint; }
-  }catch(e){}
-  try{ await sb.functions.invoke('pin-notify', { body: { category: cat, senderEndpoint, senderFcmToken } }); }catch(e){}
-}
-
 async function savePin(){
   if(!pendingLatLng) return;
   const cat = document.getElementById('btn-save').dataset.cat;
@@ -2485,7 +2475,6 @@ async function savePin(){
       showToast('Titik terkirim — menunggu persetujuan admin sebelum tampil untuk umum.');
     } else {
       showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : cat === 'blacklist' ? 'Titik rumah tersimpan' : 'Titik talaqqi tersimpan');
-      notifyNewPin(cat); // admin tambah titik langsung → beri tahu semua user
     }
   }
 }
@@ -3629,7 +3618,6 @@ async function approvePin(cat, id){
   const { error } = await sb.from(TABLE[cat]).update({ status: 'approved' }).eq('id', id);
   if(error){ showToast('Gagal setujui: ' + error.message); return; }
   showToast('Titik disetujui & kini tampil untuk umum');
-  notifyNewPin(cat); // titik user disetujui admin → beri tahu semua user
   await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
@@ -4368,6 +4356,23 @@ async function checkActiveEmergency(force){
   } catch(e){}
 }
 
+// notif in-app (lonceng + badge) saat ada titik lokasi baru disetujui/ditambahkan
+const PIN_NOTIF_TEXT = {
+  maqom_pins: 'Ada lokasi maqom baru yang ditambahkan ke peta Nuqto.',
+  blacklist_pins: 'Ada lokasi rumah blacklist baru yang ditambahkan ke peta Nuqto.',
+  razia_reports: 'Ada lokasi Talaqqi baru yang ditambahkan ke peta Nuqto.'
+};
+const _pinNotified = new Set();
+function handlePinRealtime(payload){
+  const p = payload.new;
+  if(!p || p.status !== 'approved') return;
+  if(_pinNotified.has(p.id)) return; // cegah ganda (mis. edit setelah approved)
+  _pinNotified.add(p.id);
+  if(currentUser && p.user_id === currentUser.id) return; // jangan notif ke pembuat titik sendiri
+  const txt = PIN_NOTIF_TEXT[payload.table];
+  if(txt) addNotif(txt);
+}
+
 function initEmergencyRealtime(){
   sb.channel('emergency-alerts')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'emergency_alerts' }, payload => {
@@ -4396,6 +4401,15 @@ function initEmergencyRealtime(){
 
   sb.channel('jobs-feed')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'jobs' }, () => { refreshJobBadge(); })
+    .subscribe();
+
+  sb.channel('pins-feed')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'maqom_pins' }, handlePinRealtime)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'maqom_pins' }, handlePinRealtime)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blacklist_pins' }, handlePinRealtime)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'blacklist_pins' }, handlePinRealtime)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'razia_reports' }, handlePinRealtime)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'razia_reports' }, handlePinRealtime)
     .subscribe();
 }
 
@@ -4439,10 +4453,7 @@ async function saveFcmToken(token){
   _nativeFcmToken = token;
   if(!isLoggedIn() || !currentUser) return; // simpan nanti setelah user login
   try{
-    await sb.from('fcm_tokens').upsert(
-      { user_id: currentUser.id, token: token, platform: 'android', updated_at: new Date().toISOString() },
-      { onConflict: 'token' }
-    );
+    await sb.rpc('upsert_fcm_token', { p_token: token, p_platform: 'android' });
   }catch(e){ console.warn('simpan fcm token gagal', e); }
 }
 
