@@ -2506,7 +2506,7 @@ function openEditSheet(cat, pinId){
 
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
 
-  editState = { cat, id: pin.id };
+  editState = { cat, id: pin.id, oldPhoto: pin.photo_url || null }; // simpan foto lama utk dihapus jika diganti
   pendingLatLng = { lat: pin.lat, lng: pin.lng };
   existingPhotoUrl = pin.photo_url || null;
   pendingPhotoFile = null;
@@ -2651,11 +2651,13 @@ async function savePin(){
   pinCacheInvalidate(cat); // titik baru/diubah → cache basi
 
   if(isEdit){
+    const oldPhoto = editState.oldPhoto || null;
     const idx = store[cat].findIndex(p => String(p.id) === String(editState.id));
     if(idx > -1) store[cat][idx] = { ...store[cat][idx], name, address, note, photo_url: data.photo_url };
     replaceMarker(cat, editState.id, store[cat][idx]);
     closeSheet();
     showToast('Perubahan tersimpan');
+    if(oldPhoto && oldPhoto !== data.photo_url) deletePhotoR2(oldPhoto); // foto lama diganti/dihapus → buang dari R2
   } else {
     const pin = { id: data.id, name, address, note, photo_url: data.photo_url, lat: data.lat, lng: data.lng, created_at: data.created_at, status: data.status, user_id: data.user_id };
     store[cat].push(pin);
@@ -3011,7 +3013,19 @@ function timeAgo(iso){
 /* ============================================================
    NOTIFIKASI IN-APP (ikon lonceng + badge)
    ============================================================ */
-function getNotifs(){ try{ return JSON.parse(localStorage.getItem('nuqto_notifs') || '[]'); }catch(e){ return []; } }
+const NOTIF_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // notifikasi lonceng disimpan maksimal 1 minggu
+function getNotifs(){
+  let list;
+  try{ list = JSON.parse(localStorage.getItem('nuqto_notifs') || '[]'); }catch(e){ return []; }
+  if(!Array.isArray(list)) return [];
+  const cutoff = Date.now() - NOTIF_MAX_AGE_MS;
+  const fresh = list.filter(n => {
+    const t = n && n.ts ? new Date(n.ts).getTime() : NaN;
+    return isNaN(t) ? true : t >= cutoff; // buang yang lebih tua dari 1 minggu
+  });
+  if(fresh.length !== list.length){ try{ localStorage.setItem('nuqto_notifs', JSON.stringify(fresh.slice(0, 50))); }catch(e){} }
+  return fresh;
+}
 function saveNotifs(list){ try{ localStorage.setItem('nuqto_notifs', JSON.stringify(list.slice(0, 50))); }catch(e){} }
 function unreadNotifCount(){ return getNotifs().filter(n => !n.read).length; }
 function updateNotifBadge(){
@@ -4120,13 +4134,14 @@ async function approvePin(cat, id){
 }
 
 async function rejectPin(cat, id){
-  const { error } = await sb.from(TABLE[cat]).delete().eq('id', id);
+  const { data, error } = await sb.from(TABLE[cat]).delete().eq('id', id).select();
   if(error){ showToast('Gagal tolak: ' + error.message); return; }
   showToast('Titik ditolak & dihapus');
   pinCacheInvalidate(cat); await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   refreshAdminBadge();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+  if(data && data[0] && data[0].photo_url) deletePhotoR2(data[0].photo_url); // hapus foto di R2 (best-effort)
 }
 
 let pinMenuCtx = null;
@@ -4156,11 +4171,13 @@ function pinMenuDelete(){
 }
 
 async function deletePin(cat, id){
-  const { error } = await sb.from(TABLE[cat]).delete().eq('id', id);
+  const { data, error } = await sb.from(TABLE[cat]).delete().eq('id', id).select();
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
+  if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
   showToast('Titik dihapus');
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
   pinCacheInvalidate(cat); await loadPins(cat);
+  if(data[0].photo_url) deletePhotoR2(data[0].photo_url); // hapus foto di R2 (best-effort)
 }
 
 /* ============================================================
@@ -4491,10 +4508,28 @@ async function submitInfo(){
 }
 
 async function deleteInfoPost(id){
-  const { error } = await sb.from('info_posts').delete().eq('id', id);
+  // .select() mengembalikan baris yang benar-benar terhapus (RLS: hanya pemilik/admin) → sekaligus dapat photo_url
+  const { data, error } = await sb.from('info_posts').delete().eq('id', id).select();
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
+  if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
   showToast('Postingan dihapus');
   listCacheInvalidate('info'); loadInfoPosts();
+  // picu hapus foto di R2 kalau ada (best-effort, tak mengganggu jika gagal)
+  if(data[0].photo_url) deletePhotoR2(data[0].photo_url);
+}
+
+// minta Worker menghapus objek foto di R2 (dilindungi: wajib login + Worker cek foto sudah yatim)
+async function deletePhotoR2(photoUrl){
+  try{
+    const { data: sess } = await sb.auth.getSession();
+    const token = sess && sess.session && sess.session.access_token;
+    if(!token) return;
+    await fetch('/api/delete-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ url: photoUrl })
+    });
+  }catch(e){ /* best-effort: kalau gagal, postingan tetap terhapus, foto sekadar jadi yatim */ }
 }
 
 /* ============================================================
