@@ -1190,6 +1190,19 @@
         <span class="lib-card-title">Buku Bacaan</span>
         <span class="lib-card-sub">Kitab Hadits</span>
       </button>
+      <button class="lib-card" onclick="openArbain()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="16" y="10" width="34" height="44" rx="4" fill="#0E3626"/>
+            <rect x="16" y="10" width="7" height="44" fill="#0A2A1E"/>
+            <path d="M38 10 v22 l4-4 4 4 V10 Z" fill="#BE9A46"/>
+            <rect x="26" y="40" width="16" height="2.4" rx="1.2" fill="#E9E4D7"/>
+            <rect x="26" y="46" width="10" height="2.4" rx="1.2" fill="#E9E4D7"/>
+          </svg>
+        </span>
+        <span class="lib-card-title">Arbain Nawawi</span>
+        <span class="lib-card-sub">42 hadits</span>
+      </button>
     </div>
 
     <!-- NIAGA -->
@@ -3373,9 +3386,40 @@ function openKitab(key){
     const sc = document.getElementById('buku-read-scroll');
     sc.addEventListener('scroll', () => { if(sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 140) loadNextHadithSection(); }, { passive: true });
   }
+  if(kitab.src === 'myquran'){ _bukuState = { done: true }; loadArbain(); return; }
+  _bukuState = { key, nama: kitab.nama, section: 1, loading: false, done: false };
   loadNextHadithSection();
 }
 function closeBukuRead(){ document.getElementById('page-buku-read').classList.remove('open'); }
+
+function openArbain(){
+  document.getElementById('buku-read-title').textContent = "Arba'in Nawawi";
+  document.getElementById('buku-hadith-list').innerHTML = '';
+  document.getElementById('buku-load-more').textContent = 'Memuat…';
+  document.getElementById('page-buku-read').classList.add('open');
+  document.getElementById('buku-read-scroll').scrollTop = 0;
+  _bukuState = { done: true }; // cegah infinite-scroll kitab lain
+  loadArbain();
+}
+async function loadArbain(){
+  const listEl = document.getElementById('buku-hadith-list');
+  const more = document.getElementById('buku-load-more');
+  more.textContent = 'Memuat…';
+  try{
+    const res = await fetch('https://api.myquran.com/v2/hadits/arbain/semua');
+    if(!res.ok) throw new Error('x');
+    const j = await res.json();
+    const data = (j && j.data) || [];
+    listEl.innerHTML = data.map(h => `
+      <div class="job-card">
+        <div style="font-size:11px; font-weight:700; color:var(--maqom); margin-bottom:4px;">Hadits No. ${h.no}</div>
+        ${h.judul ? `<div style="font-weight:800; font-size:14px; color:var(--maqom-deep); margin-bottom:8px;">${escapeHtml(h.judul)}</div>` : ''}
+        ${h.arab ? `<div style="font-family:'Scheherazade New', serif; font-size:20px; line-height:2; direction:rtl; text-align:right; color:var(--maqom-deep); margin-bottom:10px;">${escapeHtml(h.arab)}</div>` : ''}
+        <div style="font-size:13.5px; color:#333; line-height:1.75;">${escapeHtml(h.indo || '')}</div>
+      </div>`).join('');
+    more.textContent = data.length ? ('— selesai · ' + data.length + ' hadits —') : 'Kosong.';
+  }catch(e){ more.textContent = 'Gagal memuat. Cek koneksi lalu coba lagi.'; }
+}
 
 async function loadNextHadithSection(){
   const st = _bukuState;
