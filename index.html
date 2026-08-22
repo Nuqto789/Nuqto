@@ -1406,6 +1406,14 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
+    <button class="menu-row" id="hapus-akun-row" onclick="openHapusAkun()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      </span>
+      <span class="menu-label" style="color:#DC2626;">Hapus Akun</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <button id="akun-auth-btn" class="btn-logout" onclick="onAuthBtn()">Keluar</button>
   </div>
 </div>
@@ -1745,6 +1753,30 @@
     <input id="ubah-nama-pass" class="field-input mb-5" type="password" autocomplete="current-password" placeholder="Password Nuqto kamu" />
     <button id="ubah-nama-btn" class="btn-primary maqom" onclick="submitUbahNama()">Konfirmasi</button>
     <div id="ubah-nama-info" style="font-size:12px; color:var(--rust); text-align:center; margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : HAPUS AKUN ===================== -->
+<div id="page-hapus-akun" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeHapusAkun()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Hapus Akun</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <div style="background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.25); border-radius:12px; padding:14px 16px; margin-bottom:18px;">
+      <div style="display:flex; align-items:center; gap:8px; color:#DC2626; font-weight:800; font-size:14px; margin-bottom:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Tindakan ini permanen
+      </div>
+      <p style="font-size:13px; color:var(--ink-2); line-height:1.7; margin:0;">Menghapus akun akan menghapus <b>seluruh data kamu</b> secara permanen — titik yang kamu tambahkan, postingan, jadwal talaqqi, laporan, dan notifikasi. Data <b>tidak bisa dikembalikan</b>.</p>
+    </div>
+    <p style="font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:16px;">Masukkan password Nuqto kamu untuk mengonfirmasi penghapusan akun.</p>
+    <label class="field-label">Password</label>
+    <input id="hapus-akun-pass" class="field-input mb-5" type="password" autocomplete="current-password" placeholder="Password Nuqto kamu" />
+    <button id="hapus-akun-btn" class="btn-primary" style="background:#DC2626;" onclick="submitHapusAkun()">Hapus Akun Saya</button>
+    <div id="hapus-akun-info" style="font-size:12px; color:var(--rust); text-align:center; margin-top:12px;"></div>
   </div>
 </div>
 
@@ -3803,6 +3835,41 @@ async function submitUbahNama(){
     closeUbahNama(); closePengaturan();
   }catch(e){ info.textContent = 'Gagal — cek koneksi lalu coba lagi.'; }
   finally{ btn.disabled = false; btn.textContent = lbl; }
+}
+
+/* ---------- hapus akun (wajib Play Store) ---------- */
+function openHapusAkun(){
+  if(!isLoggedIn() || !currentUser){ openAuth(); return; }
+  document.getElementById('hapus-akun-pass').value = '';
+  document.getElementById('hapus-akun-info').textContent = '';
+  document.getElementById('page-hapus-akun').classList.add('open');
+}
+function closeHapusAkun(){ document.getElementById('page-hapus-akun').classList.remove('open'); }
+async function submitHapusAkun(){
+  if(!isLoggedIn() || !currentUser){ openAuth(); return; }
+  const pass = document.getElementById('hapus-akun-pass').value;
+  const info = document.getElementById('hapus-akun-info');
+  if(!pass){ info.textContent = 'Masukkan password untuk konfirmasi.'; return; }
+  const btn = document.getElementById('hapus-akun-btn');
+  const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Memverifikasi…'; info.textContent = '';
+  try{
+    // verifikasi password (email diambil otomatis dari akun)
+    const { error: perr } = await sb.auth.signInWithPassword({ email: currentUser.email, password: pass });
+    if(perr){ info.textContent = 'Password salah.'; btn.disabled = false; btn.textContent = lbl; return; }
+    btn.textContent = 'Menghapus akun…';
+    // edge function menghapus data + akun; token user disertakan otomatis oleh sb
+    const { data, error } = await sb.functions.invoke('delete-account', { body: {} });
+    if(error || !(data && data.ok)){
+      info.textContent = 'Gagal menghapus akun: ' + ((data && data.error) || (error && error.message) || 'coba lagi');
+      btn.disabled = false; btn.textContent = lbl; return;
+    }
+    // akun terhapus → keluar & bersihkan cache lokal
+    try{ await sb.auth.signOut(); }catch(e){}
+    try{ localStorage.clear(); }catch(e){}
+    closeHapusAkun(); closePengaturan();
+    showToast('Akun kamu telah dihapus permanen');
+    setTimeout(() => { try{ location.reload(); }catch(e){} }, 1200);
+  }catch(e){ info.textContent = 'Gagal — cek koneksi lalu coba lagi.'; btn.disabled = false; btn.textContent = lbl; }
 }
 
 /* ---------- toast ---------- */
