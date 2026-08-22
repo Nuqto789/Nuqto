@@ -4686,7 +4686,13 @@ window.addEventListener('load', () => {
     document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
   });
 
-  if('serviceWorker' in navigator){
+  if(isNativeApp()){
+    // app native: JANGAN pakai service worker (pakai FCM native) — matikan + bersihkan cache agar selalu memuat kode terbaru
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+    }
+    try{ if(window.caches && caches.keys) caches.keys().then(ks => ks.forEach(k => caches.delete(k))); }catch(e){}
+  } else if('serviceWorker' in navigator){
     navigator.serviceWorker.register('/sw.js').then(reg => { try{ reg.update(); }catch(e){} }).catch(err => console.warn('SW gagal daftar:', err));
     // saat notifikasi darurat diklik, SW mengirim pesan ini → tampilkan popup di dalam app
     navigator.serviceWorker.addEventListener('message', (event) => {
