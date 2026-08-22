@@ -4608,6 +4608,19 @@ function showBatteryDialog(){
   document.getElementById('batt-later').onclick = () => { localStorage.setItem('nuqto_batt_prompted', '1'); wrap.remove(); };
 }
 
+// segarkan data di tempat (tanpa reload penuh / tanpa splash lagi)
+async function softRefresh(){
+  try{ loadPins('maqom'); loadPins('blacklist'); loadPins('razia'); }catch(e){}
+  try{ updateCounts(); }catch(e){}
+  try{ refreshJobBadge(); }catch(e){}
+  try{ refreshInfoBadge(); }catch(e){}
+  try{ updateNotifBadge(); }catch(e){}
+  try{ checkActiveEmergency(); }catch(e){}
+  try{ if(document.getElementById('page-lowongan') && document.getElementById('page-lowongan').classList.contains('open')) loadJobs(); }catch(e){}
+  try{ if(document.getElementById('page-info') && document.getElementById('page-info').classList.contains('open')) loadInfoPosts(); }catch(e){}
+  try{ if(document.getElementById('page-sholat') && document.getElementById('page-sholat').classList.contains('open')) loadSholat(); }catch(e){}
+}
+
 // tarik layar dari atas ke bawah → refresh (pull-to-refresh) — hanya di app native (browser sudah punya bawaan)
 function initPullToRefresh(){
   if(!isNativeApp()) return;
@@ -4655,7 +4668,13 @@ function initPullToRefresh(){
       ind.style.transition = 'transform .2s';
       ind.style.transform = 'translateY(18px)';
       svg.style.animation = 'ptrspin .8s linear infinite';
-      setTimeout(() => { try{ location.reload(); }catch(e){} }, 400);
+      try{ softRefresh(); }catch(e){}
+      setTimeout(() => {
+        ind.style.transition = 'transform .3s';
+        ind.style.transform = 'translateY(-60px)';
+        svg.style.animation = '';
+        refreshing = false;
+      }, 900); // segarkan data di tempat, lalu tarik indikator kembali (tanpa splash)
     } else {
       ind.style.transition = 'transform .25s';
       ind.style.transform = 'translateY(-60px)';
