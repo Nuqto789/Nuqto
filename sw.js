@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuqto-shell-v5';
+const CACHE_NAME = 'nuqto-shell-v7';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -7,7 +7,7 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) => Promise.allSettled(APP_SHELL.map((u) => cache.add(u))))
   );
   self.skipWaiting();
 });
@@ -22,21 +22,33 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  const req = event.request;
+  const url = new URL(req.url);
 
-  // jangan cache API/data calls (Supabase, upload) — selalu ambil terbaru
-  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/') || url.hostname.includes('supabase.co')) {
+  // jangan cache API/data dinamis (Supabase, upload) — selalu ambil terbaru
+  if (req.method !== 'GET' || url.pathname.startsWith('/api/') || url.hostname.includes('supabase.co')) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
+  // HTML / navigasi (index.html) → NETWORK-FIRST: online = kode terbaru, offline = pakai cache
+  if (req.mode === 'navigate' || req.destination === 'document') {
+    event.respondWith(
+      fetch(req)
         .then((res) => {
-          if (res && res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
+          if (res && res.status === 200) { const clone = res.clone(); caches.open(CACHE_NAME).then((cache) => cache.put(req, clone)); }
+          return res;
+        })
+        .catch(() => caches.match(req).then((r) => r || caches.match('/index.html') || caches.match('/')))
+    );
+    return;
+  }
+
+  // aset lain (CDN, font, konten API Quran/hadits) → stale-while-revalidate: cepat + tersedia offline
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const network = fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) { const clone = res.clone(); caches.open(CACHE_NAME).then((cache) => cache.put(req, clone)); }
           return res;
         })
         .catch(() => cached);
