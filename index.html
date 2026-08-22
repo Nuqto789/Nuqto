@@ -4608,6 +4608,61 @@ function showBatteryDialog(){
   document.getElementById('batt-later').onclick = () => { localStorage.setItem('nuqto_batt_prompted', '1'); wrap.remove(); };
 }
 
+// tarik layar dari atas ke bawah → refresh (pull-to-refresh) — hanya di app native (browser sudah punya bawaan)
+function initPullToRefresh(){
+  if(!isNativeApp()) return;
+  const style = document.createElement('style');
+  style.textContent = '@keyframes ptrspin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(style);
+  const ind = document.createElement('div');
+  ind.id = 'ptr-ind';
+  ind.style.cssText = 'position:fixed;top:0;left:50%;margin-left:-19px;z-index:6000;width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;transform:translateY(-60px);pointer-events:none;';
+  ind.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#175038" stroke-width="2.6" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
+  document.body.appendChild(ind);
+  const svg = ind.querySelector('svg');
+  let startY = 0, pulling = false, dist = 0, scroller = null, refreshing = false;
+  const THRESH = 70;
+  function scrollableAt(el){
+    while(el && el !== document.body){
+      const oy = getComputedStyle(el).overflowY;
+      if((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) return el;
+      el = el.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
+  document.addEventListener('touchstart', (e) => {
+    if(refreshing || e.touches.length !== 1) return;
+    if(e.target.closest && e.target.closest('.leaflet-container')){ pulling = false; return; } // jangan ganggu peta
+    scroller = scrollableAt(e.target);
+    if(scroller && scroller.scrollTop > 0){ pulling = false; return; }
+    startY = e.touches[0].clientY; pulling = true; dist = 0;
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if(!pulling || refreshing) return;
+    if(scroller && scroller.scrollTop > 0){ pulling = false; ind.style.transform = 'translateY(-60px)'; return; }
+    dist = e.touches[0].clientY - startY;
+    if(dist <= 0){ ind.style.transform = 'translateY(-60px)'; return; }
+    const y = Math.min(dist * 0.5, 80) - 50;
+    ind.style.transition = 'none';
+    ind.style.transform = 'translateY(' + y + 'px)';
+    svg.style.transform = 'rotate(' + Math.min(dist * 2, 360) + 'deg)';
+  }, { passive: true });
+  document.addEventListener('touchend', () => {
+    if(!pulling || refreshing) return;
+    pulling = false;
+    if(dist > THRESH){
+      refreshing = true;
+      ind.style.transition = 'transform .2s';
+      ind.style.transform = 'translateY(18px)';
+      svg.style.animation = 'ptrspin .8s linear infinite';
+      setTimeout(() => { try{ location.reload(); }catch(e){} }, 400);
+    } else {
+      ind.style.transition = 'transform .25s';
+      ind.style.transform = 'translateY(-60px)';
+    }
+  }, { passive: true });
+}
+
 window.addEventListener('load', () => {
   initMaps();
   initAuth();
@@ -4620,6 +4675,7 @@ window.addEventListener('load', () => {
   if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
   if(isNativeApp()) setTimeout(scheduleSholatNotifications, 3800); // native: jadwalkan notif waktu sholat
   if(isNativeApp()) setTimeout(maybeShowBatteryDialog, 5500); // native: dialog izinkan berjalan di latar (muncul sekali)
+  initPullToRefresh(); // native: tarik ke bawah untuk refresh
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
