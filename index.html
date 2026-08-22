@@ -2376,6 +2376,7 @@ function switchPage(cat){
   applySafeBg(cat);
   if(cat === 'akun'){ refreshJobBadge(); refreshInfoBadge(); }
   if(maps[cat]) setTimeout(() => maps[cat].invalidateSize(), 220);
+  updateTrackBannerVisibility();
 }
 
 /* ---------- custom marker icon ---------- */
@@ -4547,8 +4548,19 @@ function closeLiveTrack(){
   else { showTrackBanner(); }
 }
 
-function showTrackBanner(){ const b = document.getElementById('track-banner'); if(b) b.classList.add('show'); }
-function hideTrackBanner(){ const b = document.getElementById('track-banner'); if(b) b.classList.remove('show'); }
+let _trackWanted = false;
+// bar darurat penerima hanya tampil di Beranda & Akun (agar tak menindih tombol kembali di halaman lain)
+function updateTrackBannerVisibility(){
+  const b = document.getElementById('track-banner');
+  if(!b) return;
+  const overlayOpen = !!document.querySelector('.overlay-page.open');
+  const active = document.querySelector('.page.active');
+  const id = active ? active.id : '';
+  const ok = _trackWanted && !overlayOpen && (id === 'page-home' || id === 'page-akun');
+  b.classList.toggle('show', ok);
+}
+function showTrackBanner(){ _trackWanted = true; updateTrackBannerVisibility(); }
+function hideTrackBanner(){ _trackWanted = false; const b = document.getElementById('track-banner'); if(b) b.classList.remove('show'); }
 function getDismissedAlerts(){ try{ return JSON.parse(localStorage.getItem('nuqto_dismissed') || '[]'); }catch(e){ return []; } }
 function addDismissedAlert(id){ if(!id) return; const d = getDismissedAlerts(); if(!d.includes(id)){ d.push(id); if(d.length > 60) d.shift(); localStorage.setItem('nuqto_dismissed', JSON.stringify(d)); } }
 function ignoreTrackBanner(){ if(incomingAlert) addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
@@ -5013,6 +5025,7 @@ window.addEventListener('load', () => {
   if(isNativeApp()) setTimeout(scheduleSholatNotifications, 3800); // native: jadwalkan notif waktu sholat
   if(isNativeApp()) setTimeout(maybeShowBatteryDialog, 5500); // native: dialog izinkan berjalan di latar (muncul sekali)
   initPullToRefresh(); // native: tarik ke bawah untuk refresh
+  try{ const _tbObs = new MutationObserver(() => updateTrackBannerVisibility()); document.querySelectorAll('.page, .overlay-page').forEach(el => _tbObs.observe(el, { attributes:true, attributeFilter:['class'] })); }catch(e){} // bar darurat: sembunyikan di halaman selain Beranda/Akun
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
