@@ -4537,6 +4537,44 @@ async function scheduleSholatNotifications(){
   }catch(e){ console.warn('jadwal sholat gagal', e); }
 }
 
+// dialog "izinkan berjalan di latar" (satu-ketuk) agar notif darurat & sholat tepat waktu walau app tertutup
+async function maybeShowBatteryDialog(){
+  if(!isNativeApp()) return;
+  if(localStorage.getItem('nuqto_batt_prompted')) return;
+  const Batt = window.Capacitor.Plugins && window.Capacitor.Plugins.Battery;
+  if(!Batt) return;
+  try{
+    const st = await Batt.isIgnoringBatteryOptimizations();
+    if(st && st.ignoring){ localStorage.setItem('nuqto_batt_prompted', '1'); return; } // sudah diizinkan → tak perlu tanya
+  }catch(e){}
+  showBatteryDialog();
+}
+function showBatteryDialog(){
+  if(document.getElementById('batt-dialog')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'batt-dialog';
+  wrap.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;';
+  wrap.innerHTML =
+    '<div style="width:100%;max-width:320px;background:#fff;border-radius:16px;overflow:hidden;">' +
+      '<div style="background:#0E3626;padding:22px;text-align:center;color:#fff;">' +
+        '<div style="font-size:34px;line-height:1;">🔔</div>' +
+        '<div style="font-size:16px;font-weight:800;margin-top:8px;">Agar notifikasi tepat waktu</div>' +
+      '</div>' +
+      '<div style="padding:18px 20px 20px;">' +
+        '<p style="font-size:13.5px;color:#555;line-height:1.6;margin:0 0 16px;">Agar notifikasi darurat &amp; waktu sholat tetap muncul walau aplikasi ditutup, izinkan Nuqto berjalan di latar belakang.</p>' +
+        '<button id="batt-allow" style="width:100%;height:44px;background:#175038;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;">Izinkan</button>' +
+        '<button id="batt-later" style="width:100%;height:40px;background:transparent;color:#888;border:none;font-size:13.5px;margin-top:4px;">Nanti saja</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(wrap);
+  document.getElementById('batt-allow').onclick = async () => {
+    localStorage.setItem('nuqto_batt_prompted', '1');
+    try{ await window.Capacitor.Plugins.Battery.requestIgnoreBatteryOptimizations(); }catch(e){}
+    wrap.remove();
+  };
+  document.getElementById('batt-later').onclick = () => { localStorage.setItem('nuqto_batt_prompted', '1'); wrap.remove(); };
+}
+
 window.addEventListener('load', () => {
   initMaps();
   initAuth();
@@ -4547,6 +4585,7 @@ window.addEventListener('load', () => {
   setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
   if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
   if(isNativeApp()) setTimeout(scheduleSholatNotifications, 3800); // native: jadwalkan notif waktu sholat
+  if(isNativeApp()) setTimeout(maybeShowBatteryDialog, 5500); // native: dialog izinkan berjalan di latar (muncul sekali)
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
