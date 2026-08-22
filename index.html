@@ -2410,9 +2410,11 @@ async function savePin(){
 
   let photo_url = existingPhotoUrl || null;
   if(pendingPhotoFile){
-    btn.textContent = 'Mengunggah foto…';
+    btn.textContent = 'Mengompres foto…';
     try{
-      photo_url = await uploadPhoto(pendingPhotoFile);
+      const compressed = await compressImage(pendingPhotoFile);
+      btn.textContent = 'Mengunggah foto…';
+      photo_url = await uploadPhoto(compressed);
     } catch(err){
       console.error(err);
       btn.disabled = false;
