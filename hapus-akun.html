@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Hapus Akun — Nuqto</title>
+<link rel="icon" href="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --green:#0E3626; --green-2:#175038; --ink:#1b2a22; --ink-2:#4b5a52;
+    --muted:#8a978f; --line:#e6ebe7; --danger:#DC2626; --soft:#f4f8f5;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:var(--ink); background:#f6f9f7; line-height:1.6;
+    min-height:100vh; padding:0 0 40px;
+  }
+  .hero{
+    background:var(--green); color:#fff; padding:34px 22px 26px; text-align:center;
+    border-radius:0 0 22px 22px;
+  }
+  .logo{
+    width:74px; height:74px; border-radius:20px; overflow:hidden; margin:0 auto 12px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); background:#fff;
+  }
+  .logo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .hero h1{ font-size:22px; font-weight:800; letter-spacing:-.02em; }
+  .hero p{ font-size:13px; color:rgba(233,242,236,.85); margin-top:4px; }
+  .wrap{ max-width:520px; margin:0 auto; padding:0 18px; }
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:20px; margin-top:18px; box-shadow:0 2px 10px rgba(14,54,38,.04);
+  }
+  h2{ font-size:16px; font-weight:800; margin-bottom:10px; color:var(--ink); }
+  p.lead{ font-size:14px; color:var(--ink-2); }
+  .warn{
+    background:rgba(220,38,38,.07); border:1px solid rgba(220,38,38,.22);
+    border-radius:12px; padding:14px 16px; margin:14px 0;
+  }
+  .warn .t{ color:var(--danger); font-weight:800; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:7px; }
+  .warn p{ font-size:13px; color:var(--ink-2); }
+  ul.list{ margin:10px 0 2px; padding-left:18px; }
+  ul.list li{ font-size:13.5px; color:var(--ink-2); margin:4px 0; }
+  .steps{ counter-reset:s; margin-top:6px; }
+  .step{ position:relative; padding:8px 0 8px 34px; font-size:14px; color:var(--ink-2); }
+  .step:before{
+    counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:7px; width:24px; height:24px;
+    background:var(--soft); color:var(--green-2); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:800;
+  }
+  .step b{ color:var(--ink); font-weight:700; }
+  label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-2); margin:14px 0 6px; }
+  input{
+    width:100%; height:46px; border:1.5px solid var(--line); border-radius:11px;
+    padding:0 14px; font-size:15px; color:var(--ink); background:#fff; outline:none;
+  }
+  input:focus{ border-color:var(--green-2); }
+  button.del{
+    width:100%; height:48px; margin-top:20px; background:var(--danger); color:#fff;
+    border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer;
+  }
+  button.del:disabled{ opacity:.6; cursor:default; }
+  .msg{ font-size:13px; text-align:center; margin-top:14px; min-height:18px; }
+  .msg.err{ color:var(--danger); }
+  .msg.ok{ color:var(--green-2); font-weight:700; }
+  .foot{ text-align:center; font-size:12px; color:var(--muted); margin-top:22px; }
+  .foot a{ color:var(--green-2); text-decoration:none; font-weight:600; }
+  .done-box{ display:none; text-align:center; padding:10px 0; }
+  .done-box .ic{ font-size:44px; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo"><img src="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg" alt="Nuqto" /></div>
+    <h1>Hapus Akun Nuqto</h1>
+    <p>Permintaan penghapusan akun & data</p>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Apa yang dihapus?</h2>
+      <p class="lead">Menghapus akun bersifat <b>permanen</b> dan menghapus seluruh data yang terkait dengan akun kamu:</p>
+      <ul class="list">
+        <li>Titik lokasi yang kamu tambahkan di peta</li>
+        <li>Postingan di Pusat Informasi & Info Jadwal Talaqqi</li>
+        <li>Laporan darurat dan riwayat notifikasi</li>
+        <li>Token & langganan notifikasi perangkat</li>
+        <li>Akun login (email & password) kamu</li>
+      </ul>
+      <div class="warn" style="margin-top:14px;">
+        <div class="t">⚠️ Tidak bisa dibatalkan</div>
+        <p>Setelah dihapus, data tidak dapat dikembalikan. Kamu perlu mendaftar ulang jika ingin memakai Nuqto lagi.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Cara 1 — Lewat aplikasi</h2>
+      <div class="steps">
+        <div class="step">Buka aplikasi Nuqto, masuk ke tab <b>Akun</b>.</div>
+        <div class="step">Tekan <b>Hapus Akun</b> (di bawah "Tentang Nuqto").</div>
+        <div class="step">Masukkan <b>password</b> kamu untuk konfirmasi.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Cara 2 — Lewat halaman ini</h2>
+      <p class="lead">Masuk dengan email & password Nuqto kamu untuk menghapus akun langsung dari sini.</p>
+      <div id="form-box">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" placeholder="email@contoh.com" />
+        <label for="pass">Password</label>
+        <input id="pass" type="password" autocomplete="current-password" placeholder="Password Nuqto kamu" />
+        <button class="del" id="del-btn" onclick="hapusAkun()">Hapus Akun Saya Permanen</button>
+        <div class="msg" id="msg"></div>
+      </div>
+      <div class="done-box" id="done-box">
+        <div class="ic">✅</div>
+        <p class="lead" style="margin-top:8px; color:var(--green-2); font-weight:700;">Akun kamu telah dihapus permanen.</p>
+        <p class="lead" style="margin-top:6px;">Terima kasih telah menggunakan Nuqto.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      Butuh bantuan? Hubungi <a href="mailto:abdsyakir160@gmail.com">abdsyakir160@gmail.com</a><br />
+      &copy; Nuqto — Satu titik, banyak cerita.
+    </div>
+  </div>
+
+<script>
+  const SUPA_URL = 'https://xiszpsqmroynihbfijwa.supabase.co';
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpc3pwc3Ftcm95bmloYmZpandhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NjM1MjIsImV4cCI6MjEwMTIzOTUyMn0.Z9Qz5GWG8UWY47JhLvD7_4ym7rnpl5lyPWrQJCvPXR0';
+  const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+  function setMsg(text, kind){
+    const m = document.getElementById('msg');
+    m.textContent = text; m.className = 'msg' + (kind ? ' ' + kind : '');
+  }
+
+  async function hapusAkun(){
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('pass').value;
+    if(!email || !pass){ setMsg('Isi email dan password kamu.', 'err'); return; }
+    if(!confirm('Yakin ingin menghapus akun secara permanen? Data tidak bisa dikembalikan.')) return;
+
+    const btn = document.getElementById('del-btn');
+    const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Memverifikasi…'; setMsg('');
+    try{
+      const { error: perr } = await sb.auth.signInWithPassword({ email, password: pass });
+      if(perr){ setMsg('Email atau password salah.', 'err'); btn.disabled = false; btn.textContent = lbl; return; }
+      btn.textContent = 'Menghapus akun…';
+      const { data, error } = await sb.functions.invoke('delete-account', { body: {} });
+      if(error || !(data && data.ok)){
+        setMsg('Gagal menghapus akun: ' + ((data && data.error) || (error && error.message) || 'coba lagi'), 'err');
+        btn.disabled = false; btn.textContent = lbl; return;
+      }
+      try{ await sb.auth.signOut(); }catch(e){}
+      document.getElementById('form-box').style.display = 'none';
+      document.getElementById('done-box').style.display = 'block';
+    }catch(e){
+      setMsg('Gagal — cek koneksi lalu coba lagi.', 'err');
+      btn.disabled = false; btn.textContent = lbl;
+    }
+  }
+</script>
+</body>
+</html>
