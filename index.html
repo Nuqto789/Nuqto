@@ -1018,9 +1018,6 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
           <span id="notif-badge" class="notif-badge" style="display:none;">0</span>
         </button>
-        <button class="home-avatar" onclick="switchPage('akun')" aria-label="Akun">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
-        </button>
       </div>
     </div>
 
@@ -1392,6 +1389,14 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
+    <button class="menu-row" onclick="openPengaturan()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </span>
+      <span class="menu-label">Pengaturan</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <div class="section-title">Lainnya</div>
     <button class="menu-row" onclick="openAbout()">
       <span class="menu-icon">
@@ -1701,6 +1706,45 @@
     <select id="kurs-to" class="field-input mb-4" onchange="hitungKurs()"></select>
     <div id="kurs-result" style="text-align:center; font-size:24px; font-weight:800; color:var(--maqom-deep); background:var(--soft-green); border-radius:14px; padding:18px 12px; margin-top:6px;">—</div>
     <div id="kurs-note" style="font-size:11.5px; color:var(--muted); text-align:center; margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : PENGATURAN ===================== -->
+<div id="page-pengaturan" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closePengaturan()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Pengaturan</div>
+  </div>
+  <div class="scroll-page" style="padding-top:12px;">
+    <div class="section-title">Akun</div>
+    <button class="menu-row" onclick="openUbahNama()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+      </span>
+      <span class="menu-label">Ubah Nama Akun</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : UBAH NAMA AKUN ===================== -->
+<div id="page-ubah-nama" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeUbahNama()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Ubah Nama Akun</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <p style="font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:16px;">Nama akun hanya bisa diubah <b>1× setiap 2 minggu</b>. Masukkan password Nuqto kamu untuk konfirmasi.</p>
+    <label class="field-label">Nama baru</label>
+    <input id="ubah-nama-input" class="field-input mb-4" type="text" placeholder="Nama tampilan kamu" />
+    <label class="field-label">Password</label>
+    <input id="ubah-nama-pass" class="field-input mb-5" type="password" autocomplete="current-password" placeholder="Password Nuqto kamu" />
+    <button id="ubah-nama-btn" class="btn-primary maqom" onclick="submitUbahNama()">Konfirmasi</button>
+    <div id="ubah-nama-info" style="font-size:12px; color:var(--rust); text-align:center; margin-top:12px;"></div>
   </div>
 </div>
 
@@ -2572,6 +2616,8 @@ async function savePin(){
     return;
   }
 
+  pinCacheInvalidate(cat); // titik baru/diubah → cache basi
+
   if(isEdit){
     const idx = store[cat].findIndex(p => String(p.id) === String(editState.id));
     if(idx > -1) store[cat][idx] = { ...store[cat][idx], name, address, note, photo_url: data.photo_url };
@@ -2825,29 +2871,62 @@ async function drawRouteTo(cat, destLatLng){
   }
 }
 
-async function loadPins(cat){
-  let data, error;
-  try{
-    const res = await sb.from(TABLE[cat]).select('*').order('created_at', { ascending: true });
-    data = res.data;
-    error = res.error;
-  } catch(err){
-    error = err;
-  }
-  if(error){
-    console.error(error);
-    const detail = (error && (error.message || error.toString())) || 'tidak diketahui';
-    showToast('Gagal ambil ' + cat + ': ' + detail);
-    return;
-  }
+/* ---------- cache client (IndexedDB) — Lapisan 1, dirancang siap-gabung KV ---------- */
+const PIN_CACHE_TTL = 5 * 60 * 1000; // 5 menit
+const _IDB = { name: 'nuqto-cache', store: 'kv' };
+let _idbP = null;
+function _idb(){
+  if(_idbP) return _idbP;
+  _idbP = new Promise((resolve, reject) => {
+    try{
+      const req = indexedDB.open(_IDB.name, 1);
+      req.onupgradeneeded = () => { try{ req.result.createObjectStore(_IDB.store); }catch(e){} };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    }catch(e){ reject(e); }
+  });
+  return _idbP;
+}
+async function _idbGet(key){ try{ const db = await _idb(); return await new Promise((res) => { const r = db.transaction(_IDB.store, 'readonly').objectStore(_IDB.store).get(key); r.onsuccess = () => res(r.result); r.onerror = () => res(undefined); }); }catch(e){ return undefined; } }
+async function _idbSet(key, val){ try{ const db = await _idb(); await new Promise((res) => { const tx = db.transaction(_IDB.store, 'readwrite'); tx.objectStore(_IDB.store).put(val, key); tx.oncomplete = () => res(); tx.onerror = () => res(); }); }catch(e){} }
+// kunci menyertakan user → cache admin (yang lihat pending) tak ketukar dengan akun lain di HP sama
+function _pinKey(cat){ return 'pins_' + cat + '_' + (currentUser ? currentUser.id : 'guest'); }
+async function pinCacheGet(cat){ return await _idbGet(_pinKey(cat)); }
+async function pinCacheSet(cat, data){ await _idbSet(_pinKey(cat), { ts: Date.now(), data }); }
+async function pinCacheInvalidate(cat){ try{ await _idbSet(_pinKey(cat), { ts: 0, data: [] }); }catch(e){} }
+
+// cache generik untuk daftar (postingan, jadwal talaqqi) — pola sama, per-user, siap-gabung KV
+const LIST_CACHE_TTL = 5 * 60 * 1000; // 5 menit
+function _listKey(name){ return name + '_' + (currentUser ? currentUser.id : 'guest'); }
+async function listCacheGet(name){ return await _idbGet(_listKey(name)); }
+async function listCacheSet(name, data){ await _idbSet(_listKey(name), { ts: Date.now(), data }); }
+async function listCacheInvalidate(name){ try{ await _idbSet(_listKey(name), { ts: 0, data: [] }); }catch(e){} }
+
+function renderPins(cat, rows){
   store[cat] = [];
   if(markerLayers[cat]) markerLayers[cat].clearLayers();
-  data.forEach(row => {
+  (rows || []).forEach(row => {
     const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng, created_at: row.created_at, status: row.status, user_id: row.user_id };
     store[cat].push(pin);
     renderMarker(cat, pin, false);
   });
   updateCounts();
+}
+
+async function loadPins(cat){
+  let cached = null;
+  try{ cached = await pinCacheGet(cat); }catch(e){}
+  if(cached && Array.isArray(cached.data)){
+    renderPins(cat, cached.data);
+    if((Date.now() - (cached.ts || 0)) < PIN_CACHE_TTL) return; // cache masih segar → tak perlu query Supabase
+  }
+  // cache basi/kosong → ambil dari sumber (nanti: ganti titik ini ke Worker+KV)
+  try{
+    const { data, error } = await sb.from(TABLE[cat]).select('*').order('created_at', { ascending: true });
+    if(error){ if(!cached) showToast('Gagal ambil ' + cat + ': ' + (error.message || 'error')); return; }
+    try{ await pinCacheSet(cat, data); }catch(e){}
+    renderPins(cat, data);
+  }catch(err){ if(!cached) showToast('Gagal ambil ' + cat + ' — cek koneksi'); }
 }
 
 function updateCounts(){
@@ -3668,6 +3747,64 @@ function shareApp(){
   }
 }
 
+/* ---------- Pengaturan & Ubah Nama Akun ---------- */
+function openPengaturan(){ document.getElementById('page-pengaturan').classList.add('open'); }
+function closePengaturan(){ document.getElementById('page-pengaturan').classList.remove('open'); }
+
+const NAMA_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000; // 2 minggu
+
+function openUbahNama(){
+  if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengubah nama akun.'); return; }
+  const input = document.getElementById('ubah-nama-input');
+  const pass = document.getElementById('ubah-nama-pass');
+  const btn = document.getElementById('ubah-nama-btn');
+  const info = document.getElementById('ubah-nama-info');
+  input.value = (currentUser.user_metadata && currentUser.user_metadata.name) || '';
+  pass.value = '';
+  const last = currentUser.user_metadata && currentUser.user_metadata.name_changed_at;
+  const locked = last && (Date.now() - new Date(last).getTime()) < NAMA_COOLDOWN_MS;
+  if(locked){
+    const next = new Date(new Date(last).getTime() + NAMA_COOLDOWN_MS);
+    const tgl = next.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    info.textContent = 'Nama baru saja diubah. Bisa diubah lagi mulai ' + tgl + '.';
+    input.disabled = true; pass.disabled = true; btn.disabled = true; btn.style.opacity = '0.5';
+  } else {
+    info.textContent = '';
+    input.disabled = false; pass.disabled = false; btn.disabled = false; btn.style.opacity = '';
+  }
+  document.getElementById('page-ubah-nama').classList.add('open');
+}
+function closeUbahNama(){ document.getElementById('page-ubah-nama').classList.remove('open'); }
+
+async function submitUbahNama(){
+  if(!isLoggedIn() || !currentUser){ openAuth(); return; }
+  const newName = document.getElementById('ubah-nama-input').value.trim();
+  const pass = document.getElementById('ubah-nama-pass').value;
+  const info = document.getElementById('ubah-nama-info');
+  if(newName.length < 2){ info.textContent = 'Nama minimal 2 karakter.'; return; }
+  if(!pass){ info.textContent = 'Masukkan password untuk konfirmasi.'; return; }
+  const last = currentUser.user_metadata && currentUser.user_metadata.name_changed_at;
+  if(last && (Date.now() - new Date(last).getTime()) < NAMA_COOLDOWN_MS){
+    info.textContent = 'Nama hanya bisa diubah 1× setiap 2 minggu.'; return;
+  }
+  const currentName = (currentUser.user_metadata && currentUser.user_metadata.name) || '';
+  if(newName === currentName){ info.textContent = 'Nama masih sama dengan sekarang.'; return; }
+  const btn = document.getElementById('ubah-nama-btn');
+  const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Memverifikasi…'; info.textContent = '';
+  try{
+    // verifikasi password (email diambil otomatis dari akun — user hanya masukkan password)
+    const { error: perr } = await sb.auth.signInWithPassword({ email: currentUser.email, password: pass });
+    if(perr){ info.textContent = 'Password salah.'; btn.disabled = false; btn.textContent = lbl; return; }
+    const { error: uerr } = await sb.auth.updateUser({ data: { name: newName, name_changed_at: new Date().toISOString() } });
+    if(uerr){ info.textContent = 'Gagal menyimpan: ' + uerr.message; btn.disabled = false; btn.textContent = lbl; return; }
+    const { data } = await sb.auth.getUser(); if(data && data.user) currentUser = data.user;
+    updateAuthUI();
+    showToast('Nama akun berhasil diubah ✓');
+    closeUbahNama(); closePengaturan();
+  }catch(e){ info.textContent = 'Gagal — cek koneksi lalu coba lagi.'; }
+  finally{ btn.disabled = false; btn.textContent = lbl; }
+}
+
 /* ---------- toast ---------- */
 let toastTimer;
 function showToast(msg){
@@ -3909,7 +4046,7 @@ async function approvePin(cat, id){
   const { error } = await sb.from(TABLE[cat]).update({ status: 'approved' }).eq('id', id);
   if(error){ showToast('Gagal setujui: ' + error.message); return; }
   showToast('Titik disetujui & kini tampil untuk umum');
-  await loadPins(cat);
+  pinCacheInvalidate(cat); await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   refreshAdminBadge();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
@@ -3919,7 +4056,7 @@ async function rejectPin(cat, id){
   const { error } = await sb.from(TABLE[cat]).delete().eq('id', id);
   if(error){ showToast('Gagal tolak: ' + error.message); return; }
   showToast('Titik ditolak & dihapus');
-  await loadPins(cat);
+  pinCacheInvalidate(cat); await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   refreshAdminBadge();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
@@ -3956,7 +4093,7 @@ async function deletePin(cat, id){
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   showToast('Titik dihapus');
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
-  await loadPins(cat);
+  pinCacheInvalidate(cat); await loadPins(cat);
 }
 
 /* ============================================================
@@ -3964,9 +4101,21 @@ async function deletePin(cat, id){
    ============================================================ */
 async function loadJobs(){
   const list = document.getElementById('job-list');
-  list.innerHTML = '<div class="empty-state">Memuat jadwal…</div>';
-  const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
-  if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
+  let cached = null;
+  try{ cached = await listCacheGet('jobs'); }catch(e){}
+  if(cached && Array.isArray(cached.data)){
+    renderJobs(cached.data);
+    if((Date.now() - (cached.ts || 0)) < LIST_CACHE_TTL) return; // cache segar → tak query Supabase
+  } else { list.innerHTML = '<div class="empty-state">Memuat jadwal…</div>'; }
+  try{
+    const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
+    if(error){ if(!cached) list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
+    try{ await listCacheSet('jobs', data); }catch(e){}
+    renderJobs(data);
+  }catch(e){ if(!cached) list.innerHTML = '<div class="empty-state">Gagal memuat — cek koneksi</div>'; }
+}
+function renderJobs(data){
+  const list = document.getElementById('job-list');
   if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada jadwal talaqqi. ' + (currentUser ? 'Tekan + untuk membagikan.' : 'Masuk untuk membagikan jadwal.') + '</div>'; return; }
   const canManage = (j) => isAdmin() || (currentUser && j.user_id === currentUser.id);
   list.innerHTML = data.map(j => `
@@ -4105,7 +4254,7 @@ async function submitJob(){
   }
   jobEditId = null;
   closeAddJob();
-  loadJobs();
+  listCacheInvalidate('jobs'); loadJobs();
 }
 
 /* ---- menu titik-3 kartu lowongan (Edit / Hapus) ---- */
@@ -4135,7 +4284,7 @@ async function deleteJob(id){
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
   showToast('Jadwal talaqqi dihapus');
-  loadJobs();
+  listCacheInvalidate('jobs'); loadJobs();
 }
 
 /* ============================================================
@@ -4172,9 +4321,21 @@ function closeInfo(){ document.getElementById('page-info').classList.remove('ope
 
 async function loadInfoPosts(){
   const list = document.getElementById('info-list');
-  list.innerHTML = '<div class="empty-state">Memuat…</div>';
-  const { data, error } = await sb.from('info_posts').select('*').order('created_at', { ascending: false }).limit(100);
-  if(error){ list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
+  let cached = null;
+  try{ cached = await listCacheGet('info'); }catch(e){}
+  if(cached && Array.isArray(cached.data)){
+    renderInfoPosts(cached.data);
+    if((Date.now() - (cached.ts || 0)) < LIST_CACHE_TTL) return; // cache segar → tak query Supabase
+  } else { list.innerHTML = '<div class="empty-state">Memuat…</div>'; }
+  try{
+    const { data, error } = await sb.from('info_posts').select('*').order('created_at', { ascending: false }).limit(100);
+    if(error){ if(!cached) list.innerHTML = '<div class="empty-state">Gagal memuat: ' + escapeHtml(error.message) + '</div>'; return; }
+    try{ await listCacheSet('info', data); }catch(e){}
+    renderInfoPosts(data);
+  }catch(e){ if(!cached) list.innerHTML = '<div class="empty-state">Gagal memuat — cek koneksi</div>'; }
+}
+function renderInfoPosts(data){
+  const list = document.getElementById('info-list');
   if(!data.length){ list.innerHTML = '<div class="empty-state">Belum ada informasi. ' + (currentUser ? 'Tekan + untuk posting.' : 'Masuk untuk memposting.') + '</div>'; return; }
   const canManage = (p) => isAdmin() || (currentUser && p.user_id === currentUser.id);
   list.innerHTML = data.map(p => {
@@ -4259,14 +4420,14 @@ async function submitInfo(){
   if(error){ showToast('Gagal posting: ' + error.message); return; }
   showToast('Informasi berhasil diposting');
   closeAddInfo();
-  loadInfoPosts();
+  listCacheInvalidate('info'); loadInfoPosts();
 }
 
 async function deleteInfoPost(id){
   const { error } = await sb.from('info_posts').delete().eq('id', id);
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   showToast('Postingan dihapus');
-  loadInfoPosts();
+  listCacheInvalidate('info'); loadInfoPosts();
 }
 
 /* ============================================================
@@ -4714,6 +4875,7 @@ const PIN_NOTIF_TEXT = {
 const _pinNotified = new Set();
 function handlePinRealtime(payload){
   const p = payload.new;
+  try{ const _c = { maqom_pins:'maqom', blacklist_pins:'blacklist', razia_reports:'razia' }[payload.table]; if(_c) pinCacheInvalidate(_c); }catch(e){} // titik berubah → cache basi, segarkan lain kali
   if(isAdmin()) refreshAdminBadge(); // admin: hitung ulang titik menunggu persetujuan secara realtime
   if(!p || p.status !== 'approved') return;
   if(_pinNotified.has(p.id)) return; // cegah ganda (mis. edit setelah approved)
@@ -4755,11 +4917,11 @@ function initEmergencyRealtime(){
     .subscribe();
 
   sb.channel('jobs-feed')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'jobs' }, () => { refreshJobBadge(); })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'jobs' }, () => { refreshJobBadge(); listCacheInvalidate('jobs'); })
     .subscribe();
 
   sb.channel('info-feed')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'info_posts' }, () => { refreshInfoBadge(); })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'info_posts' }, () => { refreshInfoBadge(); listCacheInvalidate('info'); })
     .subscribe();
 
   sb.channel('pins-feed')
@@ -4888,14 +5050,6 @@ async function scheduleSholatNotifications(){
       }
     }
     if(notifs.length){ await LN.schedule({ notifications: notifs }); }
-    // DEMO sekali per perangkat: contoh notif sholat 15 & 30 detik lagi (uji tampilan/ikon) — hapus sebelum rilis
-    if(!localStorage.getItem('nuqto_sholat_demo_v1')){
-      localStorage.setItem('nuqto_sholat_demo_v1', '1');
-      await LN.schedule({ notifications: [
-        { id: 9901, channelId:'nuqto_sholat', smallIcon:'ic_stat_nuqto', largeIcon:'ic_nuqto_logo', iconColor:'#0E3626', title:'Maghrib sebentar lagi', body:'Waktu Maghrib akan masuk dalam 15 menit.', schedule:{ at: new Date(Date.now()+15000), allowWhileIdle:true } },
-        { id: 9902, channelId:'nuqto_sholat', smallIcon:'ic_stat_nuqto', largeIcon:'ic_nuqto_logo', iconColor:'#0E3626', title:'Waktu Maghrib telah masuk', body:'Yuk, tunaikan sholat dulu 🕌', schedule:{ at: new Date(Date.now()+30000), allowWhileIdle:true } }
-      ]});
-    }
   }catch(e){ console.warn('jadwal sholat gagal', e); }
 }
 
@@ -5036,13 +5190,8 @@ window.addEventListener('load', () => {
     document.getElementById(id).addEventListener('input', function(){ this.style.borderColor = ''; });
   });
 
-  if(isNativeApp()){
-    // app native: JANGAN pakai service worker (pakai FCM native) — matikan + bersihkan cache agar selalu memuat kode terbaru
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
-    }
-    try{ if(window.caches && caches.keys) caches.keys().then(ks => ks.forEach(k => caches.delete(k))); }catch(e){}
-  } else if('serviceWorker' in navigator){
+  if('serviceWorker' in navigator){
+    // SW aktif di web & native. Strategi network-first (di sw.js): online = kode terbaru, offline = pakai cache.
     navigator.serviceWorker.register('/sw.js').then(reg => { try{ reg.update(); }catch(e){} }).catch(err => console.warn('SW gagal daftar:', err));
     // saat notifikasi darurat diklik, SW mengirim pesan ini → tampilkan popup di dalam app
     navigator.serviceWorker.addEventListener('message', (event) => {
