@@ -2395,6 +2395,16 @@ async function uploadPhoto(file){
   return result.url;
 }
 
+// notif "lokasi baru ditambahkan" ke semua user (hanya admin yang memicu: tambah langsung / setujui)
+async function notifyNewPin(cat){
+  let senderEndpoint = null, senderFcmToken = null;
+  try{
+    if(typeof isNativeApp === 'function' && isNativeApp()){ senderFcmToken = _nativeFcmToken; }
+    else if('serviceWorker' in navigator){ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) senderEndpoint = sub.endpoint; }
+  }catch(e){}
+  try{ await sb.functions.invoke('pin-notify', { body: { category: cat, senderEndpoint, senderFcmToken } }); }catch(e){}
+}
+
 async function savePin(){
   if(!pendingLatLng) return;
   const cat = document.getElementById('btn-save').dataset.cat;
@@ -2475,6 +2485,7 @@ async function savePin(){
       showToast('Titik terkirim — menunggu persetujuan admin sebelum tampil untuk umum.');
     } else {
       showToast(cat === 'maqom' ? 'Titik maqom tersimpan' : cat === 'blacklist' ? 'Titik rumah tersimpan' : 'Titik talaqqi tersimpan');
+      notifyNewPin(cat); // admin tambah titik langsung → beri tahu semua user
     }
   }
 }
@@ -3228,7 +3239,7 @@ function enableCompass(){
 
 /* ---------- jadwal sholat ---------- */
 let sholatTimer = null;
-function openSholat(){ document.getElementById('page-sholat').classList.add('open'); loadSholat(); }
+function openSholat(){ document.getElementById('page-sholat').classList.add('open'); loadSholat(); if(isNativeApp()) scheduleSholatNotifications(); }
 function closeSholat(){
   document.getElementById('page-sholat').classList.remove('open');
   if(sholatTimer){ clearInterval(sholatTimer); sholatTimer = null; }
@@ -3618,6 +3629,7 @@ async function approvePin(cat, id){
   const { error } = await sb.from(TABLE[cat]).update({ status: 'approved' }).eq('id', id);
   if(error){ showToast('Gagal setujui: ' + error.message); return; }
   showToast('Titik disetujui & kini tampil untuk umum');
+  notifyNewPin(cat); // titik user disetujui admin → beri tahu semua user
   await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
@@ -4466,6 +4478,49 @@ async function ensureNativeGeoPermission(){
   }catch(e){ return false; }
 }
 
+// jadwal notif waktu sholat (Local Notifications native) — 2 notif per waktu: 15 menit sebelum & saat masuk
+let _sholatNotifInited = false;
+async function scheduleSholatNotifications(){
+  if(!isNativeApp()) return;
+  const LN = window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+  if(!LN) return;
+  try{
+    let perm = await LN.checkPermissions();
+    if(perm.display !== 'granted'){ perm = await LN.requestPermissions(); }
+    if(perm.display !== 'granted') return;
+    try{ await LN.createChannel({ id:'nuqto_sholat', name:'Waktu Sholat', description:'Pengingat waktu sholat', importance:5, sound:'default', vibration:true, visibility:1 }); }catch(e){}
+    if(!_sholatNotifInited){ _sholatNotifInited = true; try{ LN.addListener('localNotificationActionPerformed', () => { openSholat(); }); }catch(e){} }
+    // hapus jadwal lama agar tidak dobel
+    try{ const pend = await LN.getPending(); if(pend && pend.notifications && pend.notifications.length){ await LN.cancel({ notifications: pend.notifications.map(n => ({ id:n.id })) }); } }catch(e){}
+    // lokasi (native geo, fallback Kairo)
+    let lat = 30.0444, lng = 31.2357;
+    try{ const c = await getUserLatLng(); if(c){ lat = c[0]; lng = c[1]; } }catch(e){}
+    const tzName = (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'Africa/Cairo';
+    const tzOff = -new Date().getTimezoneOffset()/60;
+    const m = sholatMethod(tzName);
+    const defs = [ ['Fajr','Subuh'], ['Dhuhr','Dzuhur'], ['Asr','Ashar'], ['Maghrib','Maghrib'], ['Isha','Isya'] ];
+    const now = Date.now();
+    const notifs = [];
+    for(let d = 0; d < 5; d++){ // jadwalkan 5 hari ke depan
+      const date = new Date(); date.setDate(date.getDate() + d);
+      const t = computeSholat(date, lat, lng, tzOff, m.fajr, m.isha, 1);
+      for(let pi = 0; pi < defs.length; pi++){
+        const key = defs[pi][0], nama = defs[pi][1];
+        const hm = t[key].split(':'); const at = new Date(date); at.setHours(+hm[0], +hm[1], 0, 0);
+        const before = new Date(at.getTime() - 15*60*1000);
+        const baseId = d*100 + pi*10;
+        if(before.getTime() > now + 10000){
+          notifs.push({ id: baseId+1, channelId:'nuqto_sholat', title: nama + ' sebentar lagi', body: 'Waktu ' + nama + ' akan masuk dalam 15 menit.', schedule:{ at: before, allowWhileIdle:true } });
+        }
+        if(at.getTime() > now + 10000){
+          notifs.push({ id: baseId+2, channelId:'nuqto_sholat', title: 'Waktu ' + nama + ' telah masuk', body: 'Yuk, tunaikan sholat dulu 🕌', schedule:{ at: at, allowWhileIdle:true } });
+        }
+      }
+    }
+    if(notifs.length){ await LN.schedule({ notifications: notifs }); }
+  }catch(e){ console.warn('jadwal sholat gagal', e); }
+}
+
 window.addEventListener('load', () => {
   initMaps();
   initAuth();
@@ -4475,6 +4530,7 @@ window.addEventListener('load', () => {
   setTimeout(updatePushLabel, 1500);
   setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
   if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
+  if(isNativeApp()) setTimeout(scheduleSholatNotifications, 3800); // native: jadwalkan notif waktu sholat
   loadPins('maqom');
   loadPins('blacklist');
   loadPins('razia');
