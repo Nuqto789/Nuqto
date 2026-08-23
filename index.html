@@ -18,7 +18,9 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1252,6 +1254,10 @@
     <button onclick="maps.maqom.zoomOut()" aria-label="Zoom out">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
+    <div class="zoom-divider"></div>
+    <button onclick="toggleTilt('maqom')" aria-label="Miringkan (3D)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </button>
   </div>
   <button id="locate-maqom" class="locate-btn" style="color:var(--maqom);" onclick="locateMe('maqom')" aria-label="Ke lokasi saya">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><line x1="12" y1="1.6" x2="12" y2="4.4"/><line x1="12" y1="19.6" x2="12" y2="22.4"/><line x1="1.6" y1="12" x2="4.4" y2="12"/><line x1="19.6" y1="12" x2="22.4" y2="12"/></svg>
@@ -1279,6 +1285,10 @@
     <button onclick="maps.blacklist.zoomOut()" aria-label="Zoom out">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
+    <div class="zoom-divider"></div>
+    <button onclick="toggleTilt('blacklist')" aria-label="Miringkan (3D)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </button>
   </div>
   <button id="locate-blacklist" class="locate-btn" style="color:var(--rust);" onclick="locateMe('blacklist')" aria-label="Ke lokasi saya">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><line x1="12" y1="1.6" x2="12" y2="4.4"/><line x1="12" y1="19.6" x2="12" y2="22.4"/><line x1="1.6" y1="12" x2="4.4" y2="12"/><line x1="19.6" y1="12" x2="22.4" y2="12"/></svg>
@@ -1305,6 +1315,10 @@
     <div class="zoom-divider"></div>
     <button onclick="maps.razia.zoomOut()" aria-label="Zoom out">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button onclick="toggleTilt('razia')" aria-label="Miringkan (3D)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
     </button>
   </div>
   <button id="locate-razia" class="locate-btn" style="color:var(--amber);" onclick="locateMe('razia')" aria-label="Ke lokasi saya">
@@ -2375,10 +2389,10 @@ const store = {
 let currentPage = 'home';
 let pendingLatLng = null;
 let pendingPhotoFile = null;
-let maps = {};
-let markerLayers = { maqom: null, blacklist: null };
+let maps = {};                                     // peta browse (MapLibre GL native)
+let mlMarkers = { maqom: [], blacklist: [], razia: [] };  // {marker, popup, pinId} per kategori
 let userMarkers = { maqom: null, blacklist: null, razia: null };
-let routeLayers = { maqom: null, blacklist: null, razia: null };
+let routeML = { maqom: null, blacklist: null, razia: null }; // {srcId, lyrId}
 let activeRoutedPinId = { maqom: null, blacklist: null, razia: null };
 let editState = null; // { cat, id } saat mode edit, null saat mode tambah baru
 let existingPhotoUrl = null; // foto lama saat mode edit (jika tidak diganti/dihapus)
@@ -2401,8 +2415,9 @@ const meta = {
   razia: { color: 'var(--amber)', icon: 'book', nameField: 'Nama Tempat Talaqqi', namePlaceholder: 'cth. Sahah Qozaz' }
 };
 
-/* ---------- basemap Latin (OpenFreeMap vektor via MapLibre GL, label dipaksa Latin;
-   fallback raster CARTO). Pola sama seperti YallaMart "Kirim Barang". ---------- */
+/* ---------- basemap Latin (OpenFreeMap vektor via MapLibre GL, label dipaksa Latin).
+   Vektor ini IKUT BERPUTAR bersama Leaflet-rotate, dan marker tetap sinkron. Tanpa API key.
+   Fallback raster CARTO kalau vektor gagal. ---------- */
 let _mlPromise = null;
 function ensureMapLibre(){
   if(_mlPromise) return _mlPromise;
@@ -2444,60 +2459,62 @@ function addLatinBasemap(map){
         return;
       }catch(e){}
     }
-    // fallback raster kalau vektor gagal
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:20, attribution:'&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
   });
 }
 
-/* ---------- init maps ---------- */
+/* ---------- init maps (MapLibre GL native: 3D miring + putar + label Latin) ---------- */
+// Sumber peta: SELALU MapTiler base-v4 (key publik frontend, dikunci via Allowed Origins).
+// Agar tampil di localhost saat dev, tambahkan localhost:8989 di Allowed Origins MapTiler.
+const NUQTO_MAP_STYLE = 'https://api.maptiler.com/maps/base-v4/style.json?key=PyFR9LQQWVOvgnrJ5VXr';
+
+function makeMlMap(id, center){
+  const m = new maplibregl.Map({
+    container: id, style: NUQTO_MAP_STYLE, center: center, zoom: 13,
+    pitch: 0, bearing: 0, attributionControl: false,        // DATAR secara default
+    dragRotate: true, pitchWithRotate: true, maxPitch: 70
+  });
+  m.on('style.load', () => forceLatinLabels(m));
+  return m;
+}
+
 function initMaps(){
-  const CAIRO = [30.0444, 31.2357];
+  const CAIRO = [31.2357, 30.0444]; // [lng, lat] untuk MapLibre
+  maps.maqom = makeMlMap('map-maqom', CAIRO);
+  maps.blacklist = makeMlMap('map-blacklist', CAIRO);
+  maps.razia = makeMlMap('map-razia', CAIRO);
 
-  maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
-  addLatinBasemap(maps.maqom);
-
-  maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
-  addLatinBasemap(maps.blacklist);
-
-  maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
-  addLatinBasemap(maps.razia);
-
-  markerLayers.maqom = L.layerGroup().addTo(maps.maqom);
-  markerLayers.blacklist = L.layerGroup().addTo(maps.blacklist);
-  markerLayers.razia = L.layerGroup().addTo(maps.razia);
-
-  maps.maqom.on('click', e => openSheet('maqom', e.latlng));
-  maps.blacklist.on('click', e => openSheet('blacklist', e.latlng));
-  maps.razia.on('click', e => openSheet('razia', e.latlng));
-
-  maps.maqom.on('locationfound', e => onLocationFound('maqom', e));
-  maps.blacklist.on('locationfound', e => onLocationFound('blacklist', e));
-  maps.razia.on('locationfound', e => onLocationFound('razia', e));
-  maps.maqom.on('locationerror', e => onLocationError('maqom', e));
-  maps.blacklist.on('locationerror', e => onLocationError('blacklist', e));
-  maps.razia.on('locationerror', e => onLocationError('razia', e));
+  maps.maqom.on('click', e => openSheet('maqom', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
+  maps.blacklist.on('click', e => openSheet('blacklist', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
+  maps.razia.on('click', e => openSheet('razia', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
 }
 
 /* ---------- locate me ---------- */
 function locateMe(cat){
   const btn = document.getElementById('locate-' + cat);
   btn.classList.add('loading');
-  maps[cat].locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+  getUserLatLng().then(ll => onLocationFound(cat, ll)).catch(() => onLocationError(cat));
 }
 
-function onLocationFound(cat, e){
+function onLocationFound(cat, ll){
   document.getElementById('locate-' + cat).classList.remove('loading');
-  if(userMarkers[cat]){ maps[cat].removeLayer(userMarkers[cat]); }
-  userMarkers[cat] = L.marker(e.latlng, {
-    icon: L.divIcon({ className:'', html:'<div class="user-dot"></div>', iconSize:[16,16], iconAnchor:[8,8] }),
-    zIndexOffset: 1000
-  }).addTo(maps[cat]);
+  if(userMarkers[cat]){ try{ userMarkers[cat].remove(); }catch(e){} }
+  const el = document.createElement('div'); el.className = 'user-dot';
+  userMarkers[cat] = new maplibregl.Marker({ element: el }).setLngLat([ll[1], ll[0]]).addTo(maps[cat]);
+  maps[cat].flyTo({ center: [ll[1], ll[0]], zoom: 16, duration: 900 });
   showToast('Ditemukan — posisimu sekarang');
 }
 
-function onLocationError(cat, e){
+function onLocationError(cat){
   document.getElementById('locate-' + cat).classList.remove('loading');
-  showToast('Tidak bisa akses lokasi — cek izin lokasi di browser');
+  showToast('Tidak bisa akses lokasi — cek izin lokasi');
+}
+
+/* ---------- miringkan / datar (3D toggle) ---------- */
+function toggleTilt(cat){
+  const m = maps[cat]; if(!m) return;
+  if(m.getPitch() < 5){ m.easeTo({ pitch: 55, duration: 500 }); }
+  else { m.easeTo({ pitch: 0, bearing: 0, duration: 500 }); }
 }
 
 /* ---------- safe-area (bottom strip) color per page ---------- */
@@ -2520,19 +2537,15 @@ function switchPage(cat){
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applySafeBg(cat);
   if(cat === 'akun'){ refreshJobBadge(); refreshInfoBadge(); }
-  if(maps[cat]) setTimeout(() => maps[cat].invalidateSize(), 220);
+  if(maps[cat]) setTimeout(() => { try{ maps[cat].resize(); }catch(e){} }, 220);
   updateTrackBannerVisibility();
 }
 
-/* ---------- custom marker icon ---------- */
-function makeIcon(cat, justAdded){
-  return L.divIcon({
-    className: '',
-    html: `<div class="pin ${cat} ${justAdded ? 'pin-drop' : ''}"><span>${ICON_SVG[meta[cat].icon]}</span></div>`,
-    iconSize: [30,30],
-    iconAnchor: [15,28],
-    popupAnchor: [0,-26]
-  });
+/* ---------- custom marker element (MapLibre) ---------- */
+function makePinEl(cat, justAdded){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `<div class="pin ${cat} ${justAdded ? 'pin-drop' : ''}"><span>${ICON_SVG[meta[cat].icon]}</span></div>`;
+  return wrap.firstElementChild;
 }
 
 /* ---------- bottom sheet: tambah / edit pin ---------- */
@@ -2573,7 +2586,7 @@ function openEditSheet(cat, pinId){
   const pin = store[cat].find(p => String(p.id) === String(pinId));
   if(!pin){ showToast('Data tidak ditemukan'); return; }
 
-  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+  closeAllPopups();
 
   editState = { cat, id: pin.id, oldPhoto: pin.photo_url || null }; // simpan foto lama utk dihapus jika diganti
   pendingLatLng = { lat: pin.lat, lng: pin.lng };
@@ -2741,31 +2754,45 @@ async function savePin(){
   }
 }
 
-function replaceMarker(cat, pinId, updatedPin){
-  markerLayers[cat].eachLayer(l => {
-    if(String(l._pinId) === String(pinId)) markerLayers[cat].removeLayer(l);
+function removeMlMarker(cat, pinId){
+  mlMarkers[cat] = (mlMarkers[cat] || []).filter(r => {
+    if(String(r.pinId) === String(pinId)){ try{ r.marker.remove(); }catch(e){} try{ r.popup.remove(); }catch(e){} return false; }
+    return true;
   });
+}
+function clearMlMarkers(cat){
+  (mlMarkers[cat] || []).forEach(r => { try{ r.marker.remove(); }catch(e){} try{ r.popup.remove(); }catch(e){} });
+  mlMarkers[cat] = [];
+}
+function closeAllPopups(){
+  ['maqom','blacklist','razia'].forEach(c => (mlMarkers[c] || []).forEach(r => { try{ r.popup.remove(); }catch(e){} }));
+}
+
+function replaceMarker(cat, pinId, updatedPin){
+  removeMlMarker(cat, pinId);
   renderMarker(cat, updatedPin, false);
 }
 
 function renderMarker(cat, pin, justAdded){
-  const marker = L.marker([pin.lat, pin.lng], { icon: makeIcon(cat, justAdded) });
-  marker.bindPopup(buildPopupHtml(cat, pin), { minWidth: 320, maxWidth: 380 });
-  marker._pinId = pin.id;
-  markerLayers[cat].addLayer(marker);
-  if(pin.status === 'pending') marker.setOpacity(0.5);
+  const el = makePinEl(cat, justAdded);
+  if(pin.status === 'pending') el.style.opacity = '0.5';
+  el.style.cursor = 'pointer';
+  const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([pin.lng, pin.lat]).addTo(maps[cat]);
+  const popup = new maplibregl.Popup({ offset: 26, maxWidth: '360px', closeButton: true }).setHTML(buildPopupHtml(cat, pin));
+  mlMarkers[cat].push({ marker, popup, pinId: pin.id });
 
-  if(cat === 'maqom' || cat === 'blacklist'){
-    marker.off('click');
-    marker.on('click', () => {
+  el.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if(cat === 'maqom' || cat === 'blacklist'){
       if(activeRoutedPinId[cat] !== pin.id){
         activeRoutedPinId[cat] = pin.id;
         drawRouteTo(cat, [pin.lat, pin.lng]);
-      } else {
-        marker.openPopup();
+        return;
       }
-    });
-  }
+    }
+    closeAllPopups();
+    popup.setLngLat([pin.lng, pin.lat]).addTo(maps[cat]);
+  });
 }
 
 function buildPopupHtml(cat, pin){
@@ -2933,9 +2960,14 @@ function getUserLatLng(){
   });
 }
 
+function removeRouteML(cat){
+  const map = maps[cat], r = routeML[cat];
+  if(r && map){ try{ if(map.getLayer(r.lyrId)) map.removeLayer(r.lyrId); if(map.getSource(r.srcId)) map.removeSource(r.srcId); }catch(e){} }
+  routeML[cat] = null;
+}
 async function drawRouteTo(cat, destLatLng){
   const map = maps[cat];
-  if(routeLayers[cat]){ map.removeLayer(routeLayers[cat]); routeLayers[cat] = null; }
+  removeRouteML(cat);
 
   let origin;
   try{
@@ -2957,13 +2989,22 @@ async function drawRouteTo(cat, destLatLng){
       return;
     }
 
-    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-    routeLayers[cat] = L.polyline(coords, {
-      color: cat === 'maqom' ? '#175038' : '#9C3B32',
-      weight: 5, opacity: 0.85, lineCap: 'round'
-    }).addTo(map);
-
-    map.fitBounds(routeLayers[cat].getBounds(), { padding: [60, 60] });
+    const coords = data.routes[0].geometry.coordinates; // sudah [lng, lat]
+    const srcId = 'route-' + cat, lyrId = 'route-' + cat + '-line';
+    const geojson = { type:'Feature', properties:{}, geometry:{ type:'LineString', coordinates: coords } };
+    const addRoute = () => {
+      try{
+        map.addSource(srcId, { type:'geojson', data: geojson });
+        map.addLayer({ id: lyrId, type:'line', source: srcId,
+          layout:{ 'line-cap':'round', 'line-join':'round' },
+          paint:{ 'line-color': cat === 'maqom' ? '#175038' : '#9C3B32', 'line-width':5, 'line-opacity':0.85 } });
+        routeML[cat] = { srcId, lyrId };
+        const b = new maplibregl.LngLatBounds(coords[0], coords[0]);
+        coords.forEach(c => b.extend(c));
+        map.fitBounds(b, { padding: 70, duration: 800 });
+      }catch(e){}
+    };
+    if(map.isStyleLoaded()) addRoute(); else map.once('idle', addRoute);
 
     const km = (data.routes[0].distance / 1000).toFixed(1);
     const menit = Math.round(data.routes[0].duration / 60);
@@ -3007,7 +3048,7 @@ async function listCacheInvalidate(name){ try{ await _idbSet(_listKey(name), { t
 
 function renderPins(cat, rows){
   store[cat] = [];
-  if(markerLayers[cat]) markerLayers[cat].clearLayers();
+  clearMlMarkers(cat);
   (rows || []).forEach(row => {
     const pin = { id: row.id, name: row.name, address: row.address, note: row.note, photo_url: row.photo_url, lat: row.lat, lng: row.lng, created_at: row.created_at, status: row.status, user_id: row.user_id };
     store[cat].push(pin);
@@ -3046,7 +3087,7 @@ async function doSearch(cat){
     const data = await res.json();
     if(data && data.length){
       const { lat, lon } = data[0];
-      maps[cat].flyTo([parseFloat(lat), parseFloat(lon)], 16, { duration: 0.9 });
+      maps[cat].flyTo({ center: [parseFloat(lon), parseFloat(lat)], zoom: 16, duration: 900 });
       showToast('Lokasi ditemukan — tap peta untuk pin titik pasti');
     } else {
       showToast('Alamat tidak ditemukan');
@@ -3133,15 +3174,15 @@ let activityExpanded = false;
 function toggleActivityAll(){ activityExpanded = !activityExpanded; renderActivity(); }
 
 function gotoPin(cat, pinId){
-  if(!maps[cat] || !markerLayers[cat]) return;
+  if(!maps[cat]) return;
   switchPage(cat);
   setTimeout(() => {
-    let target = null;
-    markerLayers[cat].eachLayer(l => { if(String(l._pinId) === String(pinId)) target = l; });
-    if(!target) return;
+    const rec = (mlMarkers[cat] || []).find(r => String(r.pinId) === String(pinId));
+    if(!rec) return;
     const map = maps[cat];
-    map.flyTo(target.getLatLng(), 20, { duration: 0.9 });
-    map.once('moveend', () => { try { target.openPopup(); } catch(e){} });
+    const ll = rec.marker.getLngLat();
+    map.flyTo({ center: [ll.lng, ll.lat], zoom: 18, duration: 900 });
+    map.once('moveend', () => { try{ closeAllPopups(); rec.popup.setLngLat(ll).addTo(map); }catch(e){} });
   }, 320);
 }
 const ACT_PHOTO = {
@@ -4237,7 +4278,7 @@ async function approvePin(cat, id){
   pinCacheInvalidate(cat); await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   refreshAdminBadge();
-  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+  closeAllPopups();
 }
 
 async function rejectPin(cat, id){
@@ -4247,7 +4288,7 @@ async function rejectPin(cat, id){
   pinCacheInvalidate(cat); await loadPins(cat);
   const el = document.getElementById('pend-' + id); if(el) el.remove();
   refreshAdminBadge();
-  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+  closeAllPopups();
   if(data && data[0] && data[0].photo_url) deletePhotoR2(data[0].photo_url); // hapus foto di R2 (best-effort)
 }
 
@@ -4282,7 +4323,7 @@ async function deletePin(cat, id){
   if(error){ showToast('Gagal hapus: ' + error.message); return; }
   if(!data || !data.length){ showToast('Tidak bisa menghapus — hanya pemilik/admin'); return; }
   showToast('Titik dihapus');
-  document.querySelectorAll('.leaflet-popup-close-button').forEach(b => b.click());
+  closeAllPopups();
   pinCacheInvalidate(cat); await loadPins(cat);
   if(data[0].photo_url) deletePhotoR2(data[0].photo_url); // hapus foto di R2 (best-effort)
 }
