@@ -2404,8 +2404,8 @@ const meta = {
 /* ---------- init maps ---------- */
 function initMaps(){
   const CAIRO = [30.0444, 31.2357];
-  const TILE_URL = 'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
-  const TILE_OPTS = { maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '&copy; Google' };
+  const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
+  const TILE_OPTS = { maxZoom: 19, attribution: 'Tiles &copy; Esri' };
 
   maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
   L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
@@ -4792,7 +4792,7 @@ function openLiveTrack(){
   setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   if(!trackMap){
     trackMap = L.map('map-track', { zoomControl: false, attributionControl: false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView([incomingAlert.lat, incomingAlert.lng], 16);
-    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '&copy; Google' }).addTo(trackMap);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(trackMap);
   }
   setTimeout(() => trackMap.invalidateSize(), 220);
   placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
@@ -4960,7 +4960,7 @@ async function openHelpMap(){
   const center = myLastCoords || [30.0444, 31.2357];
   if(!helpMap){
     helpMap = L.map('map-help', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(center, 15);
-    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom:20, subdomains:['mt0','mt1','mt2','mt3'], attribution:'&copy; Google' }).addTo(helpMap);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(helpMap);
   }
   setTimeout(() => helpMap.invalidateSize(), 220);
   helpMap.setView(center, 15);
