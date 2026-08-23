@@ -2472,7 +2472,7 @@ function makeMlMap(id, center){
   const m = new maplibregl.Map({
     container: id, style: NUQTO_MAP_STYLE, center: center, zoom: 13,
     pitch: 0, bearing: 0, attributionControl: false,        // DATAR secara default
-    dragRotate: true, pitchWithRotate: true, maxPitch: 70
+    dragRotate: true, pitchWithRotate: true, maxPitch: 85
   });
   m.on('style.load', () => forceLatinLabels(m));
   return m;
@@ -2500,7 +2500,7 @@ function onLocationFound(cat, ll){
   document.getElementById('locate-' + cat).classList.remove('loading');
   if(userMarkers[cat]){ try{ userMarkers[cat].remove(); }catch(e){} }
   const el = document.createElement('div'); el.className = 'user-dot';
-  userMarkers[cat] = new maplibregl.Marker({ element: el }).setLngLat([ll[1], ll[0]]).addTo(maps[cat]);
+  userMarkers[cat] = new maplibregl.Marker({ element: el, pitchAlignment: 'viewport', rotationAlignment: 'viewport' }).setLngLat([ll[1], ll[0]]).addTo(maps[cat]);
   maps[cat].flyTo({ center: [ll[1], ll[0]], zoom: 16, duration: 900 });
   showToast('Ditemukan — posisimu sekarang');
 }
@@ -2513,7 +2513,7 @@ function onLocationError(cat){
 /* ---------- miringkan / datar (3D toggle) ---------- */
 function toggleTilt(cat){
   const m = maps[cat]; if(!m) return;
-  if(m.getPitch() < 5){ m.easeTo({ pitch: 55, duration: 500 }); }
+  if(m.getPitch() < 5){ m.easeTo({ pitch: 65, duration: 500 }); }
   else { m.easeTo({ pitch: 0, bearing: 0, duration: 500 }); }
 }
 
@@ -2543,9 +2543,12 @@ function switchPage(cat){
 
 /* ---------- custom marker element (MapLibre) ---------- */
 function makePinEl(cat, justAdded){
+  // Wrapper 30x30: MapLibre memakai transform wrapper untuk posisi, sehingga transform
+  // rotate(-45deg) pada .pin tetap utuh (kalau .pin langsung jadi elemen marker, rotasinya ketimpa → ikon miring).
   const wrap = document.createElement('div');
+  wrap.style.width = '30px'; wrap.style.height = '30px';
   wrap.innerHTML = `<div class="pin ${cat} ${justAdded ? 'pin-drop' : ''}"><span>${ICON_SVG[meta[cat].icon]}</span></div>`;
-  return wrap.firstElementChild;
+  return wrap;
 }
 
 /* ---------- bottom sheet: tambah / edit pin ---------- */
@@ -2777,7 +2780,7 @@ function renderMarker(cat, pin, justAdded){
   const el = makePinEl(cat, justAdded);
   if(pin.status === 'pending') el.style.opacity = '0.5';
   el.style.cursor = 'pointer';
-  const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([pin.lng, pin.lat]).addTo(maps[cat]);
+  const marker = new maplibregl.Marker({ element: el, anchor: 'bottom', pitchAlignment: 'viewport', rotationAlignment: 'viewport' }).setLngLat([pin.lng, pin.lat]).addTo(maps[cat]);
   const popup = new maplibregl.Popup({ offset: 26, maxWidth: '360px', closeButton: true }).setHTML(buildPopupHtml(cat, pin));
   mlMarkers[cat].push({ marker, popup, pinId: pin.id });
 
