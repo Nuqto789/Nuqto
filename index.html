@@ -4399,13 +4399,13 @@ async function deletePin(cat, id){
 /* ============================================================
    LOWONGAN (jobs) — dari Supabase
    ============================================================ */
-async function loadJobs(){
+async function loadJobs(force){
   const list = document.getElementById('job-list');
   let cached = null;
   try{ cached = await listCacheGet('jobs'); }catch(e){}
   if(cached && Array.isArray(cached.data)){
     renderJobs(cached.data);
-    if((Date.now() - (cached.ts || 0)) < LIST_CACHE_TTL) return; // cache segar → tak query Supabase
+    if(!force && (Date.now() - (cached.ts || 0)) < LIST_CACHE_TTL) return; // cache segar → tak query Supabase (kecuali dipaksa pull-to-refresh)
   } else { list.innerHTML = '<div class="empty-state">Memuat jadwal…</div>'; }
   try{
     const { data, error } = await sb.from('jobs').select('*').order('created_at',{ascending:false});
@@ -4619,13 +4619,13 @@ function openInfo(){
 }
 function closeInfo(){ document.getElementById('page-info').classList.remove('open'); }
 
-async function loadInfoPosts(){
+async function loadInfoPosts(force){
   const list = document.getElementById('info-list');
   let cached = null;
   try{ cached = await listCacheGet('info'); }catch(e){}
   if(cached && Array.isArray(cached.data)){
     renderInfoPosts(cached.data);
-    if((Date.now() - (cached.ts || 0)) < LIST_CACHE_TTL) return; // cache segar → tak query Supabase
+    if(!force && (Date.now() - (cached.ts || 0)) < LIST_CACHE_TTL) return; // cache segar → tak query Supabase (kecuali dipaksa pull-to-refresh)
   } else { list.innerHTML = '<div class="empty-state">Memuat…</div>'; }
   try{
     const { data, error } = await sb.from('info_posts').select('*').order('created_at', { ascending: false }).limit(100);
@@ -5435,14 +5435,17 @@ async function softRefresh(){
   try{ refreshInfoBadge(); }catch(e){}
   try{ updateNotifBadge(); }catch(e){}
   try{ checkActiveEmergency(); }catch(e){}
-  try{ if(document.getElementById('page-lowongan') && document.getElementById('page-lowongan').classList.contains('open')) loadJobs(); }catch(e){}
-  try{ if(document.getElementById('page-info') && document.getElementById('page-info').classList.contains('open')) loadInfoPosts(); }catch(e){}
+  try{ if(document.getElementById('page-lowongan') && document.getElementById('page-lowongan').classList.contains('open')) loadJobs(true); }catch(e){}
+  try{ if(document.getElementById('page-info') && document.getElementById('page-info').classList.contains('open')) loadInfoPosts(true); }catch(e){}
   try{ if(document.getElementById('page-sholat') && document.getElementById('page-sholat').classList.contains('open')) loadSholat(); }catch(e){}
 }
 
-// tarik layar dari atas ke bawah → refresh (pull-to-refresh) — hanya di app native (browser sudah punya bawaan)
+// tarik layar dari atas ke bawah → refresh (pull-to-refresh)
+// Aktif di app native + PWA standalone (iOS home-screen mematikan pull-to-refresh bawaan Safari).
+// Di tab browser biasa dilewati karena browser sudah punya pull-to-refresh sendiri.
 function initPullToRefresh(){
-  if(!isNativeApp()) return;
+  const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if(!isNativeApp() && !isStandalone) return;
   const style = document.createElement('style');
   style.textContent = '@keyframes ptrspin{to{transform:rotate(360deg)}}';
   document.head.appendChild(style);
