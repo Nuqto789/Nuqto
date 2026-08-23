@@ -2517,10 +2517,10 @@ function makeMlMap(id, center, styleObj){
 // peta darurat (track/help): MapLibre GL, tanpa tombol tambah titik
 function makeMlMapSimple(id, centerLatLng, zoom){
   const m = new maplibregl.Map({
-    container: id, style: NUQTO_MAP_STYLE, center: [centerLatLng[1], centerLatLng[0]], zoom: zoom,
+    container: id, style: NUQTO_CUSTOM_STYLE, center: [centerLatLng[1], centerLatLng[0]], zoom: zoom,
     pitch: 0, bearing: 0, attributionControl: false, dragRotate: true, pitchWithRotate: true, maxPitch: 85
   });
-  m.on('style.load', () => forceLatinLabels(m));
+  addPetakGrid(m);
   return m;
 }
 // marker titik (danger/helper/responder dot) — CSS div, tetap tegak saat peta miring
@@ -2550,10 +2550,10 @@ function removeMlLine(map, id){
 
 function initMaps(){
   const CAIRO = [31.2357, 30.0444]; // [lng, lat] untuk MapLibre
-  maps.maqom = makeMlMap('map-maqom', CAIRO, NUQTO_CUSTOM_STYLE); // UJI: style kustom Google-look + petak
-  addPetakGrid(maps.maqom);
-  maps.blacklist = makeMlMap('map-blacklist', CAIRO, NUQTO_STYLE_A); // UJI: Opsi A (base-v4, tanpa petak)
-  maps.razia = makeMlMap('map-razia', CAIRO);            // MapTiler (untuk perbandingan)
+  maps.maqom = makeMlMap('map-maqom', CAIRO, NUQTO_CUSTOM_STYLE);      // style kustom Google-look + petak
+  maps.blacklist = makeMlMap('map-blacklist', CAIRO, NUQTO_CUSTOM_STYLE);
+  maps.razia = makeMlMap('map-razia', CAIRO, NUQTO_CUSTOM_STYLE);
+  addPetakGrid(maps.maqom); addPetakGrid(maps.blacklist); addPetakGrid(maps.razia);
 
   maps.maqom.on('click', e => openSheet('maqom', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
   maps.blacklist.on('click', e => openSheet('blacklist', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
