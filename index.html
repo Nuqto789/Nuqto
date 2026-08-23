@@ -2401,20 +2401,66 @@ const meta = {
   razia: { color: 'var(--amber)', icon: 'book', nameField: 'Nama Tempat Talaqqi', namePlaceholder: 'cth. Sahah Qozaz' }
 };
 
+/* ---------- basemap Latin (OpenFreeMap vektor via MapLibre GL, label dipaksa Latin;
+   fallback raster CARTO). Pola sama seperti YallaMart "Kirim Barang". ---------- */
+let _mlPromise = null;
+function ensureMapLibre(){
+  if(_mlPromise) return _mlPromise;
+  _mlPromise = new Promise((resolve) => {
+    if(L.maplibreGL) return resolve(true);
+    const loadPlugin = () => {
+      if(L.maplibreGL) return resolve(true);
+      const p = document.createElement('script');
+      p.src = 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js';
+      p.onload = () => resolve(!!L.maplibreGL);
+      p.onerror = () => resolve(false);
+      document.head.appendChild(p);
+    };
+    if(window.maplibregl) return loadPlugin();
+    const css = document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css'; document.head.appendChild(css);
+    const s = document.createElement('script'); s.src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+    s.onload = loadPlugin; s.onerror = () => resolve(false); document.head.appendChild(s);
+  });
+  return _mlPromise;
+}
+function forceLatinLabels(mm){
+  try{
+    const layers = (mm.getStyle().layers) || [];
+    layers.forEach(l => {
+      if(l.type === 'symbol' && l.layout && l.layout['text-field']){
+        try{ mm.setLayoutProperty(l.id, 'text-field', ['coalesce', ['get','name:id'], ['get','name:latin'], ['get','name:en'], ['get','name']]); }catch(e){}
+      }
+    });
+  }catch(e){}
+}
+function addLatinBasemap(map){
+  ensureMapLibre().then(ok => {
+    if(!map || !map._container) return;
+    if(ok && L.maplibreGL){
+      try{
+        const gl = L.maplibreGL({ style: 'https://tiles.openfreemap.org/styles/liberty' }).addTo(map);
+        const mm = gl.getMaplibreMap ? gl.getMaplibreMap() : gl._glMap;
+        if(mm) mm.on('load', () => forceLatinLabels(mm));
+        return;
+      }catch(e){}
+    }
+    // fallback raster kalau vektor gagal
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:20, attribution:'&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
+  });
+}
+
 /* ---------- init maps ---------- */
 function initMaps(){
   const CAIRO = [30.0444, 31.2357];
-  const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
-  const TILE_OPTS = { maxZoom: 19, attribution: 'Tiles &copy; Esri' };
 
-  maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
-  L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.maqom);
+  maps.maqom = L.map('map-maqom', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  addLatinBasemap(maps.maqom);
 
-  maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
-  L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.blacklist);
+  maps.blacklist = L.map('map-blacklist', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  addLatinBasemap(maps.blacklist);
 
-  maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(CAIRO, 13);
-  L.tileLayer(TILE_URL, TILE_OPTS).addTo(maps.razia);
+  maps.razia = L.map('map-razia', { zoomControl:false, attributionControl:false }).setView(CAIRO, 13);
+  addLatinBasemap(maps.razia);
 
   markerLayers.maqom = L.layerGroup().addTo(maps.maqom);
   markerLayers.blacklist = L.layerGroup().addTo(maps.blacklist);
@@ -4791,8 +4837,8 @@ function openLiveTrack(){
   document.getElementById('page-track').classList.add('open');
   setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   if(!trackMap){
-    trackMap = L.map('map-track', { zoomControl: false, attributionControl: false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView([incomingAlert.lat, incomingAlert.lng], 16);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(trackMap);
+    trackMap = L.map('map-track', { zoomControl: false, attributionControl: false }).setView([incomingAlert.lat, incomingAlert.lng], 16);
+    addLatinBasemap(trackMap);
   }
   setTimeout(() => trackMap.invalidateSize(), 220);
   placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
@@ -4959,8 +5005,8 @@ async function openHelpMap(){
   hideDangerBanner();
   const center = myLastCoords || [30.0444, 31.2357];
   if(!helpMap){
-    helpMap = L.map('map-help', { zoomControl:false, attributionControl:false, rotate:true, touchRotate:true, rotateControl:false, bearing:0 }).setView(center, 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(helpMap);
+    helpMap = L.map('map-help', { zoomControl:false, attributionControl:false }).setView(center, 15);
+    addLatinBasemap(helpMap);
   }
   setTimeout(() => helpMap.invalidateSize(), 220);
   helpMap.setView(center, 15);
