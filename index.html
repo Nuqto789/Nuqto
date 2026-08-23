@@ -443,6 +443,10 @@
   @keyframes ddPulse{ 0%{ box-shadow:0 0 0 0 rgba(220,38,38,0.5);} 100%{ box-shadow:0 0 0 16px rgba(220,38,38,0);} }
   .helper-dot{ width:16px; height:16px; border-radius:50%; background:#2563EB; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
   .track-dist{ font-size:12px; font-weight:600; color:var(--ink); margin-top:2px; }
+  /* toast di TENGAH peta saat korban menandai dirinya aman */
+  .track-safe-toast{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.92); z-index:600; display:none; align-items:center; gap:10px; max-width:80%; background:rgba(17,17,17,0.92); color:#fff; padding:14px 18px; border-radius:16px; font-size:14px; font-weight:700; line-height:1.35; text-align:center; box-shadow:0 10px 34px rgba(0,0,0,0.35); opacity:0; transition:opacity .3s ease, transform .3s ease; }
+  .track-safe-toast.show{ display:flex; opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .track-safe-toast .tst-ic{ flex-shrink:0; width:26px; height:26px; border-radius:50%; background:var(--maqom,#059669); display:flex; align-items:center; justify-content:center; }
 
   /* pusat informasi */
   #page-info{ background:#EFEDE6; }
@@ -2065,6 +2069,10 @@
 <!-- ===================== OVERLAY : PELACAKAN DARURAT (penerima) ===================== -->
 <div id="page-track" class="overlay-page">
   <div id="map-track"></div>
+  <div id="track-safe-toast" class="track-safe-toast">
+    <span class="tst-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    <span>User menandai dirinya telah aman</span>
+  </div>
   <button class="tilt-fab" onclick="tiltTrack()" aria-label="Miringkan (3D)">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
   </button>
@@ -4935,11 +4943,13 @@ function openEmergencyMaps(){
 
 /* ----- receiver: peta live tracking ----- */
 let trackMap = null, trackMarker = null, trackChannel = null, trackAlertId = null;
-let trackRouteLayer = null, trackHelperMarker = null, lastRouteTs = 0;
+let trackRouteLayer = null, trackHelperMarker = null, lastRouteTs = 0, trackDone = false;
 
 function openLiveTrack(){
   if(!incomingAlert || incomingAlert.lat == null){ showToast('Lokasi belum tersedia'); return; }
   trackAlertId = incomingAlert.id;
+  trackDone = false;
+  { const _stoast = document.getElementById('track-safe-toast'); if(_stoast) _stoast.classList.remove('show'); }
   document.getElementById('emg-incoming').classList.remove('open');
   hideTrackBanner();
   document.getElementById('page-track').classList.add('open');
@@ -4960,19 +4970,27 @@ function openLiveTrack(){
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'emergency_alerts', filter: 'id=eq.' + trackAlertId }, (payload) => {
       const a = payload.new;
       incomingAlert = { ...incomingAlert, ...a };
-      if(a.lat != null) placeTrackMarker(a.lat, a.lng, true);
-      const now = Date.now();
-      if(a.lat != null && now - lastRouteTs > 20000){ lastRouteTs = now; drawTrackRoute(); } // perbarui rute mengikuti pergerakan
       if(a.active === false){
+        // korban sudah aman → peta TETAP terbuka, hanya hilangkan titik lokasi A + rute, lalu toast di tengah peta
+        trackDone = true;
         st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done';
         addDismissedAlert(a.id);
         if(respondState.active && respondState.alertId === a.id) stopRespond();
+        if(trackMarker){ try{ trackMarker.remove(); }catch(e){} trackMarker = null; }
+        removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
+        if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
+        const dist = document.getElementById('track-dist'); if(dist){ dist.style.display = 'none'; }
+        const stoast = document.getElementById('track-safe-toast'); if(stoast){ stoast.classList.add('show'); }
+        return; // jangan lanjut memproses posisi/rute lagi
       }
+      if(a.lat != null) placeTrackMarker(a.lat, a.lng, true);
+      const now = Date.now();
+      if(a.lat != null && now - lastRouteTs > 20000){ lastRouteTs = now; drawTrackRoute(); } // perbarui rute mengikuti pergerakan
     }).subscribe();
 }
 
 async function drawTrackRoute(){
-  if(!trackMap || !incomingAlert || incomingAlert.lat == null) return;
+  if(trackDone || !trackMap || !incomingAlert || incomingAlert.lat == null) return;
   let origin;
   try{ origin = await getUserLatLng(); }
   catch(e){ const st = document.getElementById('track-status'); if(st && st.className.indexOf('done') < 0){ st.textContent = 'Aktifkan izin lokasi untuk melihat rute'; } return; }
@@ -4984,6 +5002,7 @@ async function drawTrackRoute(){
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
     const res = await fetch(url);
     const data = await res.json();
+    if(trackDone) return; // korban sudah aman saat rute masih diambil → jangan gambar lagi
     if(!data.routes || !data.routes.length) return;
     const coords = data.routes[0].geometry.coordinates; // [lng,lat]
     drawMlLine(trackMap, 'track-route', coords, '#DC2626');
@@ -5014,6 +5033,7 @@ function trackOpenMaps(){
 
 function closeLiveTrack(){
   document.getElementById('page-track').classList.remove('open');
+  { const _stoast = document.getElementById('track-safe-toast'); if(_stoast) _stoast.classList.remove('show'); }
   if(trackChannel){ sb.removeChannel(trackChannel); trackChannel = null; }
   if(trackMap){
     removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
