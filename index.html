@@ -16,11 +16,8 @@
 <link rel="icon" href="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg">
 <link rel="apple-touch-icon" href="https://pub-ba64decb48ad4940bbb5c68f90bd597e.r2.dev/Foto%20icon%20aplikasi/IMG_20260807_215745_363.jpg">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -491,6 +488,8 @@
 
   .leaflet-popup-content-wrapper{border-radius:14px;}
   .leaflet-popup-content{margin:14px 16px; font-family:'Plus Jakarta Sans',sans-serif;}
+  .maplibregl-popup-content{ border-radius:14px; padding:14px 16px; font-family:'Plus Jakarta Sans',sans-serif; box-shadow:0 8px 28px rgba(0,0,0,0.18); }
+  .maplibregl-popup-close-button{ font-size:20px; padding:0 8px; color:var(--muted); }
   .popup-title{font-weight:700; font-size:14px; margin-bottom:2px; color:#111827;}
   .popup-note{font-size:12.5px; font-weight:400; color:#111827; margin-bottom:8px; white-space:pre-wrap;}
   .popup-coord{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#888;}
@@ -2415,29 +2414,7 @@ const meta = {
   razia: { color: 'var(--amber)', icon: 'book', nameField: 'Nama Tempat Talaqqi', namePlaceholder: 'cth. Sahah Qozaz' }
 };
 
-/* ---------- basemap Latin (OpenFreeMap vektor via MapLibre GL, label dipaksa Latin).
-   Vektor ini IKUT BERPUTAR bersama Leaflet-rotate, dan marker tetap sinkron. Tanpa API key.
-   Fallback raster CARTO kalau vektor gagal. ---------- */
-let _mlPromise = null;
-function ensureMapLibre(){
-  if(_mlPromise) return _mlPromise;
-  _mlPromise = new Promise((resolve) => {
-    if(L.maplibreGL) return resolve(true);
-    const loadPlugin = () => {
-      if(L.maplibreGL) return resolve(true);
-      const p = document.createElement('script');
-      p.src = 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js';
-      p.onload = () => resolve(!!L.maplibreGL);
-      p.onerror = () => resolve(false);
-      document.head.appendChild(p);
-    };
-    if(window.maplibregl) return loadPlugin();
-    const css = document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css'; document.head.appendChild(css);
-    const s = document.createElement('script'); s.src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
-    s.onload = loadPlugin; s.onerror = () => resolve(false); document.head.appendChild(s);
-  });
-  return _mlPromise;
-}
+/* ---------- paksa label peta ke Latin (name:id → name:latin → name:en → name) ---------- */
 function forceLatinLabels(mm){
   try{
     const layers = (mm.getStyle().layers) || [];
@@ -2447,20 +2424,6 @@ function forceLatinLabels(mm){
       }
     });
   }catch(e){}
-}
-function addLatinBasemap(map){
-  ensureMapLibre().then(ok => {
-    if(!map || !map._container) return;
-    if(ok && L.maplibreGL){
-      try{
-        const gl = L.maplibreGL({ style: 'https://tiles.openfreemap.org/styles/liberty' }).addTo(map);
-        const mm = gl.getMaplibreMap ? gl.getMaplibreMap() : gl._glMap;
-        if(mm) mm.on('load', () => forceLatinLabels(mm));
-        return;
-      }catch(e){}
-    }
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:20, attribution:'&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
-  });
 }
 
 /* ---------- init maps (MapLibre GL native: 3D miring + putar + label Latin) ---------- */
@@ -2476,6 +2439,40 @@ function makeMlMap(id, center){
   });
   m.on('style.load', () => forceLatinLabels(m));
   return m;
+}
+
+// peta darurat (track/help): MapLibre GL, tanpa tombol tambah titik
+function makeMlMapSimple(id, centerLatLng, zoom){
+  const m = new maplibregl.Map({
+    container: id, style: NUQTO_MAP_STYLE, center: [centerLatLng[1], centerLatLng[0]], zoom: zoom,
+    pitch: 0, bearing: 0, attributionControl: false, dragRotate: true, pitchWithRotate: true, maxPitch: 85
+  });
+  m.on('style.load', () => forceLatinLabels(m));
+  return m;
+}
+// marker titik (danger/helper/responder dot) — CSS div, tetap tegak saat peta miring
+function makeDotMarker(map, latlng, cls){
+  const el = document.createElement('div'); el.className = cls;
+  return new maplibregl.Marker({ element: el, pitchAlignment: 'viewport', rotationAlignment: 'viewport' })
+    .setLngLat([latlng[1], latlng[0]]).addTo(map);
+}
+// garis rute GeoJSON (coords = [lng,lat]) — tambah/perbarui
+function drawMlLine(map, id, coords, color){
+  const src = id + '-src';
+  const geojson = { type:'Feature', properties:{}, geometry:{ type:'LineString', coordinates: coords } };
+  const add = () => {
+    try{
+      if(map.getSource(src)){ map.getSource(src).setData(geojson); }
+      else{
+        map.addSource(src, { type:'geojson', data: geojson });
+        map.addLayer({ id: id, type:'line', source: src, layout:{ 'line-cap':'round', 'line-join':'round' }, paint:{ 'line-color': color, 'line-width':5, 'line-opacity':0.9 } });
+      }
+    }catch(e){}
+  };
+  if(map.isStyleLoaded()) add(); else map.once('idle', add);
+}
+function removeMlLine(map, id){
+  try{ if(map.getLayer(id)) map.removeLayer(id); if(map.getSource(id + '-src')) map.removeSource(id + '-src'); }catch(e){}
 }
 
 function initMaps(){
@@ -4820,7 +4817,14 @@ async function ensurePushSubscription(silent){
 async function enablePush(){
   if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengaktifkan notifikasi.'); return; }
   if(isNativeApp()){ const ok = await registerNativePush(); showToast(ok ? '✅ Notifikasi darurat aktif di perangkat ini' : 'Gagal mengaktifkan notifikasi'); updatePushLabel(); return; }
-  if(!('serviceWorker' in navigator) || !('PushManager' in window)){ showToast('Browser/perangkat ini belum mendukung push. Di iPhone: pasang app ke Home Screen dulu.'); return; }
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    if(isIOS && !standalone){ showToast('Buka Nuqto dari IKON di Home Screen (jangan lewat Safari), lalu aktifkan lagi.'); }
+    else if(isIOS){ showToast('Butuh iPhone iOS 16.4 ke atas untuk notifikasi push.'); }
+    else { showToast('Browser/perangkat ini belum mendukung push notification.'); }
+    return;
+  }
   try{
     const perm = await Notification.requestPermission();
     if(perm !== 'granted'){ showToast('Izin notifikasi ditolak'); return; }
@@ -4881,12 +4885,11 @@ function openLiveTrack(){
   document.getElementById('page-track').classList.add('open');
   setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   if(!trackMap){
-    trackMap = L.map('map-track', { zoomControl: false, attributionControl: false }).setView([incomingAlert.lat, incomingAlert.lng], 16);
-    addLatinBasemap(trackMap);
+    trackMap = makeMlMapSimple('map-track', [incomingAlert.lat, incomingAlert.lng], 16);
   }
-  setTimeout(() => trackMap.invalidateSize(), 220);
+  setTimeout(() => { try{ trackMap.resize(); }catch(e){} }, 220);
   placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
-  trackMap.setView([incomingAlert.lat, incomingAlert.lng], 16);
+  trackMap.jumpTo({ center: [incomingAlert.lng, incomingAlert.lat], zoom: 16 });
   const st = document.getElementById('track-status');
   st.textContent = 'Live · memantau pergerakan'; st.className = 'track-status live';
   lastRouteTs = Date.now();
@@ -4914,18 +4917,19 @@ async function drawTrackRoute(){
   try{ origin = await getUserLatLng(); }
   catch(e){ const st = document.getElementById('track-status'); if(st && st.className.indexOf('done') < 0){ st.textContent = 'Aktifkan izin lokasi untuk melihat rute'; } return; }
   if(!trackHelperMarker){
-    trackHelperMarker = L.marker([origin[0], origin[1]], { icon: L.divIcon({ className: '', html: '<div class="helper-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(trackMap);
-  } else { trackHelperMarker.setLatLng([origin[0], origin[1]]); }
+    trackHelperMarker = makeDotMarker(trackMap, [origin[0], origin[1]], 'helper-dot');
+  } else { trackHelperMarker.setLngLat([origin[1], origin[0]]); }
   try{
     const dest = [incomingAlert.lat, incomingAlert.lng];
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
     const res = await fetch(url);
     const data = await res.json();
     if(!data.routes || !data.routes.length) return;
-    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-    if(trackRouteLayer) trackMap.removeLayer(trackRouteLayer);
-    trackRouteLayer = L.polyline(coords, { color: '#DC2626', weight: 5, opacity: 0.9, lineCap: 'round' }).addTo(trackMap);
-    trackMap.fitBounds(trackRouteLayer.getBounds(), { padding: [70, 90] });
+    const coords = data.routes[0].geometry.coordinates; // [lng,lat]
+    drawMlLine(trackMap, 'track-route', coords, '#DC2626');
+    trackRouteLayer = 'track-route';
+    const b = new maplibregl.LngLatBounds(coords[0], coords[0]); coords.forEach(c => b.extend(c));
+    trackMap.fitBounds(b, { padding: { top:70, bottom:90, left:70, right:70 } });
     const km = (data.routes[0].distance / 1000).toFixed(1);
     const menit = Math.round(data.routes[0].duration / 60);
     const dist = document.getElementById('track-dist');
@@ -4936,11 +4940,11 @@ async function drawTrackRoute(){
 function placeTrackMarker(lat, lng, recenter){
   if(!trackMap) return;
   if(!trackMarker){
-    trackMarker = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div class="danger-dot"></div>', iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(trackMap);
+    trackMarker = makeDotMarker(trackMap, [lat, lng], 'danger-dot');
   } else {
-    trackMarker.setLatLng([lat, lng]);
+    trackMarker.setLngLat([lng, lat]);
   }
-  if(recenter) trackMap.panTo([lat, lng], { animate: true });
+  if(recenter) trackMap.panTo([lng, lat]);
 }
 
 function trackOpenMaps(){
@@ -4952,9 +4956,9 @@ function closeLiveTrack(){
   document.getElementById('page-track').classList.remove('open');
   if(trackChannel){ sb.removeChannel(trackChannel); trackChannel = null; }
   if(trackMap){
-    if(trackRouteLayer){ trackMap.removeLayer(trackRouteLayer); trackRouteLayer = null; }
-    if(trackHelperMarker){ trackMap.removeLayer(trackHelperMarker); trackHelperMarker = null; }
-    if(trackMarker){ trackMap.removeLayer(trackMarker); trackMarker = null; }
+    removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
+    if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
+    if(trackMarker){ try{ trackMarker.remove(); }catch(e){} trackMarker = null; }
   }
   const dist = document.getElementById('track-dist');
   if(dist){ dist.style.display = 'none'; }
@@ -5049,11 +5053,10 @@ async function openHelpMap(){
   hideDangerBanner();
   const center = myLastCoords || [30.0444, 31.2357];
   if(!helpMap){
-    helpMap = L.map('map-help', { zoomControl:false, attributionControl:false }).setView(center, 15);
-    addLatinBasemap(helpMap);
+    helpMap = makeMlMapSimple('map-help', center, 15);
   }
-  setTimeout(() => helpMap.invalidateSize(), 220);
-  helpMap.setView(center, 15);
+  setTimeout(() => { try{ helpMap.resize(); }catch(e){} }, 220);
+  helpMap.jumpTo({ center: [center[1], center[0]], zoom: 15 });
   placeHelpVictim(center[0], center[1]);
   await loadResponders();
   if(helpChannel) sb.removeChannel(helpChannel);
@@ -5065,8 +5068,8 @@ async function openHelpMap(){
 function placeHelpVictim(lat, lng){
   if(!helpMap) return;
   if(!helpVictimMarker){
-    helpVictimMarker = L.marker([lat, lng], { icon: L.divIcon({ className:'', html:'<div class="danger-dot"></div>', iconSize:[22,22], iconAnchor:[11,11] }) }).addTo(helpMap);
-  } else helpVictimMarker.setLatLng([lat, lng]);
+    helpVictimMarker = makeDotMarker(helpMap, [lat, lng], 'danger-dot');
+  } else helpVictimMarker.setLngLat([lng, lat]);
 }
 
 async function loadResponders(){
@@ -5077,13 +5080,13 @@ async function loadResponders(){
   (data || []).forEach(r => {
     if(r.lat == null || r.lng == null) return;
     seen[r.user_id] = true;
-    if(helpResponderMarkers[r.user_id]){ helpResponderMarkers[r.user_id].setLatLng([r.lat, r.lng]); }
+    if(helpResponderMarkers[r.user_id]){ helpResponderMarkers[r.user_id].setLngLat([r.lng, r.lat]); }
     else if(helpMap){
-      helpResponderMarkers[r.user_id] = L.marker([r.lat, r.lng], { icon: L.divIcon({ className:'', html:'<div class="responder-dot"></div>', iconSize:[16,16], iconAnchor:[8,8] }) }).addTo(helpMap);
+      helpResponderMarkers[r.user_id] = makeDotMarker(helpMap, [r.lat, r.lng], 'responder-dot');
     }
   });
   Object.keys(helpResponderMarkers).forEach(uid => {
-    if(!seen[uid]){ if(helpMap) helpMap.removeLayer(helpResponderMarkers[uid]); delete helpResponderMarkers[uid]; }
+    if(!seen[uid]){ try{ helpResponderMarkers[uid].remove(); }catch(e){} delete helpResponderMarkers[uid]; }
   });
   const n = Object.keys(seen).length;
   const el = document.getElementById('help-count');
@@ -5096,7 +5099,7 @@ async function loadResponders(){
 function closeHelpMap(){
   document.getElementById('page-helpmap').classList.remove('open');
   if(helpChannel){ sb.removeChannel(helpChannel); helpChannel = null; }
-  Object.keys(helpResponderMarkers).forEach(uid => { if(helpMap) helpMap.removeLayer(helpResponderMarkers[uid]); });
+  Object.keys(helpResponderMarkers).forEach(uid => { try{ helpResponderMarkers[uid].remove(); }catch(e){} });
   helpResponderMarkers = {};
   if(myAlertId) showDangerBanner(); // tampilkan lagi banner kalau masih menyiarkan
 }
@@ -5381,7 +5384,7 @@ function initPullToRefresh(){
   }
   document.addEventListener('touchstart', (e) => {
     if(refreshing || e.touches.length !== 1) return;
-    if(e.target.closest && e.target.closest('.leaflet-container')){ pulling = false; return; } // jangan ganggu peta
+    if(e.target.closest && e.target.closest('.maplibregl-map, .leaflet-container')){ pulling = false; return; } // jangan ganggu peta
     scroller = scrollableAt(e.target);
     if(scroller && scroller.scrollTop > 0){ pulling = false; return; }
     startY = e.touches[0].clientY; pulling = true; dist = 0;
@@ -5419,7 +5422,7 @@ function initPullToRefresh(){
 }
 
 window.addEventListener('load', () => {
-  initMaps();
+  try{ initMaps(); }catch(e){ console.warn('initMaps gagal:', e); } // peta gagal jangan sampai menghentikan setup izin/push
   initAuth();
   initEmergencyRealtime();
   updateNotifBadge();
