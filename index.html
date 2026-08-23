@@ -2489,21 +2489,6 @@ const NUQTO_STYLE_A = {
   ]
 };
 
-// petak "bangunan" hiasan yang menempel di peta (ground-anchored) — untuk peta bergaya kustom
-function addPetakGrid(map){
-  map.on('load', () => {
-    function rnd(x,y){ const v=Math.sin(x*127.1+y*311.7)*43758.5453; return v-Math.floor(v); }
-    const lngScale = 1/Math.cos(30.05*Math.PI/180);
-    function rect(cx,cy,hw,hh,ang){ const ca=Math.cos(ang),sa=Math.sin(ang); const pts=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(p=>{ const rx=p[0]*ca-p[1]*sa, ry=p[0]*sa+p[1]*ca; return [cx+rx*lngScale, cy+ry]; }); pts.push(pts[0]); return { type:'Feature', geometry:{ type:'Polygon', coordinates:[pts] } }; }
-    function buildGrid(){ const feats=[]; const step=0.00042; const b=map.getBounds(); const w=b.getWest()-0.003,e=b.getEast()+0.003,s0=b.getSouth()-0.003,n=b.getNorth()+0.003; const gx0=Math.floor(w/step),gx1=Math.ceil(e/step),gy0=Math.floor(s0/step),gy1=Math.ceil(n/step); for(let ix=gx0;ix<=gx1;ix++){ for(let iy=gy0;iy<=gy1;iy++){ const r=rnd(ix,iy); if(r<0.16) continue; const ang=(rnd(Math.floor(ix/6),Math.floor(iy/6))-0.5)*0.5+(rnd(ix+2,iy+8)-0.5)*0.14; const cx=ix*step+(rnd(ix+7,iy)-0.5)*step*0.34; const cy=iy*step+(rnd(ix,iy+9)-0.5)*step*0.34; const big=rnd(ix+11,iy+11); const hw=step*(0.17+rnd(ix+3,iy+3)*0.17+(big>0.82?0.14:0)); const hh=step*(0.17+rnd(ix+5,iy+1)*0.17+(big>0.9?0.12:0)); const f=rect(cx,cy,hw,hh,ang); f.properties={ sh:rnd(ix+13,iy+4) }; feats.push(f); } } return { type:'FeatureCollection', features:feats }; }
-    try{
-      map.addSource('petakgrid', { type:'geojson', data: buildGrid() });
-      map.addLayer({ id:'petak-grid', type:'fill', source:'petakgrid', minzoom:13, paint:{ 'fill-color':['interpolate',['linear'],['get','sh'],0,'#e9e3d5',1,'#dcd5c4'], 'fill-outline-color':'#cdc6b5', 'fill-opacity':0.92 } }, 'landcover');
-      let _t; map.on('moveend', ()=>{ clearTimeout(_t); _t=setTimeout(()=>{ try{ map.getSource('petakgrid').setData(buildGrid()); }catch(e){} }, 150); });
-    }catch(e){}
-  });
-}
-
 function makeMlMap(id, center, styleObj){
   const m = new maplibregl.Map({
     container: id, style: styleObj || NUQTO_MAP_STYLE, center: center, zoom: 13,
@@ -2520,7 +2505,6 @@ function makeMlMapSimple(id, centerLatLng, zoom){
     container: id, style: NUQTO_CUSTOM_STYLE, center: [centerLatLng[1], centerLatLng[0]], zoom: zoom,
     pitch: 0, bearing: 0, attributionControl: false, dragRotate: true, pitchWithRotate: true, maxPitch: 85
   });
-  addPetakGrid(m);
   return m;
 }
 // marker titik (danger/helper/responder dot) — CSS div, tetap tegak saat peta miring
@@ -2550,10 +2534,9 @@ function removeMlLine(map, id){
 
 function initMaps(){
   const CAIRO = [31.2357, 30.0444]; // [lng, lat] untuk MapLibre
-  maps.maqom = makeMlMap('map-maqom', CAIRO, NUQTO_CUSTOM_STYLE);      // style kustom Google-look + petak
+  maps.maqom = makeMlMap('map-maqom', CAIRO, NUQTO_CUSTOM_STYLE);      // style kustom Google-look
   maps.blacklist = makeMlMap('map-blacklist', CAIRO, NUQTO_CUSTOM_STYLE);
   maps.razia = makeMlMap('map-razia', CAIRO, NUQTO_CUSTOM_STYLE);
-  addPetakGrid(maps.maqom); addPetakGrid(maps.blacklist); addPetakGrid(maps.razia);
 
   maps.maqom.on('click', e => openSheet('maqom', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
   maps.blacklist.on('click', e => openSheet('blacklist', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
