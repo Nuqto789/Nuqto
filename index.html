@@ -2438,17 +2438,58 @@ function forceLatinLabels(mm){
 }
 
 /* ---------- init maps (MapLibre GL native: 3D miring + putar + label Latin) ---------- */
-// Sumber peta: SELALU MapTiler base-v4 (key publik frontend, dikunci via Allowed Origins).
-// Agar tampil di localhost saat dev, tambahkan localhost:8989 di Allowed Origins MapTiler.
+// MapTiler base-v4 (dipakai Blacklist/Talaqqi/darurat). Key publik, dikunci via Allowed Origins.
 const NUQTO_MAP_STYLE = 'https://api.maptiler.com/maps/base-v4/style.json?key=PyFR9LQQWVOvgnrJ5VXr';
 
-function makeMlMap(id, center){
+// Style kustom (OpenFreeMap, TANPA key, boleh komersial) mirip Google Maps — UJI COBA di peta Maqom.
+const _LAT = ['coalesce',['get','name:id'],['get','name:latin'],['get','name:en'],['get','name']];
+const NUQTO_CUSTOM_STYLE = {
+  version: 8,
+  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  sources: { om: { type:'vector', url:'https://tiles.openfreemap.org/planet' } },
+  layers: [
+    { id:'bg', type:'background', paint:{ 'background-color':'#f4f3ef' } },
+    { id:'landuse-resid', type:'fill', source:'om', 'source-layer':'landuse', filter:['in','class','residential','suburb','neighbourhood'], paint:{ 'fill-color':'#eae7df' } },
+    { id:'landuse-other', type:'fill', source:'om', 'source-layer':'landuse', filter:['in','class','commercial','industrial','retail','university','hospital','school'], paint:{ 'fill-color':'#efe9df', 'fill-opacity':0.7 } },
+    { id:'landcover', type:'fill', source:'om', 'source-layer':'landcover', filter:['in','class','grass','wood','forest','meadow','park','garden','recreation_ground','scrub','heath'], paint:{ 'fill-color':'#b3e09b', 'fill-opacity':0.85 } },
+    { id:'park', type:'fill', source:'om', 'source-layer':'park', filter:['!=','class','protected_area'], paint:{ 'fill-color':'#a6dd8f', 'fill-opacity':0.9 } },
+    { id:'landuse-green', type:'fill', source:'om', 'source-layer':'landuse', filter:['in','class','park','recreation_ground','grass','garden','meadow','pitch','playground','golf_course','cemetery'], paint:{ 'fill-color':'#b3e09b', 'fill-opacity':0.8 } },
+    { id:'water', type:'fill', source:'om', 'source-layer':'water', paint:{ 'fill-color':'#a9d3f2' } },
+    { id:'building', type:'fill', source:'om', 'source-layer':'building', minzoom:12, paint:{ 'fill-color':'#e6e0d2', 'fill-outline-color':'#ccc5b4' } },
+    { id:'road-casing', type:'line', source:'om', 'source-layer':'transportation', filter:['in','class','motorway','trunk','primary','secondary','tertiary','minor','street'], layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#d8d4ca', 'line-width':['interpolate',['linear'],['zoom'],11,1.6,16,11] } },
+    { id:'road-minor', type:'line', source:'om', 'source-layer':'transportation', filter:['in','class','minor','street','service','tertiary'], layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#ffffff', 'line-width':['interpolate',['linear'],['zoom'],12,0.8,16,6] } },
+    { id:'road-arterial', type:'line', source:'om', 'source-layer':'transportation', filter:['in','class','secondary','primary'], layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#ffffff', 'line-width':['interpolate',['linear'],['zoom'],11,1.4,16,8] } },
+    { id:'road-highway-casing', type:'line', source:'om', 'source-layer':'transportation', filter:['in','class','motorway','trunk'], layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#f2b95a', 'line-width':['interpolate',['linear'],['zoom'],9,2.4,16,12] } },
+    { id:'road-highway', type:'line', source:'om', 'source-layer':'transportation', filter:['in','class','motorway','trunk'], layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#fbd274', 'line-width':['interpolate',['linear'],['zoom'],9,1.4,16,9] } },
+    { id:'boundary', type:'line', source:'om', 'source-layer':'boundary', filter:['<=','admin_level',4], paint:{ 'line-color':'#c9c4b8', 'line-dasharray':[3,2], 'line-width':1 } },
+    { id:'place-city', type:'symbol', source:'om', 'source-layer':'place', filter:['in','class','city','town'], layout:{ 'text-field':_LAT, 'text-font':['Noto Sans Regular'], 'text-size':['interpolate',['linear'],['zoom'],8,13,14,22], 'text-pitch-alignment':'viewport','text-rotation-alignment':'viewport' }, paint:{ 'text-color':'#3c4043','text-halo-color':'#f4f3ef','text-halo-width':1.6 } },
+    { id:'road-name', type:'symbol', source:'om', 'source-layer':'transportation_name', minzoom:13, layout:{ 'text-field':_LAT, 'text-font':['Noto Sans Regular'], 'symbol-placement':'line', 'text-size':11, 'text-pitch-alignment':'viewport' }, paint:{ 'text-color':'#5f5f5f','text-halo-color':'#ffffff','text-halo-width':1.6 } },
+    { id:'place-other', type:'symbol', source:'om', 'source-layer':'place', filter:['in','class','suburb','neighbourhood','quarter','village'], layout:{ 'text-field':_LAT, 'text-font':['Noto Sans Regular'], 'text-size':12, 'text-pitch-alignment':'viewport','text-rotation-alignment':'viewport' }, paint:{ 'text-color':'#70757a','text-halo-color':'#f4f3ef','text-halo-width':1.4 } }
+  ]
+};
+
+// petak "bangunan" hiasan yang menempel di peta (ground-anchored) — untuk peta bergaya kustom
+function addPetakGrid(map){
+  map.on('load', () => {
+    function rnd(x,y){ const v=Math.sin(x*127.1+y*311.7)*43758.5453; return v-Math.floor(v); }
+    const lngScale = 1/Math.cos(30.05*Math.PI/180);
+    function rect(cx,cy,hw,hh,ang){ const ca=Math.cos(ang),sa=Math.sin(ang); const pts=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(p=>{ const rx=p[0]*ca-p[1]*sa, ry=p[0]*sa+p[1]*ca; return [cx+rx*lngScale, cy+ry]; }); pts.push(pts[0]); return { type:'Feature', geometry:{ type:'Polygon', coordinates:[pts] } }; }
+    function buildGrid(){ const feats=[]; const step=0.00042; const b=map.getBounds(); const w=b.getWest()-0.003,e=b.getEast()+0.003,s0=b.getSouth()-0.003,n=b.getNorth()+0.003; const gx0=Math.floor(w/step),gx1=Math.ceil(e/step),gy0=Math.floor(s0/step),gy1=Math.ceil(n/step); for(let ix=gx0;ix<=gx1;ix++){ for(let iy=gy0;iy<=gy1;iy++){ const r=rnd(ix,iy); if(r<0.16) continue; const ang=(rnd(Math.floor(ix/6),Math.floor(iy/6))-0.5)*0.5+(rnd(ix+2,iy+8)-0.5)*0.14; const cx=ix*step+(rnd(ix+7,iy)-0.5)*step*0.34; const cy=iy*step+(rnd(ix,iy+9)-0.5)*step*0.34; const big=rnd(ix+11,iy+11); const hw=step*(0.17+rnd(ix+3,iy+3)*0.17+(big>0.82?0.14:0)); const hh=step*(0.17+rnd(ix+5,iy+1)*0.17+(big>0.9?0.12:0)); const f=rect(cx,cy,hw,hh,ang); f.properties={ sh:rnd(ix+13,iy+4) }; feats.push(f); } } return { type:'FeatureCollection', features:feats }; }
+    try{
+      map.addSource('petakgrid', { type:'geojson', data: buildGrid() });
+      map.addLayer({ id:'petak-grid', type:'fill', source:'petakgrid', minzoom:13, paint:{ 'fill-color':['interpolate',['linear'],['get','sh'],0,'#e9e3d5',1,'#dcd5c4'], 'fill-outline-color':'#cdc6b5', 'fill-opacity':0.92 } }, 'landcover');
+      let _t; map.on('moveend', ()=>{ clearTimeout(_t); _t=setTimeout(()=>{ try{ map.getSource('petakgrid').setData(buildGrid()); }catch(e){} }, 150); });
+    }catch(e){}
+  });
+}
+
+function makeMlMap(id, center, styleObj){
   const m = new maplibregl.Map({
-    container: id, style: NUQTO_MAP_STYLE, center: center, zoom: 13,
+    container: id, style: styleObj || NUQTO_MAP_STYLE, center: center, zoom: 13,
     pitch: 0, bearing: 0, attributionControl: false,        // DATAR secara default
     dragRotate: true, pitchWithRotate: true, maxPitch: 85
   });
-  m.on('style.load', () => forceLatinLabels(m));
+  if(!styleObj) m.on('style.load', () => forceLatinLabels(m)); // MapTiler perlu paksa Latin; kustom sudah Latin
   return m;
 }
 
@@ -2488,9 +2529,10 @@ function removeMlLine(map, id){
 
 function initMaps(){
   const CAIRO = [31.2357, 30.0444]; // [lng, lat] untuk MapLibre
-  maps.maqom = makeMlMap('map-maqom', CAIRO);
-  maps.blacklist = makeMlMap('map-blacklist', CAIRO);
-  maps.razia = makeMlMap('map-razia', CAIRO);
+  maps.maqom = makeMlMap('map-maqom', CAIRO, NUQTO_CUSTOM_STYLE); // UJI: style kustom Google-look + petak
+  addPetakGrid(maps.maqom);
+  maps.blacklist = makeMlMap('map-blacklist', CAIRO);   // MapTiler (untuk perbandingan)
+  maps.razia = makeMlMap('map-razia', CAIRO);            // MapTiler
 
   maps.maqom.on('click', e => openSheet('maqom', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
   maps.blacklist.on('click', e => openSheet('blacklist', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
