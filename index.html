@@ -5523,6 +5523,15 @@ function initPullToRefresh(){
   }, { passive: true });
 }
 
+// native (Capacitor): splash native DITAHAN (launchAutoHide:false) sampai halaman web tergambar,
+// lalu disembunyikan → tak ada celah/kedip, native hijau menyatu langsung ke splash web (terasa satu splash).
+function _hideNativeSplash(){
+  requestAnimationFrame(() => {
+    try{ if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen){ window.Capacitor.Plugins.SplashScreen.hide(); } }catch(e){}
+  });
+}
+if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', _hideNativeSplash); } else { _hideNativeSplash(); }
+
 window.addEventListener('load', () => {
   try{ initMaps(); }catch(e){ console.warn('initMaps gagal:', e); } // peta gagal jangan sampai menghentikan setup izin/push
   initAuth();
