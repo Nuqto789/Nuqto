@@ -3676,6 +3676,12 @@ function openBuku(){
 function closeBuku(){ document.getElementById('page-buku').classList.remove('open'); }
 
 let _bukuState = null, _bukuScrollBound = false;
+function bindBukuScroll(){
+  if(_bukuScrollBound) return;
+  _bukuScrollBound = true;
+  const sc = document.getElementById('buku-read-scroll');
+  sc.addEventListener('scroll', () => { if(sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 140) loadNextHadithSection(); }, { passive: true });
+}
 function openKitab(key){
   const kitab = KITAB_HADITS.find(k => k.key === key);
   if(!kitab) return;
@@ -3685,12 +3691,7 @@ function openKitab(key){
   document.getElementById('buku-load-more').textContent = 'Memuat…';
   document.getElementById('page-buku-read').classList.add('open');
   document.getElementById('buku-read-scroll').scrollTop = 0;
-  if(!_bukuScrollBound){
-    _bukuScrollBound = true;
-    const sc = document.getElementById('buku-read-scroll');
-    sc.addEventListener('scroll', () => { if(sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 140) loadNextHadithSection(); }, { passive: true });
-  }
-  if(kitab.src === 'myquran'){ _bukuState = { done: true }; loadArbain(); return; }
+  bindBukuScroll();
   _bukuState = { key, nama: kitab.nama, section: 1, loading: false, done: false };
   loadNextHadithSection();
 }
@@ -3702,32 +3703,50 @@ function openArbain(){
   document.getElementById('buku-load-more').textContent = 'Memuat…';
   document.getElementById('page-buku-read').classList.add('open');
   document.getElementById('buku-read-scroll').scrollTop = 0;
-  _bukuState = { done: true }; // cegah infinite-scroll kitab lain
+  bindBukuScroll();
+  _bukuState = { arbain: true, data: null, shown: 0, loading: false, done: false };
   loadArbain();
 }
+// Arba'in: ambil sekali (payload kecil), tapi tampilkan bertahap per 10 (lazy render) agar ringan
 async function loadArbain(){
-  const listEl = document.getElementById('buku-hadith-list');
+  const st = _bukuState;
   const more = document.getElementById('buku-load-more');
+  if(!st || st.loading || st.done) return;
+  st.loading = true;
   more.textContent = 'Memuat…';
   try{
-    const res = await fetch('https://api.myquran.com/v2/hadits/arbain/semua');
-    if(!res.ok) throw new Error('x');
-    const j = await res.json();
-    const data = (j && j.data) || [];
-    listEl.innerHTML = data.map(h => `
+    if(!st.data){
+      const res = await fetch('https://api.myquran.com/v2/hadits/arbain/semua');
+      if(!res.ok) throw new Error('x');
+      const j = await res.json();
+      st.data = (j && j.data) || [];
+    }
+    st.loading = false;
+    renderArbainNext();
+  }catch(e){ st.loading = false; more.textContent = 'Gagal memuat. Cek koneksi lalu coba lagi.'; }
+}
+function renderArbainNext(){
+  const st = _bukuState;
+  if(!st || !st.data) return;
+  const listEl = document.getElementById('buku-hadith-list');
+  const more = document.getElementById('buku-load-more');
+  const slice = st.data.slice(st.shown, st.shown + 10);
+  listEl.insertAdjacentHTML('beforeend', slice.map(h => `
       <div class="job-card">
         <div style="font-size:11px; font-weight:700; color:var(--maqom); margin-bottom:4px;">Hadits No. ${h.no}</div>
         ${h.judul ? `<div style="font-weight:800; font-size:14px; color:var(--maqom-deep); margin-bottom:8px;">${escapeHtml(h.judul)}</div>` : ''}
         ${h.arab ? `<div style="font-family:'Scheherazade New', serif; font-size:20px; line-height:2; direction:rtl; text-align:right; color:var(--maqom-deep); margin-bottom:10px;">${escapeHtml(h.arab)}</div>` : ''}
         <div style="font-size:13.5px; color:#333; line-height:1.75;">${escapeHtml(h.indo || '')}</div>
-      </div>`).join('');
-    more.textContent = data.length ? ('— selesai · ' + data.length + ' hadits —') : 'Kosong.';
-  }catch(e){ more.textContent = 'Gagal memuat. Cek koneksi lalu coba lagi.'; }
+      </div>`).join(''));
+  st.shown += slice.length;
+  if(st.shown >= st.data.length){ st.done = true; more.textContent = st.data.length ? ('— selesai · ' + st.data.length + ' hadits —') : 'Kosong.'; }
+  else { more.textContent = 'Scroll untuk memuat lanjutan…'; }
 }
 
 async function loadNextHadithSection(){
   const st = _bukuState;
   if(!st || st.loading || st.done) return;
+  if(st.arbain){ renderArbainNext(); return; } // Arba'in: render 10 berikutnya dari data yang sudah diambil
   st.loading = true;
   const more = document.getElementById('buku-load-more');
   more.textContent = 'Memuat…';
@@ -5456,7 +5475,7 @@ function initPullToRefresh(){
   document.body.appendChild(ind);
   const svg = ind.querySelector('svg');
   let startY = 0, pulling = false, dist = 0, scroller = null, refreshing = false;
-  const THRESH = 70;
+  const THRESH = 90; // tarikan harus jelas disengaja (bukan sentuhan/scroll sekilas)
   function scrollableAt(el){
     while(el && el !== document.body){
       const oy = getComputedStyle(el).overflowY;
