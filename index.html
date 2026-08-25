@@ -203,6 +203,18 @@
   .locate-btn:active{transform:scale(0.92);}
   .locate-btn.loading svg{animation:spin .9s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
+  .follow-btn{
+    position:absolute; right:14px; bottom:calc(170px + env(safe-area-inset-bottom, 0px)); z-index:450;
+    width:46px; height:46px; border-radius:50%;
+    background:var(--paper); border:1px solid var(--line);
+    box-shadow:0 4px 14px rgba(28,27,23,0.14);
+    display:none; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform .15s ease; color:var(--muted);
+  }
+  .follow-btn.show{ display:flex; }
+  .follow-btn:active{ transform:scale(0.92); }
+  .follow-btn.on{ color:#fff; background:#1E6FEB; border-color:transparent; box-shadow:0 4px 16px rgba(30,111,235,0.5); animation:followPulse 1.6s ease-in-out infinite; }
+  @keyframes followPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(30,111,235,0.5);} 50%{ box-shadow:0 0 0 8px rgba(30,111,235,0);} }
 
   /* ---- splash screen ---- */
   #splash-screen{
@@ -1317,6 +1329,9 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
     </button>
   </div>
+  <button id="follow-maqom" class="follow-btn" onclick="toggleFollow('maqom')" aria-label="Ikuti posisi saya" aria-pressed="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+  </button>
   <button id="locate-maqom" class="locate-btn" style="color:var(--maqom);" onclick="locateMe('maqom')" aria-label="Ke lokasi saya">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><line x1="12" y1="1.6" x2="12" y2="4.4"/><line x1="12" y1="19.6" x2="12" y2="22.4"/><line x1="1.6" y1="12" x2="4.4" y2="12"/><line x1="19.6" y1="12" x2="22.4" y2="12"/></svg>
   </button>
@@ -1348,6 +1363,9 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
     </button>
   </div>
+  <button id="follow-blacklist" class="follow-btn" onclick="toggleFollow('blacklist')" aria-label="Ikuti posisi saya" aria-pressed="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+  </button>
   <button id="locate-blacklist" class="locate-btn" style="color:var(--rust);" onclick="locateMe('blacklist')" aria-label="Ke lokasi saya">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><line x1="12" y1="1.6" x2="12" y2="4.4"/><line x1="12" y1="19.6" x2="12" y2="22.4"/><line x1="1.6" y1="12" x2="4.4" y2="12"/><line x1="19.6" y1="12" x2="22.4" y2="12"/></svg>
   </button>
@@ -1379,6 +1397,9 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
     </button>
   </div>
+  <button id="follow-razia" class="follow-btn" onclick="toggleFollow('razia')" aria-label="Ikuti posisi saya" aria-pressed="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+  </button>
   <button id="locate-razia" class="locate-btn" style="color:var(--amber);" onclick="locateMe('razia')" aria-label="Ke lokasi saya">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><line x1="12" y1="1.6" x2="12" y2="4.4"/><line x1="12" y1="19.6" x2="12" y2="22.4"/><line x1="1.6" y1="12" x2="4.4" y2="12"/><line x1="19.6" y1="12" x2="22.4" y2="12"/></svg>
   </button>
@@ -2545,6 +2566,8 @@ let mlMarkers = { maqom: [], blacklist: [], razia: [] };  // {marker, popup, pin
 let userMarkers = { maqom: null, blacklist: null, razia: null };
 let routeML = { maqom: null, blacklist: null, razia: null }; // {srcId, lyrId}
 let activeRoutedPinId = { maqom: null, blacklist: null, razia: null };
+let activeRouteDest = { maqom: null, blacklist: null, razia: null }; // [lat,lng] tujuan rute aktif
+let followState = { maqom: null, blacklist: null, razia: null }; // {dest,lastOrigin,lastRedraw,webId,capId} saat "ikuti posisi" aktif
 let editState = null; // { cat, id } saat mode edit, null saat mode tambah baru
 let existingPhotoUrl = null; // foto lama saat mode edit (jika tidak diganti/dihapus)
 
@@ -2704,11 +2727,15 @@ function locateMe(cat){
   getUserLatLng().then(ll => onLocationFound(cat, ll)).catch(() => onLocationError(cat));
 }
 
-function onLocationFound(cat, ll){
-  document.getElementById('locate-' + cat).classList.remove('loading');
-  if(userMarkers[cat]){ try{ userMarkers[cat].remove(); }catch(e){} }
+function placeUserDot(cat, ll){
+  if(!maps[cat]) return;
+  if(userMarkers[cat]){ try{ userMarkers[cat].setLngLat([ll[1], ll[0]]); return; }catch(e){} }
   const el = document.createElement('div'); el.className = 'user-dot';
   userMarkers[cat] = new maplibregl.Marker({ element: el, pitchAlignment: 'viewport', rotationAlignment: 'viewport' }).setLngLat([ll[1], ll[0]]).addTo(maps[cat]);
+}
+function onLocationFound(cat, ll){
+  document.getElementById('locate-' + cat).classList.remove('loading');
+  placeUserDot(cat, ll);
   maps[cat].flyTo({ center: [ll[1], ll[0]], zoom: 16, duration: 900 });
   showToast('Ditemukan — posisimu sekarang');
 }
@@ -2743,6 +2770,7 @@ function applySafeBg(cat){
 /* ---------- page switching ---------- */
 function switchPage(cat){
   currentPage = cat;
+  ['maqom','blacklist','razia'].forEach(c => { if(c !== cat && followState[c]) stopFollow(c); }); // keluar dari peta → stop ikuti posisi
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + cat).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
@@ -3182,9 +3210,6 @@ function removeRouteML(cat){
   routeML[cat] = null;
 }
 async function drawRouteTo(cat, destLatLng){
-  const map = maps[cat];
-  removeRouteML(cat);
-
   let origin;
   try{
     origin = await getUserLatLng();
@@ -3192,20 +3217,24 @@ async function drawRouteTo(cat, destLatLng){
     showToast('Aktifkan izin lokasi untuk melihat rute');
     return;
   }
-
+  placeUserDot(cat, origin);
+  activeRouteDest[cat] = destLatLng;
   showToast('Menyusun rute…');
+  const ok = await renderRouteML(cat, origin, destLatLng, false);
+  if(ok) startFollow(cat, destLatLng, origin); // auto: ikuti posisi begitu rute jadi
+}
 
+// Gambar garis rute jalan kaki dari origin→dest. quiet=true dipakai saat auto-redraw (tanpa toast & tanpa fitBounds).
+async function renderRouteML(cat, origin, destLatLng, quiet){
+  const map = maps[cat];
+  if(!map) return false;
+  removeRouteML(cat);
   try{
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${destLatLng[1]},${destLatLng[0]}?overview=full&geometries=geojson`;
     const res = await fetch(url);
     const data = await res.json();
-
-    if(!data.routes || !data.routes.length){
-      showToast('Rute tidak ditemukan');
-      return;
-    }
-
-    const coords = data.routes[0].geometry.coordinates; // sudah [lng, lat]
+    if(!data.routes || !data.routes.length){ if(!quiet) showToast('Rute tidak ditemukan'); return false; }
+    const coords = data.routes[0].geometry.coordinates; // [lng, lat]
     const srcId = 'route-' + cat, lyrId = 'route-' + cat + '-line';
     const geojson = { type:'Feature', properties:{}, geometry:{ type:'LineString', coordinates: coords } };
     const addRoute = () => {
@@ -3215,19 +3244,81 @@ async function drawRouteTo(cat, destLatLng){
           layout:{ 'line-cap':'round', 'line-join':'round' },
           paint:{ 'line-color': cat === 'maqom' ? '#175038' : cat === 'razia' ? '#B8721E' : '#9C3B32', 'line-width':5, 'line-opacity':0.85 } });
         routeML[cat] = { srcId, lyrId };
-        const b = new maplibregl.LngLatBounds(coords[0], coords[0]);
-        coords.forEach(c => b.extend(c));
-        map.fitBounds(b, { padding: 70, duration: 800 });
+        if(!quiet){ const b = new maplibregl.LngLatBounds(coords[0], coords[0]); coords.forEach(c => b.extend(c)); map.fitBounds(b, { padding: 70, duration: 800 }); }
       }catch(e){}
     };
     if(map.isStyleLoaded()) addRoute(); else map.once('idle', addRoute);
-
-    const km = (data.routes[0].distance / 1000).toFixed(1);
-    const menit = Math.round(data.routes[0].duration / 60);
-    showToast(`Rute ditemukan — ${km} km, ~${menit} menit jalan kaki`);
+    if(!quiet){
+      const km = (data.routes[0].distance / 1000).toFixed(1);
+      const menit = Math.round(data.routes[0].duration / 60);
+      showToast(`Rute ditemukan — ${km} km, ~${menit} menit jalan kaki`);
+    }
+    return true;
   } catch(err){
     console.error(err);
-    showToast('Gagal ambil rute — cek koneksi internet');
+    if(!quiet) showToast('Gagal ambil rute — cek koneksi internet');
+    return false;
+  }
+}
+
+/* ---------- ikuti posisi live (maqom/blacklist/talaqqi) ---------- */
+function setFollowBtn(cat, on){
+  const b = document.getElementById('follow-' + cat);
+  if(!b) return;
+  b.classList.add('show');
+  b.classList.toggle('on', !!on);
+  b.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+function startFollow(cat, dest, origin){
+  if(!dest) return;
+  let st = followState[cat];
+  if(st){ st.dest = dest; if(origin) st.lastOrigin = origin; setFollowBtn(cat, true); return; } // sudah aktif → cukup ganti tujuan
+  st = { dest, lastOrigin: origin || null, lastRedraw: Date.now(), webId: null, capId: null };
+  followState[cat] = st;
+  const onPos = (lat, lng) => onFollowPos(cat, lat, lng);
+  if(isNativeApp() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation){
+    ensureNativeGeoPermission().then(() => {
+      window.Capacitor.Plugins.Geolocation.watchPosition({ enableHighAccuracy: true, timeout: 20000 }, (pos, err) => {
+        if(pos && pos.coords) onPos(pos.coords.latitude, pos.coords.longitude);
+      }).then(id => {
+        if(followState[cat]) followState[cat].capId = id;
+        else { try{ window.Capacitor.Plugins.Geolocation.clearWatch({ id }); }catch(e){} } // sudah keburu di-stop
+      }).catch(() => {});
+    }).catch(() => { showToast('Aktifkan izin lokasi untuk mengikuti posisi'); stopFollow(cat); });
+  } else if(navigator.geolocation){
+    st.webId = navigator.geolocation.watchPosition(
+      pos => onPos(pos.coords.latitude, pos.coords.longitude),
+      () => {}, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
+  } else {
+    showToast('Perangkat tak mendukung lokasi'); stopFollow(cat); return;
+  }
+  setFollowBtn(cat, true);
+  showToast('Mengikuti posisimu…');
+}
+function stopFollow(cat){
+  const st = followState[cat];
+  if(st){
+    if(st.webId != null){ try{ navigator.geolocation.clearWatch(st.webId); }catch(e){} }
+    if(st.capId != null && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation){ try{ window.Capacitor.Plugins.Geolocation.clearWatch({ id: st.capId }); }catch(e){} }
+  }
+  followState[cat] = null;
+  setFollowBtn(cat, false);
+}
+function toggleFollow(cat){
+  if(followState[cat]){ stopFollow(cat); showToast('Berhenti mengikuti posisi'); }
+  else if(activeRouteDest[cat]){ startFollow(cat, activeRouteDest[cat], null); }
+}
+function onFollowPos(cat, lat, lng){
+  const st = followState[cat];
+  if(!st) return;
+  placeUserDot(cat, [lat, lng]);
+  if(!st.lastOrigin){ st.lastOrigin = [lat, lng]; return; }
+  const now = Date.now();
+  const devM = haversineKm(lat, lng, st.lastOrigin[0], st.lastOrigin[1]) * 1000;
+  if(devM > 30 && now - st.lastRedraw > 10000){ // menyimpang >30 m & jeda ≥10 dtk → perbarui rute (hemat panggilan)
+    st.lastRedraw = now;
+    st.lastOrigin = [lat, lng];
+    renderRouteML(cat, [lat, lng], st.dest, true);
   }
 }
 
