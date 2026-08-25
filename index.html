@@ -1783,6 +1783,22 @@
       <span class="menu-label">Kartu Darurat</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
+
+    <div class="section-title">Ibadah</div>
+    <div class="menu-row" style="cursor:default;">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--maqom)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
+      </span>
+      <span class="menu-label" style="flex:1;">Azan waktu sholat<span style="display:block; font-size:11px; color:var(--muted); font-weight:500;">Putar takbir saat waktu sholat masuk</span></span>
+      <label class="sos-switch"><input type="checkbox" id="azan-toggle" onchange="azanToggleChange()"><span class="sos-switch-slider"></span></label>
+    </div>
+    <button class="menu-row" onclick="testAzan()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      </span>
+      <span class="menu-label">Tes suara azan</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
   </div>
 </div>
 
@@ -3994,6 +4010,7 @@ async function loadSholat(){
       ['Subuh', t.Fajr], ['Terbit', t.Sunrise], ['Dzuhur', t.Dhuhr], ['Ashar', t.Asr], ['Maghrib', t.Maghrib], ['Isya', t.Isha]
     ].map(p => ({ name:p[0], hm:p[1] }));
     renderSholat(prayers);
+    try{ setAzanSchedule(prayers); }catch(e){} // perbarui jadwal azan web dgn lokasi akurat
   }catch(e){
     listEl.innerHTML = '<div class="empty-state">Gagal menghitung jadwal.</div>';
   }
@@ -4026,6 +4043,61 @@ function renderSholat(prayers){
   tick();
   if(sholatTimer) clearInterval(sholatTimer);
   sholatTimer = setInterval(tick, 1000);
+}
+
+/* ---------- AZAN otomatis (WEB/PWA) saat app DIBUKA & waktu shalat masuk ----------
+   Di app native, azan diputar via suara notifikasi channel 'nuqto_azan' (bunyi walau tertutup). */
+let _azanSchedule = null, _azanAudio = null, _azanPlayed = new Set(), _azanDay = '';
+function setAzanSchedule(prayers){
+  const toMin = hm => { const a = hm.split(':'); return (+a[0])*60 + (+a[1]); };
+  _azanSchedule = (prayers || []).filter(p => p.name !== 'Terbit').map(p => ({ name:p.name, min: toMin(p.hm) }));
+}
+function playAzan(){
+  try{ if(!_azanAudio){ _azanAudio = new Audio('/azan.mp3'); _azanAudio.preload = 'none'; } _azanAudio.currentTime = 0; _azanAudio.play().catch(()=>{}); }catch(e){}
+}
+function checkAzan(){
+  if(isNativeApp()) return;                       // native: pakai notifikasi (bunyi walau tertutup)
+  if(localStorage.getItem('nuqto_azan_off') === '1') return; // dimatikan user
+  if(!_azanSchedule) return;
+  const now = new Date(), day = now.toDateString();
+  if(day !== _azanDay){ _azanDay = day; _azanPlayed = new Set(); } // hari baru → reset
+  if(document.visibilityState !== 'visible') return;             // hanya saat app terlihat
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  for(const p of _azanSchedule){ if(nowMin === p.min && !_azanPlayed.has(p.name)){ _azanPlayed.add(p.name); playAzan(); showToast('🕌 Waktu ' + p.name + ' telah masuk'); } }
+}
+function initAzanSchedule(){
+  if(isNativeApp()) return;
+  try{
+    const tzName = (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'Africa/Cairo';
+    const m = sholatMethod(tzName);
+    const t = computeSholat(new Date(), 30.0444, 31.2357, -new Date().getTimezoneOffset()/60, m.fajr, m.isha, 1); // default Kairo; disempurnakan saat buka halaman Sholat
+    setAzanSchedule([['Subuh',t.Fajr],['Dzuhur',t.Dhuhr],['Ashar',t.Asr],['Maghrib',t.Maghrib],['Isya',t.Isha]].map(p => ({ name:p[0], hm:p[1] })));
+  }catch(e){}
+}
+// buka kunci autoplay audio pada interaksi pertama (kebijakan browser)
+document.addEventListener('pointerdown', function _azUnlock(){
+  try{ new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play().catch(()=>{}); }catch(e){}
+}, { once:true });
+// on/off azan
+function azanToggleChange(){
+  const on = document.getElementById('azan-toggle').checked;
+  if(on) localStorage.removeItem('nuqto_azan_off'); else localStorage.setItem('nuqto_azan_off', '1');
+  if(isNativeApp()) scheduleSholatNotifications(); // native: jadwalkan ulang dgn/ tanpa channel azan
+  showToast(on ? 'Azan waktu sholat: AKTIF' : 'Azan waktu sholat: NONAKTIF');
+}
+// tes suara azan tanpa menunggu waktu shalat
+async function testAzan(){
+  if(isNativeApp()){
+    const LN = window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+    if(!LN){ showToast('Notifikasi tak tersedia'); return; }
+    try{
+      let perm = await LN.checkPermissions(); if(perm.display !== 'granted'){ perm = await LN.requestPermissions(); }
+      if(perm.display !== 'granted'){ showToast('Izinkan notifikasi dulu'); return; }
+      try{ await LN.createChannel({ id:'nuqto_azan', name:'Azan Waktu Sholat', description:'Azan (takbir) saat waktu sholat masuk', importance:5, sound:'azan.mp3', vibration:true, visibility:1 }); }catch(e){}
+      await LN.schedule({ notifications:[{ id:999001, channelId:'nuqto_azan', sound:'azan.mp3', smallIcon:'ic_stat_nuqto', iconColor:'#0E3626', title:'Tes Azan 🕌', body:'Beginilah azan berbunyi saat waktu sholat masuk.', schedule:{ at: new Date(Date.now()+4000), allowWhileIdle:true } }] });
+      showToast('Tes azan berbunyi ~4 detik lagi (boleh kunci layar)');
+    }catch(e){ showToast('Gagal tes azan'); }
+  } else { playAzan(); showToast('Memutar azan…'); }
 }
 
 /* ---------- kalender hijriah (offline, kalender Islam bawaan browser) ---------- */
@@ -4086,7 +4158,10 @@ function shareApp(){
 }
 
 /* ---------- Pengaturan & Ubah Nama Akun ---------- */
-function openPengaturan(){ document.getElementById('page-pengaturan').classList.add('open'); }
+function openPengaturan(){
+  const az = document.getElementById('azan-toggle'); if(az) az.checked = localStorage.getItem('nuqto_azan_off') !== '1';
+  document.getElementById('page-pengaturan').classList.add('open');
+}
 function closePengaturan(){ document.getElementById('page-pengaturan').classList.remove('open'); }
 
 const NAMA_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000; // 2 minggu
@@ -5697,6 +5772,8 @@ async function scheduleSholatNotifications(){
     if(perm.display !== 'granted'){ perm = await LN.requestPermissions(); }
     if(perm.display !== 'granted') return;
     try{ await LN.createChannel({ id:'nuqto_sholat', name:'Waktu Sholat', description:'Pengingat waktu sholat', importance:5, sound:'default', vibration:true, visibility:1 }); }catch(e){}
+    // channel khusus dengan suara AZAN (takbir) untuk notifikasi "waktu sholat MASUK" — bunyi walau app tertutup
+    try{ await LN.createChannel({ id:'nuqto_azan', name:'Azan Waktu Sholat', description:'Azan (takbir) saat waktu sholat masuk', importance:5, sound:'azan.mp3', vibration:true, visibility:1 }); }catch(e){}
     if(!_sholatNotifInited){ _sholatNotifInited = true; try{ LN.addListener('localNotificationActionPerformed', () => { openSholat(); }); }catch(e){} }
     // hapus jadwal lama agar tidak dobel
     try{ const pend = await LN.getPending(); if(pend && pend.notifications && pend.notifications.length){ await LN.cancel({ notifications: pend.notifications.map(n => ({ id:n.id })) }); } }catch(e){}
@@ -5707,6 +5784,7 @@ async function scheduleSholatNotifications(){
     const tzOff = -new Date().getTimezoneOffset()/60;
     const m = sholatMethod(tzName);
     const defs = [ ['Fajr','Subuh'], ['Dhuhr','Dzuhur'], ['Asr','Ashar'], ['Maghrib','Maghrib'], ['Isha','Isya'] ];
+    const azanOff = localStorage.getItem('nuqto_azan_off') === '1'; // toggle azan
     const now = Date.now();
     const notifs = [];
     for(let d = 0; d < 5; d++){ // jadwalkan 5 hari ke depan
@@ -5721,7 +5799,7 @@ async function scheduleSholatNotifications(){
           notifs.push({ id: baseId+1, channelId:'nuqto_sholat', smallIcon:'ic_stat_nuqto', largeIcon:'ic_nuqto_logo', iconColor:'#0E3626', title: nama + ' sebentar lagi', body: 'Waktu ' + nama + ' akan masuk dalam 15 menit.', schedule:{ at: before, allowWhileIdle:true } });
         }
         if(at.getTime() > now + 10000){
-          notifs.push({ id: baseId+2, channelId:'nuqto_sholat', smallIcon:'ic_stat_nuqto', largeIcon:'ic_nuqto_logo', iconColor:'#0E3626', title: 'Waktu ' + nama + ' telah masuk', body: 'Yuk, tunaikan sholat dulu 🕌', schedule:{ at: at, allowWhileIdle:true } });
+          notifs.push({ id: baseId+2, channelId: azanOff ? 'nuqto_sholat' : 'nuqto_azan', sound: azanOff ? undefined : 'azan.mp3', smallIcon:'ic_stat_nuqto', largeIcon:'ic_nuqto_logo', iconColor:'#0E3626', title: 'Waktu ' + nama + ' telah masuk', body: 'Yuk, tunaikan sholat dulu 🕌', schedule:{ at: at, allowWhileIdle:true } });
         }
       }
     }
@@ -5864,8 +5942,9 @@ window.addEventListener('load', () => {
   setTimeout(updatePushLabel, 1500);
   setTimeout(() => { if(isNativeApp()) registerNativePush(); else ensurePushSubscription(true); }, 2000); // native: daftar FCM; web: langganan Web Push (buat ulang jika hilang)
   if(isNativeApp()) setTimeout(ensureNativeGeoPermission, 2800); // native: minta izin lokasi lebih awal
-  if(isNativeApp()) setTimeout(scheduleSholatNotifications, 3800); // native: jadwalkan notif waktu sholat
+  if(isNativeApp()) setTimeout(scheduleSholatNotifications, 3800); // native: jadwalkan notif waktu sholat (suara azan)
   if(isNativeApp()) setTimeout(maybeShowBatteryDialog, 5500); // native: dialog izinkan berjalan di latar (muncul sekali)
+  if(!isNativeApp()){ initAzanSchedule(); setInterval(checkAzan, 15000); } // web/PWA: azan saat app dibuka & waktu shalat masuk
   initPullToRefresh(); // native: tarik ke bawah untuk refresh
   try{ const _tbObs = new MutationObserver(() => updateTrackBannerVisibility()); document.querySelectorAll('.page, .overlay-page').forEach(el => _tbObs.observe(el, { attributes:true, attributeFilter:['class'] })); }catch(e){} // bar darurat: sembunyikan di halaman selain Beranda/Akun
   loadPins('maqom');
