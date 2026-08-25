@@ -2127,7 +2127,7 @@
 <div id="track-banner" class="danger-banner track-banner">
   <button class="tb-main" onclick="openLiveTrack()">
     <span class="db-pulse"></span>
-    <span class="tb-text">🚨 Lokasi Darurat<span class="tb-sub">Ketuk untuk lihat pelacakan</span></span>
+    <span class="tb-text"><span id="track-banner-text">🚨 Lokasi Darurat</span><span class="tb-sub">Ketuk untuk lihat pelacakan</span></span>
   </button>
   <button class="db-safe" onclick="ignoreTrackBanner()">Abaikan</button>
 </div>
@@ -4951,8 +4951,10 @@ async function confirmEmergency(){
   let coords;
   try{ coords = await getUserLatLng(); }
   catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
-  // nonaktifkan alert aktif lama milik sendiri (cegah penumpukan; RLS batasi ke baris sendiri)
-  await sb.from('emergency_alerts').update({ active: false }).eq('active', true);
+  // nonaktifkan alert aktif lama MILIK SENDIRI saja (filter user_id eksplisit —
+  // JANGAN andalkan RLS: admin punya is_admin() sehingga tanpa filter ini admin akan
+  // mematikan darurat SEMUA orang saat mengirim SOS).
+  await sb.from('emergency_alerts').update({ active: false }).eq('active', true).eq('user_id', currentUser.id);
   // Kartu Darurat: kalau user sudah set → lampirkan; kalau lupa/belum set → tetap siarkan pakai nama akun.
   const m = (currentUser && currentUser.user_metadata) || {};
   const sosOn = m.sos_enabled !== false; // Kartu Darurat aktif? (default aktif) — kalau nonaktif → anonim
@@ -5120,65 +5122,44 @@ function openEmergencyMaps(){
   window.open('https://www.google.com/maps/search/?api=1&query=' + incomingAlert.lat + ',' + incomingAlert.lng, '_blank');
 }
 
-/* ----- receiver: peta live tracking ----- */
-let trackMap = null, trackMarker = null, trackChannel = null, trackAlertId = null;
+/* ----- receiver: peta live tracking (MULTI-KORBAN) ----- */
+let trackMap = null, trackMarker = null, trackChannel = null, trackAlertId = null, trackAlert = null;
 let trackRouteLayer = null, trackHelperMarker = null, lastRouteTs = 0, trackDone = false;
+let activeAlerts = [], trackVictimMarkers = {}; // semua alert darurat AKTIF (bukan milik sendiri) + marker per korban
 // gate identitas: hanya muncul saat penolong sudah dekat korban
 let trackHelperLatLng = null, victimPopup = null, victimIdentityShown = false;
 const SOS_REVEAL_M = 150; // radius "dekat" (meter) untuk membuka identitas korban
 
 function openLiveTrack(){
   if(!incomingAlert || incomingAlert.lat == null){ showToast('Lokasi belum tersedia'); return; }
-  trackAlertId = incomingAlert.id;
-  trackDone = false;
-  { const _stoast = document.getElementById('track-safe-toast'); if(_stoast) _stoast.classList.remove('show'); }
   document.getElementById('emg-incoming').classList.remove('open');
   hideTrackBanner();
   document.getElementById('page-track').classList.add('open');
-  // reset gate identitas tiap buka pelacakan (identitas baru muncul saat sudah dekat)
-  victimIdentityShown = false; trackHelperLatLng = null;
+  trackDone = false; victimIdentityShown = false; trackHelperLatLng = null;
+  { const _stoast = document.getElementById('track-safe-toast'); if(_stoast) _stoast.classList.remove('show'); }
   if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
-  if(incomingAlert.name || incomingAlert.photo_url) showToast('Ketuk titik merah saat sudah dekat untuk melihat identitas korban');
-  setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   if(!trackMap){
     trackMap = makeMlMapSimple('map-track', [incomingAlert.lat, incomingAlert.lng], 16);
   }
   setTimeout(() => { try{ trackMap.resize(); }catch(e){} }, 220);
-  placeTrackMarker(incomingAlert.lat, incomingAlert.lng);
-  trackMap.jumpTo({ center: [incomingAlert.lng, incomingAlert.lat], zoom: 16 });
   const st = document.getElementById('track-status');
   st.textContent = 'Live · memantau pergerakan'; st.className = 'track-status live';
   lastRouteTs = Date.now();
+  // MULTI-KORBAN: pastikan pemicu ada di daftar, tampilkan SEMUA korban aktif sebagai titik merah
+  upsertActiveAlert(incomingAlert);
+  renderTrackVictims();
+  trackMap.jumpTo({ center: [incomingAlert.lng, incomingAlert.lat], zoom: 16 });
+  // pilih korban pemicu sebagai default (gambar rute + coba buka identitas)
+  trackAlert = incomingAlert; trackAlertId = incomingAlert.id;
+  setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   drawTrackRoute();
-
-  if(trackChannel) sb.removeChannel(trackChannel);
-  trackChannel = sb.channel('track-' + trackAlertId)
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'emergency_alerts', filter: 'id=eq.' + trackAlertId }, (payload) => {
-      const a = payload.new;
-      incomingAlert = { ...incomingAlert, ...a };
-      if(a.active === false){
-        // korban sudah aman → peta TETAP terbuka, hanya hilangkan titik lokasi A + rute, lalu toast di tengah peta
-        trackDone = true;
-        st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done';
-        addDismissedAlert(a.id);
-        if(respondState.active && respondState.alertId === a.id) stopRespond();
-        if(trackMarker){ try{ trackMarker.remove(); }catch(e){} trackMarker = null; }
-        removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
-        if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
-        if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; } // identitas ikut hilang bersama titik lokasi
-        victimIdentityShown = false;
-        const dist = document.getElementById('track-dist'); if(dist){ dist.style.display = 'none'; }
-        const stoast = document.getElementById('track-safe-toast'); if(stoast){ stoast.classList.add('show'); }
-        return; // jangan lanjut memproses posisi/rute lagi
-      }
-      if(a.lat != null) placeTrackMarker(a.lat, a.lng, true);
-      const now = Date.now();
-      if(a.lat != null && now - lastRouteTs > 20000){ lastRouteTs = now; drawTrackRoute(); } // perbarui rute mengikuti pergerakan
-    }).subscribe();
+  if(activeAlerts.length > 1) showToast(activeAlerts.length + ' orang dalam bahaya — ketuk titik merah untuk pilih & lihat rute');
+  else showToast('Ketuk titik merah saat sudah dekat untuk melihat identitas korban');
+  // pembaruan posisi/aman semua korban ditangani channel umum di initEmergencyRealtime()
 }
 
 async function drawTrackRoute(){
-  if(trackDone || !trackMap || !incomingAlert || incomingAlert.lat == null) return;
+  if(trackDone || !trackMap || !trackAlert || trackAlert.lat == null) return;
   let origin;
   try{ origin = await getUserLatLng(); }
   catch(e){ const st = document.getElementById('track-status'); if(st && st.className.indexOf('done') < 0){ st.textContent = 'Aktifkan izin lokasi untuk melihat rute'; } return; }
@@ -5190,7 +5171,7 @@ async function drawTrackRoute(){
   const _dm = victimDistanceM();
   if(_dm != null && _dm <= SOS_REVEAL_M && !victimIdentityShown) showVictimIdentity();
   try{
-    const dest = [incomingAlert.lat, incomingAlert.lng];
+    const dest = [trackAlert.lat, trackAlert.lng];
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
     const res = await fetch(url);
     const data = await res.json();
@@ -5222,27 +5203,27 @@ function closeImageFull(){
 
 /* ----- gate identitas korban: hanya terbuka saat penolong sudah DEKAT ----- */
 function victimDistanceM(){
-  if(!incomingAlert || incomingAlert.lat == null || !trackHelperLatLng) return null;
-  return haversineKm(trackHelperLatLng[0], trackHelperLatLng[1], incomingAlert.lat, incomingAlert.lng) * 1000;
+  if(!trackAlert || trackAlert.lat == null || !trackHelperLatLng) return null;
+  return haversineKm(trackHelperLatLng[0], trackHelperLatLng[1], trackAlert.lat, trackAlert.lng) * 1000;
 }
 function showVictimIdentity(){
-  if(!trackMap || !incomingAlert || incomingAlert.lat == null) return;
-  const name = incomingAlert.name || 'Korban';
-  const photo = incomingAlert.photo_url;
+  if(!trackMap || !trackAlert || trackAlert.lat == null) return;
+  const name = trackAlert.name || 'Korban';
+  const photo = trackAlert.photo_url;
   const html = '<div style="text-align:center; padding:2px 4px; min-width:130px;">'
     + (photo ? '<img src="' + photo + '" onclick="openImageFull(\'' + photo + '\')" title="Ketuk untuk perbesar" style="width:82px;height:82px;border-radius:50%;object-fit:cover;border:3px solid #DC2626;display:block;margin:0 auto 8px;cursor:pointer;">' : '')
     + '<div style="font-weight:800;font-size:14.5px;color:#DC2626;line-height:1.2;">' + escapeHtml(name) + '</div>'
-    + '<div style="font-size:11px;color:#666;margin-top:3px;">Orang yang butuh pertolongan</div>'
-    + (photo ? '<div style="font-size:10px;color:#999;margin-top:4px;">ketuk foto untuk perbesar</div>' : '') + '</div>';
+    + '<div style="font-size:11px;color:#333;margin-top:3px;">Orang yang butuh pertolongan</div>'
+    + (photo ? '<div style="font-size:10px;color:#555;margin-top:4px;">ketuk foto untuk perbesar</div>' : '') + '</div>';
   if(victimPopup){ try{ victimPopup.remove(); }catch(e){} }
   victimPopup = new maplibregl.Popup({ closeButton:true, closeOnClick:false, offset:20, maxWidth:'220px' })
-    .setLngLat([incomingAlert.lng, incomingAlert.lat]).setHTML(html).addTo(trackMap);
+    .setLngLat([trackAlert.lng, trackAlert.lat]).setHTML(html).addTo(trackMap);
   victimIdentityShown = true;
 }
 // dipanggil saat titik merah diklik ATAU otomatis saat penolong masuk radius
 function revealVictimIdentity(){
-  if(!incomingAlert || incomingAlert.lat == null) return;
-  if(!incomingAlert.name && !incomingAlert.photo_url){ showToast('Korban tidak melampirkan identitas'); return; }
+  if(!trackAlert || trackAlert.lat == null) return;
+  if(!trackAlert.name && !trackAlert.photo_url){ showToast('Korban tidak melampirkan identitas'); return; }
   const proceed = (d) => {
     if(d == null){ showToast('Aktifkan lokasi untuk melihat identitas saat sudah dekat'); return; }
     if(d <= SOS_REVEAL_M) showVictimIdentity();
@@ -5253,40 +5234,88 @@ function revealVictimIdentity(){
   getUserLatLng().then(o => { trackHelperLatLng = o; proceed(victimDistanceM()); }).catch(() => proceed(null));
 }
 
-function placeTrackMarker(lat, lng, recenter){
+/* ----- MULTI-KORBAN: daftar alert aktif + marker per korban ----- */
+function _receivableAlert(a){ return a && a.active !== false && a.lat != null && (!currentUser || a.user_id !== currentUser.id); }
+function updateEmergencyCount(){
+  const n = activeAlerts.length;
+  const el = document.getElementById('track-banner-text');
+  if(el) el.textContent = n > 1 ? ('🚨 ' + n + ' Lokasi Darurat') : '🚨 Lokasi Darurat';
+  if(n === 0) hideTrackBanner();
+}
+function renderTrackVictims(){
   if(!trackMap) return;
-  if(!trackMarker){
-    trackMarker = makeDotMarker(trackMap, [lat, lng], 'danger-dot');
-    const el = trackMarker.getElement();
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', (e) => { e.stopPropagation(); revealVictimIdentity(); });
-  } else {
-    trackMarker.setLngLat([lng, lat]);
+  const ids = new Set(activeAlerts.map(a => a.id));
+  Object.keys(trackVictimMarkers).forEach(id => {
+    if(!ids.has(id)){ try{ trackVictimMarkers[id].remove(); }catch(e){} delete trackVictimMarkers[id]; }
+  });
+  activeAlerts.forEach(a => {
+    if(a.lat == null) return;
+    if(trackVictimMarkers[a.id]){ trackVictimMarkers[a.id].setLngLat([a.lng, a.lat]); }
+    else {
+      const mk = makeDotMarker(trackMap, [a.lat, a.lng], 'danger-dot');
+      const el = mk.getElement(); el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => { e.stopPropagation(); selectTrackVictim(a.id); });
+      trackVictimMarkers[a.id] = mk;
+    }
+  });
+  if(victimPopup && trackAlert){ try{ victimPopup.setLngLat([trackAlert.lng, trackAlert.lat]); }catch(e){} } // ikuti korban terpilih
+}
+function syncActiveAlerts(list){
+  activeAlerts = (list || []).filter(_receivableAlert);
+  renderTrackVictims(); updateEmergencyCount();
+}
+function upsertActiveAlert(a){
+  if(!a || (currentUser && a.user_id === currentUser.id)) return;
+  const i = activeAlerts.findIndex(x => x.id === a.id);
+  if(a.active === false || a.lat == null){ if(i >= 0) activeAlerts.splice(i, 1); }
+  else if(i >= 0){ activeAlerts[i] = { ...activeAlerts[i], ...a }; }
+  else { activeAlerts.push(a); }
+  if(trackAlert && a.id === trackAlert.id && a.active !== false) trackAlert = { ...trackAlert, ...a };
+  renderTrackVictims(); updateEmergencyCount();
+}
+function removeActiveAlert(id){
+  const i = activeAlerts.findIndex(x => x.id === id);
+  if(i >= 0) activeAlerts.splice(i, 1);
+  renderTrackVictims(); updateEmergencyCount();
+}
+// pilih korban yang dilacak (klik titik merah) → gambar rute + buka identitas kalau dekat
+function selectTrackVictim(id){
+  const a = activeAlerts.find(x => x.id === id);
+  if(!a || a.lat == null) return;
+  const switching = !trackAlert || trackAlert.id !== id;
+  trackAlert = a; trackAlertId = id; trackDone = false;
+  setRespondBtn(respondState.active && respondState.alertId === id);
+  if(switching){
+    victimIdentityShown = false;
+    if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
+    lastRouteTs = Date.now();
+    if(trackMap) trackMap.panTo([a.lng, a.lat]);
+    removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
+    drawTrackRoute();
   }
-  if(recenter) trackMap.panTo([lng, lat]);
-  if(victimPopup){ try{ victimPopup.setLngLat([lng, lat]); }catch(e){} } // ikuti pergerakan korban
+  revealVictimIdentity();
 }
 
 function trackOpenMaps(){
-  if(!incomingAlert || incomingAlert.lat == null) return;
-  window.open('https://www.google.com/maps/search/?api=1&query=' + incomingAlert.lat + ',' + incomingAlert.lng, '_blank');
+  if(!trackAlert || trackAlert.lat == null) return;
+  window.open('https://www.google.com/maps/search/?api=1&query=' + trackAlert.lat + ',' + trackAlert.lng, '_blank');
 }
 
 function closeLiveTrack(){
   document.getElementById('page-track').classList.remove('open');
   { const _stoast = document.getElementById('track-safe-toast'); if(_stoast) _stoast.classList.remove('show'); }
-  if(trackChannel){ sb.removeChannel(trackChannel); trackChannel = null; }
   if(trackMap){
     removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
     if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
-    if(trackMarker){ try{ trackMarker.remove(); }catch(e){} trackMarker = null; }
+    Object.keys(trackVictimMarkers).forEach(id => { try{ trackVictimMarkers[id].remove(); }catch(e){} });
+    trackVictimMarkers = {};
   }
   if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
-  victimIdentityShown = false; trackHelperLatLng = null;
+  victimIdentityShown = false; trackHelperLatLng = null; trackAlert = null; trackDone = false;
   const dist = document.getElementById('track-dist');
   if(dist){ dist.style.display = 'none'; }
-  if(incomingAlert && incomingAlert.active === false){ addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
-  else { showTrackBanner(); }
+  updateEmergencyCount();
+  if(activeAlerts.length === 0) hideTrackBanner(); else showTrackBanner();
 }
 
 let _trackWanted = false;
@@ -5432,6 +5461,7 @@ async function checkActiveEmergency(force){
   try{
     const since = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
     const { data } = await sb.from('emergency_alerts').select('*').eq('active', true).gte('created_at', since).order('created_at', { ascending: false }).limit(8);
+    syncActiveAlerts(data || []); // MULTI-KORBAN: perbarui daftar korban aktif + titik di peta + jumlah banner
     if(!data || !data.length) return;
     const dismissed = force ? [] : getDismissedAlerts();
     // pengirim buka lagi app: lanjutkan penyiaran lokasi miliknya
@@ -5475,23 +5505,43 @@ function initEmergencyRealtime(){
       const a = payload.new;
       if(!a) return;
       if(currentUser && a.user_id === currentUser.id) return; // jangan tampilkan ke pengirim sendiri
-      showIncomingEmergency(a);
+      upsertActiveAlert(a);     // MULTI-KORBAN: tambah titik korban ke peta + hitung banner
+      showIncomingEmergency(a); // popup + banner
     })
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'emergency_alerts' }, payload => {
       const a = payload.new;
-      if(!a || a.active !== false) return; // hanya peduli saat alert jadi tidak aktif (korban sudah aman)
-      if(safeNotified.has(a.id)) return;   // cegah pemrosesan/notif ganda
-      safeNotified.add(a.id);
-      addDismissedAlert(a.id);
-      // penerima: kalau banner/modal yang tampil untuk alert ini → hilangkan secara real time
-      if(incomingAlert && incomingAlert.id === a.id){
-        hideTrackBanner();
-        closeEmergencyIncoming();
+      if(!a) return;
+      if(currentUser && a.user_id === currentUser.id) return; // update milik sendiri (broadcast) — bukan urusan penerima
+      if(a.active === false){
+        removeActiveAlert(a.id); // korban ini menandai aman → titiknya hilang, korban lain TETAP
+        if(safeNotified.has(a.id)) return; // cegah pemrosesan/notif ganda
+        safeNotified.add(a.id);
+        addDismissedAlert(a.id);
+        const trackOpen = document.getElementById('page-track').classList.contains('open');
+        if(trackOpen && trackAlert && trackAlert.id === a.id){
+          // korban yang sedang dilacak → tampilkan "sudah aman" di peta + bersihkan rute/identitas
+          trackDone = true;
+          const st = document.getElementById('track-status'); if(st){ st.textContent = 'Selesai · user menandai sudah aman ✓'; st.className = 'track-status done'; }
+          if(respondState.active && respondState.alertId === a.id) stopRespond();
+          if(trackMap){ removeMlLine(trackMap, 'track-route'); trackRouteLayer = null; }
+          if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
+          if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
+          victimIdentityShown = false;
+          const dist = document.getElementById('track-dist'); if(dist) dist.style.display = 'none';
+          const stoast = document.getElementById('track-safe-toast'); if(stoast) stoast.classList.add('show');
+        }
+        if(incomingAlert && incomingAlert.id === a.id){ closeEmergencyIncoming(); }
+        if(activeAlerts.length === 0) hideTrackBanner();
+        const wasAware = (trackAlert && trackAlert.id === a.id) || (incomingAlert && incomingAlert.id === a.id) || (respondState && respondState.alertId === a.id);
+        if(wasAware){ addNotif('User telah menandai dirinya sudah aman'); }
+      } else {
+        // posisi update (masih aktif) → gerakkan titik korban; kalau korban terpilih → perbarui rute sesekali
+        upsertActiveAlert(a);
+        if(document.getElementById('page-track').classList.contains('open') && trackAlert && trackAlert.id === a.id){
+          const now = Date.now();
+          if(now - lastRouteTs > 20000){ lastRouteTs = now; drawTrackRoute(); }
+        }
       }
-      // notif in-app ke penerima yang tahu alert ini (bukan korban sendiri)
-      const iAmVictim = currentUser && a.user_id === currentUser.id;
-      const wasAware = (incomingAlert && incomingAlert.id === a.id) || (respondState && respondState.alertId === a.id);
-      if(!iAmVictim && wasAware){ addNotif('User telah menandai dirinya sudah aman'); }
     })
     .subscribe();
 
