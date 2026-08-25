@@ -4718,11 +4718,11 @@ function renderJobs(data){
         <div class="info-avatar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div>
         <div class="info-name">${escapeHtml(j.author_name || 'Pengguna')}<span class="info-time">${timeAgo(j.created_at)}</span></div>
       </div>
-      <div style="font-size:14px; color:var(--ink); margin-bottom:5px;"><b style="color:var(--maqom-deep);">Pengajar:</b> ${escapeHtml(j.title)}</div>
-      ${j.location ? `<div style="font-size:12.5px; color:#444; margin-bottom:3px;"><b style="color:var(--maqom-deep);">Lokasi:</b> ${escapeHtml(j.location)}</div>` : ''}
-      ${j.tag ? `<div style="font-size:12.5px; color:#444; margin-bottom:3px;"><b style="color:var(--maqom-deep);">Kitab:</b> ${escapeHtml(j.tag)}</div>` : ''}
-      ${j.description ? `<div style="font-size:12.5px; color:#444; margin-bottom:3px;"><b style="color:var(--maqom-deep);">Jadwal:</b> ${escapeHtml(j.description)}</div>` : ''}
-      ${j.contact ? `<div style="font-size:12.5px; color:#444; margin-top:5px;"><b style="color:var(--maqom-deep);">Kontak:</b> <span style="font-weight:600; color:var(--maqom);">${escapeHtml(j.contact)}</span></div>` : ''}
+      <div style="font-size:15px; color:var(--ink); margin-bottom:6px;"><b style="color:var(--maqom-deep);">Pengajar:</b> ${escapeHtml(j.title)}</div>
+      ${j.location ? `<div style="font-size:13.5px; color:#444; margin-bottom:3px;"><b style="color:var(--maqom-deep);">Lokasi:</b> ${escapeHtml(j.location)}</div>` : ''}
+      ${j.tag ? `<div style="font-size:13.5px; color:#444; margin-bottom:3px;"><b style="color:var(--maqom-deep);">Kitab:</b> ${escapeHtml(j.tag)}</div>` : ''}
+      ${j.description ? `<div style="font-size:13.5px; color:#444; margin-bottom:3px;"><b style="color:var(--maqom-deep);">Jadwal:</b> ${escapeHtml(j.description)}</div>` : ''}
+      ${j.contact ? `<div style="font-size:13.5px; color:#444; margin-top:5px;"><b style="color:var(--maqom-deep);">Kontak:</b> <span style="font-weight:600; color:var(--maqom);">${escapeHtml(j.contact)}</span></div>` : ''}
     </div>
   `).join('');
   markJobsSeen(data[0].created_at);
