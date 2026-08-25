@@ -2108,6 +2108,12 @@
   </div>
 </div>
 
+<!-- ===================== LIGHTBOX : FOTO FULLSCREEN ===================== -->
+<div id="img-lightbox" onclick="closeImageFull()" style="position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.92); display:none; align-items:center; justify-content:center; padding:16px;">
+  <img id="img-lightbox-img" alt="Foto" style="max-width:100%; max-height:100%; border-radius:10px; object-fit:contain;">
+  <button onclick="event.stopPropagation(); closeImageFull()" aria-label="Tutup" style="position:absolute; top:calc(env(safe-area-inset-top,0px) + 14px); right:16px; width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.16); border:none; color:#fff; font-size:20px; line-height:1; cursor:pointer;">✕</button>
+</div>
+
 <!-- ===================== BANNER : SEDANG MENYIARKAN (pengirim) ===================== -->
 <div id="danger-banner" class="danger-banner">
   <button class="db-main" onclick="openHelpMap()">
@@ -5159,6 +5165,8 @@ function openLiveTrack(){
         if(trackMarker){ try{ trackMarker.remove(); }catch(e){} trackMarker = null; }
         removeMlLine(trackMap, 'track-route'); trackRouteLayer = null;
         if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
+        if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; } // identitas ikut hilang bersama titik lokasi
+        victimIdentityShown = false;
         const dist = document.getElementById('track-dist'); if(dist){ dist.style.display = 'none'; }
         const stoast = document.getElementById('track-safe-toast'); if(stoast){ stoast.classList.add('show'); }
         return; // jangan lanjut memproses posisi/rute lagi
@@ -5200,6 +5208,18 @@ async function drawTrackRoute(){
   } catch(e){ /* koneksi */ }
 }
 
+/* ----- penampil foto fullscreen (lightbox) ----- */
+function openImageFull(url){
+  if(!url) return;
+  document.getElementById('img-lightbox-img').src = url;
+  document.getElementById('img-lightbox').style.display = 'flex';
+}
+function closeImageFull(){
+  const box = document.getElementById('img-lightbox');
+  box.style.display = 'none';
+  document.getElementById('img-lightbox-img').removeAttribute('src');
+}
+
 /* ----- gate identitas korban: hanya terbuka saat penolong sudah DEKAT ----- */
 function victimDistanceM(){
   if(!incomingAlert || incomingAlert.lat == null || !trackHelperLatLng) return null;
@@ -5210,9 +5230,10 @@ function showVictimIdentity(){
   const name = incomingAlert.name || 'Korban';
   const photo = incomingAlert.photo_url;
   const html = '<div style="text-align:center; padding:2px 4px; min-width:130px;">'
-    + (photo ? '<img src="' + photo + '" style="width:78px;height:78px;border-radius:50%;object-fit:cover;border:3px solid #DC2626;display:block;margin:0 auto 8px;">' : '')
+    + (photo ? '<img src="' + photo + '" onclick="openImageFull(\'' + photo + '\')" title="Ketuk untuk perbesar" style="width:82px;height:82px;border-radius:50%;object-fit:cover;border:3px solid #DC2626;display:block;margin:0 auto 8px;cursor:pointer;">' : '')
     + '<div style="font-weight:800;font-size:14.5px;color:#DC2626;line-height:1.2;">' + escapeHtml(name) + '</div>'
-    + '<div style="font-size:11px;color:#666;margin-top:3px;">Orang yang butuh pertolongan</div></div>';
+    + '<div style="font-size:11px;color:#666;margin-top:3px;">Orang yang butuh pertolongan</div>'
+    + (photo ? '<div style="font-size:10px;color:#999;margin-top:4px;">ketuk foto untuk perbesar</div>' : '') + '</div>';
   if(victimPopup){ try{ victimPopup.remove(); }catch(e){} }
   victimPopup = new maplibregl.Popup({ closeButton:true, closeOnClick:false, offset:20, maxWidth:'220px' })
     .setLngLat([incomingAlert.lng, incomingAlert.lat]).setHTML(html).addTo(trackMap);
