@@ -5015,6 +5015,28 @@ async function iAmSafe(){
 
 function showDangerBanner(){ document.getElementById('danger-banner').classList.add('show'); }
 function hideDangerBanner(){ document.getElementById('danger-banner').classList.remove('show'); }
+// reset SEMUA state darurat saat GANTI AKUN / logout — cegah banner "Saya sudah aman" atau
+// pelacakan milik akun sebelumnya BOCOR ke akun lain (bug: banner muncul di akun yang tak mengirim).
+function resetEmergencyState(){
+  // pengirim: hentikan penyiaran lokasi + sembunyikan banner "Saya sudah aman"
+  if(myWatchId != null){ try{ navigator.geolocation.clearWatch(myWatchId); }catch(e){} myWatchId = null; }
+  myAlertId = null; myLastCoords = null;
+  hideDangerBanner();
+  try{ setEmergencyDisabled(false); }catch(e){}
+  try{ if(typeof closeHelpMap === 'function') closeHelpMap(); }catch(e){}
+  // penolong: hentikan "saya menuju ke sana"
+  if(respondState && respondState.watchId != null){ try{ navigator.geolocation.clearWatch(respondState.watchId); }catch(e){} }
+  respondState = { active:false, alertId:null, watchId:null, lastSent:0 };
+  // penerima: bersihkan popup + banner + marker pelacakan
+  incomingAlert = null; trackAlert = null;
+  try{ document.getElementById('emg-incoming').classList.remove('open'); }catch(e){}
+  if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
+  try{ Object.keys(trackVictimMarkers).forEach(id => { try{ trackVictimMarkers[id].remove(); }catch(e){} }); }catch(e){}
+  trackVictimMarkers = {};
+  activeAlerts = [];
+  hideTrackBanner();
+  try{ updateEmergencyCount(); }catch(e){}
+}
 
 /* ----- Web Push: aktifkan notifikasi & simpan langganan ----- */
 const VAPID_PUBLIC = 'BB3iAwxnDlMBRv0hbLRBBOnA2yQTiWIfxInDpZM0DW6eag3f77zdVyTbmb43wF6WRNmd9p6gI5H5B96bFxjnYMQ';
@@ -5594,7 +5616,9 @@ async function initAuth(){
     currentUser = (session && session.user) || null;
     updateAuthUI();
     if((currentUser ? currentUser.id : null) !== prev){
+      resetEmergencyState();       // ganti akun/logout → buang status darurat akun lama (banner "Saya sudah aman" dll)
       loadPins('maqom'); loadPins('blacklist'); loadPins('razia');
+      checkActiveEmergency();      // muat status darurat untuk akun BARU (resume alert miliknya sendiri kalau ada)
     }
     if(isNativeApp() && currentUser){ if(_nativeFcmToken) saveFcmToken(_nativeFcmToken); else registerNativePush(); }
   });
