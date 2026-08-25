@@ -735,6 +735,14 @@
   /* kartu darurat: radio pilihan nama */
   .sos-radio{ display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--ink-2); padding:9px 0; cursor:pointer; }
   .sos-radio input{ width:18px; height:18px; accent-color:#175038; flex-shrink:0; }
+  /* kartu darurat: toggle aktif/nonaktif */
+  .sos-switch{ position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+  .sos-switch input{ opacity:0; width:0; height:0; }
+  .sos-switch-slider{ position:absolute; inset:0; background:#cfcfcf; border-radius:26px; transition:.2s; cursor:pointer; }
+  .sos-switch-slider:before{ content:''; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .sos-switch input:checked + .sos-switch-slider{ background:#175038; }
+  .sos-switch input:checked + .sos-switch-slider:before{ transform:translateX(20px); }
+  #sos-fields.dim{ opacity:.4; pointer-events:none; }
 
   /* ---- jadwal sholat ---- */
   .sholat-loc{ font-size:13px; color:var(--muted); text-align:center; margin-bottom:14px; }
@@ -1789,6 +1797,18 @@
   <div class="scroll-page" style="padding-top:16px;">
     <p style="font-size:13px; color:var(--ink-2); line-height:1.6; margin-bottom:18px;">Data ini <b>dilampirkan otomatis</b> saat kamu mengirim laporan darurat, agar penolong mudah mengenalimu. Semua opsional — kalau kosong, laporan <b>tetap terkirim</b> dengan nama akunmu.</p>
 
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; background:var(--soft,#f4f8f5); border:1px solid var(--line); border-radius:12px; margin-bottom:18px;">
+      <div style="min-width:0;">
+        <div style="font-weight:700; font-size:14px; color:var(--ink);">Aktifkan Kartu Darurat</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4;">Kalau nonaktif, laporan darurat dikirim <b>tanpa identitas</b> (anonim).</div>
+      </div>
+      <label class="sos-switch">
+        <input type="checkbox" id="sos-enabled-input" checked onchange="sosEnabledChange()">
+        <span class="sos-switch-slider"></span>
+      </label>
+    </div>
+
+    <div id="sos-fields">
     <label class="field-label" style="color:var(--ink);">Nama yang disiarkan</label>
     <label class="sos-radio"><input type="radio" name="sos-name-mode" value="account" onchange="sosNameModeChange()" checked> Pakai nama akun (<b id="sos-account-name"></b>)</label>
     <label class="sos-radio"><input type="radio" name="sos-name-mode" value="custom" onchange="sosNameModeChange()"> Tulis nama sendiri</label>
@@ -1801,6 +1821,7 @@
       <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('sos-foto-input').click()">Pilih Foto</button>
       <button type="button" id="sos-foto-remove" class="btn-ghost" style="margin-top:0; display:none; color:#DC2626;" onclick="removeSosFoto()">Hapus</button>
     </div>
+    </div><!-- /sos-fields -->
 
     <button id="sos-save-btn" class="btn-primary maqom" onclick="saveKartuDarurat()">Simpan Kartu Darurat</button>
     <div id="sos-save-info" style="font-size:12.5px; text-align:center; margin-top:12px; min-height:16px;"></div>
@@ -4821,16 +4842,20 @@ async function deletePhotoR2(photoUrl){
 }
 
 /* ---------- Kartu Darurat (identitas yang dilampirkan saat SOS) ---------- */
-let sosFotoUrl = null;
+let sosFotoUrl = null, _sosSavedPhoto = null;
 function openKartuDarurat(){
   if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengatur Kartu Darurat.'); return; }
   const m = (currentUser && currentUser.user_metadata) || {};
   document.getElementById('sos-account-name').textContent = m.name || 'Pengguna';
+  const enabled = m.sos_enabled !== false; // default AKTIF
+  document.getElementById('sos-enabled-input').checked = enabled;
+  document.getElementById('sos-fields').classList.toggle('dim', !enabled);
   const custom = (m.sos_name && m.sos_name.trim()) ? m.sos_name.trim() : '';
   document.querySelector('input[name="sos-name-mode"][value="' + (custom ? 'custom' : 'account') + '"]').checked = true;
   document.getElementById('sos-name-input').value = custom;
   document.getElementById('sos-name-input').style.display = custom ? '' : 'none';
   sosFotoUrl = (m.sos_photo_url && m.sos_photo_url.trim()) ? m.sos_photo_url.trim() : null;
+  _sosSavedPhoto = sosFotoUrl; // untuk deteksi foto lama saat diganti
   const prev = document.getElementById('sos-foto-preview');
   if(sosFotoUrl){ prev.src = sosFotoUrl; prev.style.display = ''; document.getElementById('sos-foto-remove').style.display = ''; }
   else { prev.style.display = 'none'; document.getElementById('sos-foto-remove').style.display = 'none'; }
@@ -4838,6 +4863,10 @@ function openKartuDarurat(){
   document.getElementById('page-kartu-darurat').classList.add('open');
 }
 function closeKartuDarurat(){ document.getElementById('page-kartu-darurat').classList.remove('open'); }
+function sosEnabledChange(){
+  const on = document.getElementById('sos-enabled-input').checked;
+  document.getElementById('sos-fields').classList.toggle('dim', !on);
+}
 function sosNameModeChange(){
   const mode = document.querySelector('input[name="sos-name-mode"]:checked').value;
   document.getElementById('sos-name-input').style.display = mode === 'custom' ? '' : 'none';
@@ -4866,15 +4895,20 @@ async function saveKartuDarurat(){
   const btn = document.getElementById('sos-save-btn'), info = document.getElementById('sos-save-info');
   const mode = document.querySelector('input[name="sos-name-mode"]:checked').value;
   const customName = document.getElementById('sos-name-input').value.trim();
+  const enabled = document.getElementById('sos-enabled-input').checked;
   if(mode === 'custom' && !customName){ info.style.color = 'var(--rust)'; info.textContent = 'Isi nama sendiri, atau pilih "Pakai nama akun".'; return; }
   btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Menyimpan…';
   try{
     const { error } = await sb.auth.updateUser({ data: {
+      sos_enabled: enabled,
       sos_name: mode === 'custom' ? customName : '',   // '' = pakai nama akun saat darurat
       sos_photo_url: sosFotoUrl || ''
     }});
     if(error) throw new Error(error.message);
     try{ const { data: u } = await sb.auth.getUser(); if(u && u.user) currentUser = u.user; }catch(e){}
+    // foto lama diganti/dihapus → buang dari R2 (best-effort)
+    if(_sosSavedPhoto && _sosSavedPhoto !== (sosFotoUrl || '')){ deletePhotoR2(_sosSavedPhoto); }
+    _sosSavedPhoto = sosFotoUrl || null;
     info.style.color = 'var(--maqom-deep)'; info.textContent = 'Kartu Darurat tersimpan ✓';
   }catch(err){ info.style.color = 'var(--rust)'; info.textContent = 'Gagal simpan: ' + (err.message || ''); }
   btn.disabled = false; btn.textContent = lbl;
@@ -4915,8 +4949,9 @@ async function confirmEmergency(){
   await sb.from('emergency_alerts').update({ active: false }).eq('active', true);
   // Kartu Darurat: kalau user sudah set → lampirkan; kalau lupa/belum set → tetap siarkan pakai nama akun.
   const m = (currentUser && currentUser.user_metadata) || {};
-  const sosName  = (m.sos_name && m.sos_name.trim()) ? m.sos_name.trim() : (m.name || null); // fallback nama akun
-  const sosPhoto = (m.sos_photo_url && m.sos_photo_url.trim()) ? m.sos_photo_url.trim() : null;
+  const sosOn = m.sos_enabled !== false; // Kartu Darurat aktif? (default aktif) — kalau nonaktif → anonim
+  const sosName  = sosOn ? ((m.sos_name && m.sos_name.trim()) ? m.sos_name.trim() : (m.name || null)) : null; // fallback nama akun
+  const sosPhoto = sosOn ? ((m.sos_photo_url && m.sos_photo_url.trim()) ? m.sos_photo_url.trim() : null) : null;
   const { data, error } = await sb.from('emergency_alerts')
     .insert({ name: sosName, photo_url: sosPhoto, lat: coords[0], lng: coords[1] })
     .select().single();
