@@ -2999,7 +2999,7 @@ function renderMarker(cat, pin, justAdded){
 
   el.addEventListener('click', (ev) => {
     ev.stopPropagation();
-    if(cat === 'maqom' || cat === 'blacklist'){
+    if(cat === 'maqom' || cat === 'blacklist' || cat === 'razia'){
       if(activeRoutedPinId[cat] !== pin.id){
         activeRoutedPinId[cat] = pin.id;
         drawRouteTo(cat, [pin.lat, pin.lng]);
@@ -3213,7 +3213,7 @@ async function drawRouteTo(cat, destLatLng){
         map.addSource(srcId, { type:'geojson', data: geojson });
         map.addLayer({ id: lyrId, type:'line', source: srcId,
           layout:{ 'line-cap':'round', 'line-join':'round' },
-          paint:{ 'line-color': cat === 'maqom' ? '#175038' : '#9C3B32', 'line-width':5, 'line-opacity':0.85 } });
+          paint:{ 'line-color': cat === 'maqom' ? '#175038' : cat === 'razia' ? '#B8721E' : '#9C3B32', 'line-width':5, 'line-opacity':0.85 } });
         routeML[cat] = { srcId, lyrId };
         const b = new maplibregl.LngLatBounds(coords[0], coords[0]);
         coords.forEach(c => b.extend(c));
