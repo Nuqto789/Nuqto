@@ -732,6 +732,9 @@
   .qibla-info{ font-size:14px; line-height:1.6; color:var(--ink-2); max-width:280px; margin-bottom:16px; }
   .qibla-info b{ color:var(--maqom-deep); }
   .qibla-hint{ font-size:12.5px; color:var(--muted); margin-top:4px; }
+  /* kartu darurat: radio pilihan nama */
+  .sos-radio{ display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--ink-2); padding:9px 0; cursor:pointer; }
+  .sos-radio input{ width:18px; height:18px; accent-color:#175038; flex-shrink:0; }
 
   /* ---- jadwal sholat ---- */
   .sholat-loc{ font-size:13px; color:var(--muted); text-align:center; margin-bottom:14px; }
@@ -1765,6 +1768,42 @@
       <span class="menu-label">Ubah Nama Akun</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
+    <button class="menu-row" onclick="openKartuDarurat()">
+      <span class="menu-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><circle cx="12" cy="10" r="2.5"/><path d="M8.5 17a3.5 3.5 0 0 1 7 0"/></svg>
+      </span>
+      <span class="menu-label">Kartu Darurat</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY : KARTU DARURAT ===================== -->
+<div id="page-kartu-darurat" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeKartuDarurat()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Kartu Darurat</div>
+  </div>
+  <div class="scroll-page" style="padding-top:16px;">
+    <p style="font-size:13px; color:var(--ink-2); line-height:1.6; margin-bottom:18px;">Data ini <b>dilampirkan otomatis</b> saat kamu mengirim laporan darurat, agar penolong mudah mengenalimu. Semua opsional — kalau kosong, laporan <b>tetap terkirim</b> dengan nama akunmu.</p>
+
+    <label class="field-label" style="color:var(--ink);">Nama yang disiarkan</label>
+    <label class="sos-radio"><input type="radio" name="sos-name-mode" value="account" onchange="sosNameModeChange()" checked> Pakai nama akun (<b id="sos-account-name"></b>)</label>
+    <label class="sos-radio"><input type="radio" name="sos-name-mode" value="custom" onchange="sosNameModeChange()"> Tulis nama sendiri</label>
+    <input id="sos-name-input" class="field-input mb-4" type="text" placeholder="Nama untuk darurat" style="display:none; margin-top:8px;">
+
+    <label class="field-label" style="margin-top:6px; color:var(--ink);">Foto wajah <span style="color:var(--ink-2); font-weight:500;">(opsional)</span></label>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+      <img id="sos-foto-preview" style="width:64px; height:64px; border-radius:12px; object-fit:cover; border:1px solid var(--line); display:none;">
+      <input id="sos-foto-input" type="file" accept="image/*" style="display:none;" onchange="handleSosFoto(event)">
+      <button type="button" class="btn-ghost" style="margin-top:0;" onclick="document.getElementById('sos-foto-input').click()">Pilih Foto</button>
+      <button type="button" id="sos-foto-remove" class="btn-ghost" style="margin-top:0; display:none; color:#DC2626;" onclick="removeSosFoto()">Hapus</button>
+    </div>
+
+    <button id="sos-save-btn" class="btn-primary maqom" onclick="saveKartuDarurat()">Simpan Kartu Darurat</button>
+    <div id="sos-save-info" style="font-size:12.5px; text-align:center; margin-top:12px; min-height:16px;"></div>
   </div>
 </div>
 
@@ -2040,7 +2079,7 @@
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"/><path d="M12 2v1"/><path d="M21 12h1"/><path d="M2 12h1"/></svg>
     </div>
     <div class="emg-modal-title">🚨 ADA YANG DALAM BAHAYA</div>
-    <div class="emg-modal-body"><b id="emg-in-name">Seseorang</b> menandai dirinya dalam bahaya dan meminta bantuan. Buka lokasinya sekarang.</div>
+    <div class="emg-modal-body"><b>Seseorang di dekatmu</b> menandai dirinya dalam bahaya dan meminta bantuan. Buka lokasinya sekarang — identitasnya akan muncul saat kamu sudah dekat.</div>
     <div class="emg-modal-actions col">
       <button class="emg-btn danger" onclick="openLiveTrack()">Lacak Lokasi (Live)</button>
       <button class="emg-btn cancel" onclick="closeEmergencyIncoming()">Tutup</button>
@@ -4781,6 +4820,66 @@ async function deletePhotoR2(photoUrl){
   }catch(e){ /* best-effort: kalau gagal, postingan tetap terhapus, foto sekadar jadi yatim */ }
 }
 
+/* ---------- Kartu Darurat (identitas yang dilampirkan saat SOS) ---------- */
+let sosFotoUrl = null;
+function openKartuDarurat(){
+  if(!isLoggedIn()){ openAuth('Masuk dulu untuk mengatur Kartu Darurat.'); return; }
+  const m = (currentUser && currentUser.user_metadata) || {};
+  document.getElementById('sos-account-name').textContent = m.name || 'Pengguna';
+  const custom = (m.sos_name && m.sos_name.trim()) ? m.sos_name.trim() : '';
+  document.querySelector('input[name="sos-name-mode"][value="' + (custom ? 'custom' : 'account') + '"]').checked = true;
+  document.getElementById('sos-name-input').value = custom;
+  document.getElementById('sos-name-input').style.display = custom ? '' : 'none';
+  sosFotoUrl = (m.sos_photo_url && m.sos_photo_url.trim()) ? m.sos_photo_url.trim() : null;
+  const prev = document.getElementById('sos-foto-preview');
+  if(sosFotoUrl){ prev.src = sosFotoUrl; prev.style.display = ''; document.getElementById('sos-foto-remove').style.display = ''; }
+  else { prev.style.display = 'none'; document.getElementById('sos-foto-remove').style.display = 'none'; }
+  document.getElementById('sos-save-info').textContent = '';
+  document.getElementById('page-kartu-darurat').classList.add('open');
+}
+function closeKartuDarurat(){ document.getElementById('page-kartu-darurat').classList.remove('open'); }
+function sosNameModeChange(){
+  const mode = document.querySelector('input[name="sos-name-mode"]:checked').value;
+  document.getElementById('sos-name-input').style.display = mode === 'custom' ? '' : 'none';
+}
+async function handleSosFoto(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  const info = document.getElementById('sos-save-info');
+  info.style.color = 'var(--muted)'; info.textContent = 'Mengunggah foto…';
+  try{
+    const url = await uploadPhoto(file);
+    sosFotoUrl = url;
+    const prev = document.getElementById('sos-foto-preview');
+    prev.src = url; prev.style.display = '';
+    document.getElementById('sos-foto-remove').style.display = '';
+    info.textContent = 'Foto siap. Jangan lupa tekan Simpan.';
+  }catch(err){ info.style.color = 'var(--rust)'; info.textContent = 'Gagal unggah foto: ' + (err.message || ''); }
+}
+function removeSosFoto(){
+  sosFotoUrl = null;
+  document.getElementById('sos-foto-preview').style.display = 'none';
+  document.getElementById('sos-foto-remove').style.display = 'none';
+}
+async function saveKartuDarurat(){
+  const btn = document.getElementById('sos-save-btn'), info = document.getElementById('sos-save-info');
+  const mode = document.querySelector('input[name="sos-name-mode"]:checked').value;
+  const customName = document.getElementById('sos-name-input').value.trim();
+  if(mode === 'custom' && !customName){ info.style.color = 'var(--rust)'; info.textContent = 'Isi nama sendiri, atau pilih "Pakai nama akun".'; return; }
+  btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Menyimpan…';
+  try{
+    const { error } = await sb.auth.updateUser({ data: {
+      sos_name: mode === 'custom' ? customName : '',   // '' = pakai nama akun saat darurat
+      sos_photo_url: sosFotoUrl || ''
+    }});
+    if(error) throw new Error(error.message);
+    try{ const { data: u } = await sb.auth.getUser(); if(u && u.user) currentUser = u.user; }catch(e){}
+    info.style.color = 'var(--maqom-deep)'; info.textContent = 'Kartu Darurat tersimpan ✓';
+  }catch(err){ info.style.color = 'var(--rust)'; info.textContent = 'Gagal simpan: ' + (err.message || ''); }
+  btn.disabled = false; btn.textContent = lbl;
+}
+
 /* ============================================================
    LAPORAN DARURAT (emergency)
    ============================================================ */
@@ -4814,8 +4913,13 @@ async function confirmEmergency(){
   catch(e){ btn.disabled = false; btn.textContent = lbl; showToast('Gagal ambil lokasi — aktifkan izin lokasi di HP'); return; }
   // nonaktifkan alert aktif lama milik sendiri (cegah penumpukan; RLS batasi ke baris sendiri)
   await sb.from('emergency_alerts').update({ active: false }).eq('active', true);
-  // anonim: jangan simpan/siarkan nama atau email pengirim (privasi). user_id tetap terekam via trigger.
-  const { data, error } = await sb.from('emergency_alerts').insert({ name: null, lat: coords[0], lng: coords[1] }).select().single();
+  // Kartu Darurat: kalau user sudah set → lampirkan; kalau lupa/belum set → tetap siarkan pakai nama akun.
+  const m = (currentUser && currentUser.user_metadata) || {};
+  const sosName  = (m.sos_name && m.sos_name.trim()) ? m.sos_name.trim() : (m.name || null); // fallback nama akun
+  const sosPhoto = (m.sos_photo_url && m.sos_photo_url.trim()) ? m.sos_photo_url.trim() : null;
+  const { data, error } = await sb.from('emergency_alerts')
+    .insert({ name: sosName, photo_url: sosPhoto, lat: coords[0], lng: coords[1] })
+    .select().single();
   btn.disabled = false; btn.textContent = lbl;
   if(error){ showToast('Gagal kirim laporan: ' + error.message); return; }
   myAlertId = data.id;
@@ -4960,7 +5064,8 @@ async function updatePushLabel(){
 
 function showIncomingEmergency(a){
   incomingAlert = a;
-  document.getElementById('emg-in-name').textContent = a.name || 'Seseorang';
+  // Broadcast ke semua user tetap ANONIM (tanpa nama/foto). Identitas hanya terbuka di peta
+  // saat penolong sudah DEKAT (lihat revealVictimIdentity) — privasi korban.
   document.getElementById('emg-incoming').classList.add('open');
   showTrackBanner();
   if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]);
@@ -4977,6 +5082,9 @@ function openEmergencyMaps(){
 /* ----- receiver: peta live tracking ----- */
 let trackMap = null, trackMarker = null, trackChannel = null, trackAlertId = null;
 let trackRouteLayer = null, trackHelperMarker = null, lastRouteTs = 0, trackDone = false;
+// gate identitas: hanya muncul saat penolong sudah dekat korban
+let trackHelperLatLng = null, victimPopup = null, victimIdentityShown = false;
+const SOS_REVEAL_M = 150; // radius "dekat" (meter) untuk membuka identitas korban
 
 function openLiveTrack(){
   if(!incomingAlert || incomingAlert.lat == null){ showToast('Lokasi belum tersedia'); return; }
@@ -4986,6 +5094,10 @@ function openLiveTrack(){
   document.getElementById('emg-incoming').classList.remove('open');
   hideTrackBanner();
   document.getElementById('page-track').classList.add('open');
+  // reset gate identitas tiap buka pelacakan (identitas baru muncul saat sudah dekat)
+  victimIdentityShown = false; trackHelperLatLng = null;
+  if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
+  if(incomingAlert.name || incomingAlert.photo_url) showToast('Ketuk titik merah saat sudah dekat untuk melihat identitas korban');
   setRespondBtn(respondState.active && respondState.alertId === trackAlertId);
   if(!trackMap){
     trackMap = makeMlMapSimple('map-track', [incomingAlert.lat, incomingAlert.lng], 16);
@@ -5030,6 +5142,10 @@ async function drawTrackRoute(){
   if(!trackHelperMarker){
     trackHelperMarker = makeDotMarker(trackMap, [origin[0], origin[1]], 'helper-dot');
   } else { trackHelperMarker.setLngLat([origin[1], origin[0]]); }
+  trackHelperLatLng = [origin[0], origin[1]];
+  // otomatis buka identitas begitu penolong masuk radius dekat (posisi diperbarui saat ia berjalan)
+  const _dm = victimDistanceM();
+  if(_dm != null && _dm <= SOS_REVEAL_M && !victimIdentityShown) showVictimIdentity();
   try{
     const dest = [incomingAlert.lat, incomingAlert.lng];
     const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
@@ -5049,14 +5165,50 @@ async function drawTrackRoute(){
   } catch(e){ /* koneksi */ }
 }
 
+/* ----- gate identitas korban: hanya terbuka saat penolong sudah DEKAT ----- */
+function victimDistanceM(){
+  if(!incomingAlert || incomingAlert.lat == null || !trackHelperLatLng) return null;
+  return haversineKm(trackHelperLatLng[0], trackHelperLatLng[1], incomingAlert.lat, incomingAlert.lng) * 1000;
+}
+function showVictimIdentity(){
+  if(!trackMap || !incomingAlert || incomingAlert.lat == null) return;
+  const name = incomingAlert.name || 'Korban';
+  const photo = incomingAlert.photo_url;
+  const html = '<div style="text-align:center; padding:2px 4px; min-width:130px;">'
+    + (photo ? '<img src="' + photo + '" style="width:78px;height:78px;border-radius:50%;object-fit:cover;border:3px solid #DC2626;display:block;margin:0 auto 8px;">' : '')
+    + '<div style="font-weight:800;font-size:14.5px;color:#DC2626;line-height:1.2;">' + escapeHtml(name) + '</div>'
+    + '<div style="font-size:11px;color:#666;margin-top:3px;">Orang yang butuh pertolongan</div></div>';
+  if(victimPopup){ try{ victimPopup.remove(); }catch(e){} }
+  victimPopup = new maplibregl.Popup({ closeButton:true, closeOnClick:false, offset:20, maxWidth:'220px' })
+    .setLngLat([incomingAlert.lng, incomingAlert.lat]).setHTML(html).addTo(trackMap);
+  victimIdentityShown = true;
+}
+// dipanggil saat titik merah diklik ATAU otomatis saat penolong masuk radius
+function revealVictimIdentity(){
+  if(!incomingAlert || incomingAlert.lat == null) return;
+  if(!incomingAlert.name && !incomingAlert.photo_url){ showToast('Korban tidak melampirkan identitas'); return; }
+  const proceed = (d) => {
+    if(d == null){ showToast('Aktifkan lokasi untuk melihat identitas saat sudah dekat'); return; }
+    if(d <= SOS_REVEAL_M) showVictimIdentity();
+    else showToast('Dekati lokasi dulu untuk melihat identitas — masih ± ' + Math.round(d) + ' m');
+  };
+  const d = victimDistanceM();
+  if(d != null){ proceed(d); return; }
+  getUserLatLng().then(o => { trackHelperLatLng = o; proceed(victimDistanceM()); }).catch(() => proceed(null));
+}
+
 function placeTrackMarker(lat, lng, recenter){
   if(!trackMap) return;
   if(!trackMarker){
     trackMarker = makeDotMarker(trackMap, [lat, lng], 'danger-dot');
+    const el = trackMarker.getElement();
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', (e) => { e.stopPropagation(); revealVictimIdentity(); });
   } else {
     trackMarker.setLngLat([lng, lat]);
   }
   if(recenter) trackMap.panTo([lng, lat]);
+  if(victimPopup){ try{ victimPopup.setLngLat([lng, lat]); }catch(e){} } // ikuti pergerakan korban
 }
 
 function trackOpenMaps(){
@@ -5073,6 +5225,8 @@ function closeLiveTrack(){
     if(trackHelperMarker){ try{ trackHelperMarker.remove(); }catch(e){} trackHelperMarker = null; }
     if(trackMarker){ try{ trackMarker.remove(); }catch(e){} trackMarker = null; }
   }
+  if(victimPopup){ try{ victimPopup.remove(); }catch(e){} victimPopup = null; }
+  victimIdentityShown = false; trackHelperLatLng = null;
   const dist = document.getElementById('track-dist');
   if(dist){ dist.style.display = 'none'; }
   if(incomingAlert && incomingAlert.active === false){ addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
