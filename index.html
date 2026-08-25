@@ -752,7 +752,7 @@
   .amm-judul{ font-size:19px; font-weight:800; color:var(--ink); line-height:1.3; margin:4px 0 14px; }
   .amm-page p{ font-size:14.5px; line-height:1.75; color:var(--ink-2); margin:0 0 12px; }
   .amm-ar{ font-family:'Scheherazade New',serif; font-size:30px; direction:rtl; text-align:center; color:var(--maqom-deep); margin:8px 0 2px; line-height:1.6; }
-  .amm-baca{ text-align:center; font-style:italic; color:var(--muted); font-size:13.5px; }
+  .amm-baca{ text-align:center; font-style:italic; color:var(--ink-2); font-size:13.5px; }
   .amm-arti{ text-align:center; color:var(--ink-2); font-size:13.5px; margin-bottom:12px; }
   .amm-quote{ background:var(--soft,#f4f8f5); border-left:3px solid var(--maqom); padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0; font-size:14px; color:var(--ink-2); line-height:1.6; }
   .amm-list{ margin:4px 0 14px; padding-left:20px; }
@@ -1136,17 +1136,6 @@
       <div class="st">Pustaka</div>
     </div>
     <div class="lib-row reveal d4">
-      <button class="lib-card" onclick="openAmmiyah()">
-        <span class="lib-card-img" aria-hidden="true">
-          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <rect x="9" y="10" width="46" height="44" rx="7" fill="#0E3626"/>
-            <rect x="9" y="10" width="7" height="44" rx="3.5" fill="#0A2A1E"/>
-            <text x="36" y="40" font-size="24" fill="#BE9A46" text-anchor="middle" font-family="'Scheherazade New',serif">ع</text>
-          </svg>
-        </span>
-        <span class="lib-card-title">Jago 'Ammiyah</span>
-        <span class="lib-card-sub">Bahasa Mesir</span>
-      </button>
       <button class="lib-card" onclick="openQuran()">
         <span class="lib-card-img" aria-hidden="true">
           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
@@ -1527,7 +1516,7 @@
 </div>
 
 <!-- ===================== OVERLAY : JAGO 'AMMIYAH (buku geser) ===================== -->
-<div id="page-ammiyah" class="overlay-page">
+<div id="page-ammiyah" class="overlay-page" style="z-index:950;">
   <div class="overlay-header">
     <button class="back-btn" onclick="closeAmmiyah()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -3692,9 +3681,16 @@ function closeFrasa(){ document.getElementById('page-frasa').classList.remove('o
 function renderFrasaCats(){
   const el = document.getElementById('frasa-list');
   if(!el || el.dataset.loaded === '1') return;
-  el.innerHTML = FRASA_LIST.map((g, i) =>
+  const bookRow =
+    '<button class="surah-row" onclick="openAmmiyah()">' +
+      '<span class="qs-num">1</span>' +
+      '<span class="qs-info"><span class="qs-name">Kaidah Dasar Bahasa Ammiyah</span>' +
+      '<span class="qs-meta">Buku panduan · geser untuk baca</span></span>' +
+      '<svg class="doa-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>' +
+    '</button>';
+  el.innerHTML = bookRow + FRASA_LIST.map((g, i) =>
     '<button class="surah-row" onclick="openFrasaCat(' + i + ')">' +
-      '<span class="qs-num">' + (i + 1) + '</span>' +
+      '<span class="qs-num">' + (i + 2) + '</span>' +
       '<span class="qs-info"><span class="qs-name">' + escapeHtml(g.cat) + '</span>' +
       '<span class="qs-meta">' + g.items.length + ' frasa</span></span>' +
       '<svg class="doa-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>' +
