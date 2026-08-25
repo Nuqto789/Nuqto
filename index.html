@@ -743,6 +743,45 @@
   .sos-switch input:checked + .sos-switch-slider{ background:#175038; }
   .sos-switch input:checked + .sos-switch-slider:before{ transform:translateX(20px); }
   #sos-fields.dim{ opacity:.4; pointer-events:none; }
+  /* ---- Jago 'Ammiyah (buku geser) ---- */
+  .amm-viewport{ flex:1; display:flex; direction:ltr; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+  .amm-viewport::-webkit-scrollbar{ display:none; }
+  .amm-page{ min-width:100%; max-width:100%; scroll-snap-align:center; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:18px 20px calc(24px + env(safe-area-inset-bottom,0px)); }
+  .amm-bab{ font-size:11.5px; font-weight:800; letter-spacing:.08em; color:var(--maqom); text-transform:uppercase; }
+  .amm-no{ font-size:12.5px; font-weight:700; color:var(--muted); margin-top:2px; }
+  .amm-judul{ font-size:19px; font-weight:800; color:var(--ink); line-height:1.3; margin:4px 0 14px; }
+  .amm-page p{ font-size:14.5px; line-height:1.75; color:var(--ink-2); margin:0 0 12px; }
+  .amm-ar{ font-family:'Scheherazade New',serif; font-size:30px; direction:rtl; text-align:center; color:var(--maqom-deep); margin:8px 0 2px; line-height:1.6; }
+  .amm-baca{ text-align:center; font-style:italic; color:var(--muted); font-size:13.5px; }
+  .amm-arti{ text-align:center; color:var(--ink-2); font-size:13.5px; margin-bottom:12px; }
+  .amm-quote{ background:var(--soft,#f4f8f5); border-left:3px solid var(--maqom); padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0; font-size:14px; color:var(--ink-2); line-height:1.6; }
+  .amm-list{ margin:4px 0 14px; padding-left:20px; }
+  .amm-list li{ font-size:14px; line-height:1.7; color:var(--ink-2); margin:3px 0; }
+  .amm-table{ width:100%; border-collapse:collapse; margin:8px 0 14px; }
+  .amm-table td{ border:1px solid var(--line); padding:8px 10px; font-size:13.5px; color:var(--ink-2); vertical-align:middle; }
+  .amm-table td:first-child{ font-family:'Scheherazade New',serif; font-size:19px; direction:rtl; text-align:center; color:var(--maqom-deep); width:40%; }
+  .amm-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%; gap:12px; padding:20px; }
+  .amm-cover .ic{ font-size:54px; }
+  .amm-cover h1{ font-size:26px; font-weight:800; color:var(--maqom-deep); letter-spacing:-.01em; }
+  .amm-hint{ font-size:12.5px; color:var(--muted); }
+  #amm-indicator{ text-align:center; font-size:12px; color:var(--muted); padding:9px; font-family:'JetBrains Mono',monospace; border-top:1px solid var(--line); }
+  .amm-dialog-title{ font-size:12px; font-weight:800; color:var(--maqom-deep); margin:14px 0 6px; letter-spacing:.02em; }
+  .amm-dialog{ background:var(--soft,#f4f8f5); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:6px 0 12px; }
+  .amm-line{ padding:8px 0; border-bottom:1px dashed var(--line); }
+  .amm-line:last-child{ border-bottom:none; padding-bottom:0; }
+  .amm-line:first-child{ padding-top:0; }
+  .amm-spk{ display:inline-block; min-width:20px; font-size:11px; font-weight:800; color:#fff; background:var(--maqom); border-radius:6px; padding:1px 7px; }
+  .amm-line .amm-ar{ font-size:24px; margin:5px 0 1px; }
+  .amm-line .amm-baca{ margin-bottom:1px; }
+  .amm-line .amm-arti{ margin-bottom:0; font-weight:600; }
+  .amm-tip{ font-size:13.5px; color:var(--ink-2); line-height:1.7; margin:4px 0 12px; }
+  .amm-page .aa{ font-family:'Scheherazade New',serif; font-size:19px; color:var(--maqom-deep); line-height:1; }
+  .amm-conj-box{ background:var(--soft,#f4f8f5); border:1px solid var(--line); border-radius:12px; margin:6px 0 12px; overflow:hidden; }
+  .amm-conj{ display:flex; align-items:center; gap:8px; padding:7px 11px; border-bottom:1px solid var(--line); }
+  .amm-conj:last-child{ border-bottom:none; }
+  .amm-conj .p{ flex:0 0 30%; font-size:12px; color:var(--muted); font-weight:600; }
+  .amm-conj .aa{ flex:0 0 32%; text-align:right; font-size:20px; }
+  .amm-conj .b{ flex:1; font-size:13px; font-style:italic; color:var(--ink-2); text-align:left; }
 
   /* ---- jadwal sholat ---- */
   .sholat-loc{ font-size:13px; color:var(--muted); text-align:center; margin-bottom:14px; }
@@ -1097,6 +1136,17 @@
       <div class="st">Pustaka</div>
     </div>
     <div class="lib-row reveal d4">
+      <button class="lib-card" onclick="openAmmiyah()">
+        <span class="lib-card-img" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="9" y="10" width="46" height="44" rx="7" fill="#0E3626"/>
+            <rect x="9" y="10" width="7" height="44" rx="3.5" fill="#0A2A1E"/>
+            <text x="36" y="40" font-size="24" fill="#BE9A46" text-anchor="middle" font-family="'Scheherazade New',serif">ع</text>
+          </svg>
+        </span>
+        <span class="lib-card-title">Jago 'Ammiyah</span>
+        <span class="lib-card-sub">Bahasa Mesir</span>
+      </button>
       <button class="lib-card" onclick="openQuran()">
         <span class="lib-card-img" aria-hidden="true">
           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
@@ -1474,6 +1524,18 @@
   <div class="scroll-page" style="padding-top:16px;">
     <div id="job-list"></div>
   </div>
+</div>
+
+<!-- ===================== OVERLAY : JAGO 'AMMIYAH (buku geser) ===================== -->
+<div id="page-ammiyah" class="overlay-page">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeAmmiyah()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="font-display" style="font-size:19px; font-weight:700; flex:1;">Jago 'Ammiyah</div>
+  </div>
+  <div id="amm-viewport" class="amm-viewport"></div>
+  <div id="amm-indicator">memuat…</div>
 </div>
 
 <!-- ===================== OVERLAY : AL-QURAN (daftar surah) ===================== -->
@@ -3407,6 +3469,50 @@ function closeLowongan(){
 
 /* ---------- al-quran (teks, sumber: alquran.cloud) ---------- */
 function toArabicNum(n){ return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]); }
+
+/* ---------- Jago 'Ammiyah (buku geser, materi lazy-load dari /ammiyah.json) ---------- */
+let _ammData = null, _ammScrollBound = false;
+async function openAmmiyah(){
+  document.getElementById('page-ammiyah').classList.add('open');
+  const vp = document.getElementById('amm-viewport');
+  if(_ammData){ renderAmmiyah(); return; }
+  vp.innerHTML = '<div class="amm-page"><div class="empty-state" style="margin:auto;">Memuat materi…</div></div>';
+  document.getElementById('amm-indicator').textContent = 'memuat…';
+  try{
+    const res = await fetch('/ammiyah.json');
+    if(!res.ok) throw new Error('x');
+    _ammData = await res.json();
+    renderAmmiyah();
+  }catch(e){ vp.innerHTML = '<div class="amm-page"><div class="empty-state" style="margin:auto;">Gagal memuat materi. Cek koneksi lalu buka lagi.</div></div>'; document.getElementById('amm-indicator').textContent = '—'; }
+}
+function renderAmmiyah(){
+  const vp = document.getElementById('amm-viewport');
+  const pages = (_ammData && _ammData.pages) || [];
+  vp.innerHTML = pages.map(pg => {
+    if(pg.cover){
+      return '<div class="amm-page"><div class="amm-cover"><div class="ic">📖</div><h1>' + escapeHtml(_ammData.judul || "Jago 'Ammiyah") + '</h1>'
+        + (pg.judul ? '<div style="font-size:15px;color:var(--ink-2);line-height:1.4;">' + escapeHtml(pg.judul) + '</div>' : '')
+        + '<div class="amm-hint">Geser ke kiri untuk mulai membaca →</div></div></div>';
+    }
+    return '<div class="amm-page">'
+      + (pg.bab ? '<div class="amm-bab">' + escapeHtml(pg.bab) + '</div>' : '')
+      + (pg.no ? '<div class="amm-no">' + escapeHtml(pg.no) + '</div>' : '')
+      + (pg.judul ? '<div class="amm-judul">' + escapeHtml(pg.judul) + '</div>' : '')
+      + (pg.html || '') + '</div>';
+  }).join('');
+  vp.scrollLeft = 0;
+  if(!_ammScrollBound){ _ammScrollBound = true; vp.addEventListener('scroll', () => { clearTimeout(vp._at); vp._at = setTimeout(updateAmmIndicator, 90); }, { passive:true }); }
+  updateAmmIndicator();
+}
+function updateAmmIndicator(){
+  const vp = document.getElementById('amm-viewport');
+  const ind = document.getElementById('amm-indicator');
+  if(!vp || !ind) return;
+  const total = vp.children.length || 1;
+  const cur = Math.min(Math.round(vp.scrollLeft / Math.max(1, vp.clientWidth)) + 1, total);
+  ind.textContent = 'Halaman ' + cur + ' / ' + total;
+}
+function closeAmmiyah(){ document.getElementById('page-ammiyah').classList.remove('open'); }
 
 function openQuran(){
   document.getElementById('page-quran').classList.add('open');
