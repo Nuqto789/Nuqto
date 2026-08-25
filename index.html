@@ -3578,7 +3578,7 @@ async function openSurah(num, title){
 }
 
 /* ---------- arah kiblat ---------- */
-let qiblaDeg = null, qiblaOrientHandler = null;
+let qiblaDeg = null, qiblaAbsHandler = null, qiblaRelHandler = null, qiblaSensorTimer = null, qiblaGotReading = false;
 function qiblaBearing(lat, lng){
   const toR = Math.PI/180;
   const kLat = 21.4225 * toR, kLng = 39.8262 * toR;
@@ -3615,25 +3615,39 @@ function openQibla(){
 }
 function closeQibla(){
   document.getElementById('page-qibla').classList.remove('open');
-  if(qiblaOrientHandler){
-    window.removeEventListener('deviceorientationabsolute', qiblaOrientHandler, true);
-    window.removeEventListener('deviceorientation', qiblaOrientHandler, true);
-    qiblaOrientHandler = null;
-  }
+  clearTimeout(qiblaSensorTimer);
+  if(qiblaAbsHandler){ window.removeEventListener('deviceorientationabsolute', qiblaAbsHandler, true); qiblaAbsHandler = null; }
+  if(qiblaRelHandler){ window.removeEventListener('deviceorientation', qiblaRelHandler, true); qiblaRelHandler = null; }
 }
 function enableCompass(){
   const start = () => {
-    qiblaOrientHandler = (e) => {
-      let heading = null;
-      if(typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
-      else if(typeof e.alpha === 'number') heading = 360 - e.alpha;
-      if(heading == null || qiblaDeg == null) return;
-      setNeedle(qiblaDeg - heading);
+    qiblaGotReading = false;
+    const apply = (h) => {
+      if(h == null || qiblaDeg == null) return;
+      qiblaGotReading = true;
+      const hint = document.getElementById('qibla-hint');
+      if(hint) hint.style.display = '';
+      setNeedle(qiblaDeg - h);
     };
-    window.addEventListener('deviceorientationabsolute', qiblaOrientHandler, true);
-    window.addEventListener('deviceorientation', qiblaOrientHandler, true);
+    // Sumber ABSOLUTE (true north) — paling akurat untuk kiblat (mayoritas Android).
+    qiblaAbsHandler = (e) => { if(typeof e.alpha === 'number') apply(360 - e.alpha); };
+    // Event 'deviceorientation': iOS pakai webkitCompassHeading (akurat); Android HANYA dipakai kalau absolute,
+    // karena alpha relatif (absolute!==true) menunjuk arah SALAH → sengaja diabaikan.
+    qiblaRelHandler = (e) => {
+      if(typeof e.webkitCompassHeading === 'number'){ apply(e.webkitCompassHeading); return; } // iOS
+      if(e.absolute === true && typeof e.alpha === 'number') apply(360 - e.alpha);               // Android absolute
+    };
+    window.addEventListener('deviceorientationabsolute', qiblaAbsHandler, true);
+    window.addEventListener('deviceorientation', qiblaRelHandler, true);
     document.getElementById('qibla-enable').style.display = 'none';
-    document.getElementById('qibla-hint').style.display = '';
+    // HP tanpa kompas absolut / tanpa magnetometer → beri tahu, jangan tampilkan arah yang salah.
+    clearTimeout(qiblaSensorTimer);
+    qiblaSensorTimer = setTimeout(() => {
+      if(!qiblaGotReading){
+        const info = document.getElementById('qibla-info');
+        if(info && qiblaDeg != null){ info.innerHTML += '<br><span style="color:#b45309;">Kompas HP ini tidak akurat/tidak ada. Kalibrasi dengan menggerakkan HP membentuk angka 8, atau tetap gunakan arah <b>' + Math.round(qiblaDeg) + '°</b> dari Utara secara manual.</span>'; }
+      }
+    }, 2800);
   };
   if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
     DeviceOrientationEvent.requestPermission()
