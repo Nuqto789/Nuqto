@@ -5110,7 +5110,7 @@ function showIncomingEmergency(a){
   // Broadcast ke semua user tetap ANONIM (tanpa nama/foto). Identitas hanya terbuka di peta
   // saat penolong sudah DEKAT (lihat revealVictimIdentity) — privasi korban.
   document.getElementById('emg-incoming').classList.add('open');
-  showTrackBanner();
+  // Banner "Lokasi Darurat" TIDAK ditampilkan saat kedatangan — baru muncul setelah user klik "Lacak Lokasi".
   if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]);
 }
 function closeEmergencyIncoming(){
@@ -5132,6 +5132,7 @@ const SOS_REVEAL_M = 150; // radius "dekat" (meter) untuk membuka identitas korb
 
 function openLiveTrack(){
   if(!incomingAlert || incomingAlert.lat == null){ showToast('Lokasi belum tersedia'); return; }
+  addEngagedId(incomingAlert.id); // korban ini sudah di-Lacak → banner boleh tampil (persisten lintas restart, sampai "Abaikan")
   document.getElementById('emg-incoming').classList.remove('open');
   hideTrackBanner();
   document.getElementById('page-track').classList.add('open');
@@ -5240,7 +5241,7 @@ function updateEmergencyCount(){
   const n = activeAlerts.length;
   const el = document.getElementById('track-banner-text');
   if(el) el.textContent = n > 1 ? ('🚨 ' + n + ' Lokasi Darurat') : '🚨 Lokasi Darurat';
-  if(n === 0) hideTrackBanner();
+  updateTrackBannerVisibility();
 }
 function renderTrackVictims(){
   if(!trackMap) return;
@@ -5283,6 +5284,7 @@ function selectTrackVictim(id){
   const a = activeAlerts.find(x => x.id === id);
   if(!a || a.lat == null) return;
   const switching = !trackAlert || trackAlert.id !== id;
+  addEngagedId(id); // korban yang dipilih juga dianggap sudah di-Lacak
   trackAlert = a; trackAlertId = id; trackDone = false;
   setRespondBtn(respondState.active && respondState.alertId === id);
   if(switching){
@@ -5314,26 +5316,32 @@ function closeLiveTrack(){
   victimIdentityShown = false; trackHelperLatLng = null; trackAlert = null; trackDone = false;
   const dist = document.getElementById('track-dist');
   if(dist){ dist.style.display = 'none'; }
-  updateEmergencyCount();
-  if(activeAlerts.length === 0) hideTrackBanner(); else showTrackBanner();
+  updateEmergencyCount(); // perbarui jumlah + visibilitas banner (kini tampil karena sudah engaged)
 }
 
-let _trackWanted = false;
-// bar darurat penerima hanya tampil di Beranda & Akun (agar tak menindih tombol kembali di halaman lain)
+// "engaged" per-alert = id korban yang PERNAH user klik "Lacak Lokasi". Disimpan di localStorage
+// → banner bertahan walau app di-swipe close, dan hanya untuk korban yang benar-benar sudah dilacak.
+function getEngagedIds(){ try{ return JSON.parse(localStorage.getItem('nuqto_track_engaged_ids') || '[]'); }catch(e){ return []; } }
+function addEngagedId(id){ if(!id) return; const e = getEngagedIds(); if(!e.includes(id)){ e.push(id); if(e.length > 80) e.shift(); localStorage.setItem('nuqto_track_engaged_ids', JSON.stringify(e)); } }
+function getDismissedAlerts(){ try{ return JSON.parse(localStorage.getItem('nuqto_dismissed') || '[]'); }catch(e){ return []; } }
+function addDismissedAlert(id){ if(!id) return; const d = getDismissedAlerts(); if(!d.includes(id)){ d.push(id); if(d.length > 60) d.shift(); localStorage.setItem('nuqto_dismissed', JSON.stringify(d)); } }
+// banner tampil jika ada korban AKTIF yang sudah di-Lacak (engaged) & belum di-Abaikan (dismissed)
+function bannerShouldShow(){ const dismissed = getDismissedAlerts(), engaged = getEngagedIds(); return activeAlerts.some(a => engaged.includes(a.id) && !dismissed.includes(a.id)); }
+// bar darurat penerima: tampil HANYA setelah user klik "Lacak Lokasi", selama korban itu masih aktif &
+// belum di-"Abaikan", dan di Beranda/Akun (agar tak menindih tombol kembali di halaman lain).
 function updateTrackBannerVisibility(){
   const b = document.getElementById('track-banner');
   if(!b) return;
   const overlayOpen = !!document.querySelector('.overlay-page.open');
   const active = document.querySelector('.page.active');
   const id = active ? active.id : '';
-  const ok = _trackWanted && !overlayOpen && (id === 'page-home' || id === 'page-akun');
+  const ok = bannerShouldShow() && !overlayOpen && (id === 'page-home' || id === 'page-akun');
   b.classList.toggle('show', ok);
 }
-function showTrackBanner(){ _trackWanted = true; updateTrackBannerVisibility(); }
-function hideTrackBanner(){ _trackWanted = false; const b = document.getElementById('track-banner'); if(b) b.classList.remove('show'); }
-function getDismissedAlerts(){ try{ return JSON.parse(localStorage.getItem('nuqto_dismissed') || '[]'); }catch(e){ return []; } }
-function addDismissedAlert(id){ if(!id) return; const d = getDismissedAlerts(); if(!d.includes(id)){ d.push(id); if(d.length > 60) d.shift(); localStorage.setItem('nuqto_dismissed', JSON.stringify(d)); } }
-function ignoreTrackBanner(){ if(incomingAlert) addDismissedAlert(incomingAlert.id); hideTrackBanner(); }
+function showTrackBanner(){ updateTrackBannerVisibility(); } // kompat: visibilitas kini didorong engaged + korban aktif
+function hideTrackBanner(){ const b = document.getElementById('track-banner'); if(b) b.classList.remove('show'); } // sembunyikan visual saja
+// "Abaikan" → matikan banner SELAMANYA untuk darurat yang sedang aktif (dismiss semua yg aktif)
+function ignoreTrackBanner(){ activeAlerts.forEach(a => addDismissedAlert(a.id)); hideTrackBanner(); }
 
 /* ============================================================
    PENOLONG: tombol "Saya menuju ke sana" — siarkan lokasi live ke korban
