@@ -2606,16 +2606,29 @@ function removeMlLine(map, id){
   try{ if(map.getLayer(id)) map.removeLayer(id); if(map.getSource(id + '-src')) map.removeSource(id + '-src'); }catch(e){}
 }
 
-function initMaps(){
-  const CAIRO = [31.2357, 30.0444]; // [lng, lat] untuk MapLibre
-  maps.maqom = makeMlMap('map-maqom', CAIRO, NUQTO_CUSTOM_STYLE);      // style kustom Google-look
-  maps.blacklist = makeMlMap('map-blacklist', CAIRO, NUQTO_CUSTOM_STYLE);
-  maps.razia = makeMlMap('map-razia', CAIRO, NUQTO_CUSTOM_STYLE);
-
-  maps.maqom.on('click', e => openSheet('maqom', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
-  maps.blacklist.on('click', e => openSheet('blacklist', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
-  maps.razia.on('click', e => openSheet('razia', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
+// render ulang semua marker kategori dari data yang sudah dimuat (store[cat])
+function renderStoredMarkers(cat){
+  clearMlMarkers(cat);
+  (store[cat] || []).forEach(pin => renderMarker(cat, pin, false));
 }
+// pemulihan konteks WebGL — kalau GPU sempat "hilang" (memori penuh), peta pulih sendiri tanpa perlu swipe-close
+function attachWebglRecovery(map, cat){
+  try{
+    const canvas = map.getCanvas();
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); }, false); // izinkan browser me-restore
+    canvas.addEventListener('webglcontextrestored', () => { try{ map.resize(); renderStoredMarkers(cat); }catch(e){} }, false);
+  }catch(e){}
+}
+// LAZY-INIT: peta kategori dibuat HANYA saat tab-nya dibuka (bukan 3 sekaligus saat startup) → hemat WebGL/memori
+function ensureMap(cat){
+  if(maps[cat]) return maps[cat];
+  maps[cat] = makeMlMap('map-' + cat, [31.2357, 30.0444], NUQTO_CUSTOM_STYLE);
+  maps[cat].on('click', e => openSheet(cat, { lat: e.lngLat.lat, lng: e.lngLat.lng }));
+  attachWebglRecovery(maps[cat], cat);
+  renderStoredMarkers(cat); // tampilkan titik yang sudah dimuat (data di store[cat])
+  return maps[cat];
+}
+function initMaps(){ /* lazy: peta dibuat via ensureMap() saat tab dibuka */ }
 
 /* ---------- locate me ---------- */
 function locateMe(cat){
@@ -2668,6 +2681,7 @@ function switchPage(cat){
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applySafeBg(cat);
   if(cat === 'akun'){ refreshJobBadge(); refreshInfoBadge(); }
+  if(cat === 'maqom' || cat === 'blacklist' || cat === 'razia'){ ensureMap(cat); } // LAZY: buat peta saat tab dibuka
   if(maps[cat]) setTimeout(() => { try{ maps[cat].resize(); }catch(e){} }, 220);
   updateTrackBannerVisibility();
 }
@@ -2908,6 +2922,7 @@ function replaceMarker(cat, pinId, updatedPin){
 }
 
 function renderMarker(cat, pin, justAdded){
+  if(!maps[cat]) return; // lazy-init: peta cat ini belum dibuat → cukup simpan data (store), marker dirender saat peta dibuka
   const el = makePinEl(cat, justAdded);
   if(pin.status === 'pending') el.style.opacity = '0.5';
   el.style.cursor = 'pointer';
