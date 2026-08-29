@@ -5268,20 +5268,32 @@ let myAlertId = null;
 let myWatchId = null;
 let lastPosSent = 0;
 let myLastCoords = null;
+let lastAcceptedCoords = null; // posisi terakhir yang lolos filter (anti-jitter)
 
 function startDangerBroadcast(id){
   showDangerBanner();
   setEmergencyDisabled(true);
   if(!navigator.geolocation) return;
   if(myWatchId != null) navigator.geolocation.clearWatch(myWatchId);
+  lastAcceptedCoords = null;
   myWatchId = navigator.geolocation.watchPosition(async (pos) => {
-    myLastCoords = [pos.coords.latitude, pos.coords.longitude];
-    if(document.getElementById('page-helpmap').classList.contains('open')) placeHelpVictim(myLastCoords[0], myLastCoords[1]);
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    const acc = pos.coords.accuracy || 999;
+    // buang fix akurasi sangat buruk (biang lompatan) — kecuali fix pertama
+    if(lastAcceptedCoords && acc > 100) return;
+    // anti-jitter: kalau pergerakan lebih kecil dari ambang (skala akurasi), anggap DIAM → titik tidak dipindah
+    if(lastAcceptedCoords){
+      const movedM = haversineKm(lat, lng, lastAcceptedCoords[0], lastAcceptedCoords[1]) * 1000;
+      if(movedM < Math.max(8, acc * 0.5)) return;
+    }
+    lastAcceptedCoords = [lat, lng];
+    myLastCoords = [lat, lng];
+    if(document.getElementById('page-helpmap').classList.contains('open')) placeHelpVictim(lat, lng);
     const now = Date.now();
     if(now - lastPosSent < 6000) return; // throttle ~6 detik
     lastPosSent = now;
     await sb.from('emergency_alerts').update({
-      lat: pos.coords.latitude, lng: pos.coords.longitude, updated_at: new Date().toISOString()
+      lat: lat, lng: lng, updated_at: new Date().toISOString()
     }).eq('id', id);
   }, () => {}, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
 }
@@ -5289,7 +5301,7 @@ function startDangerBroadcast(id){
 async function iAmSafe(){
   if(myWatchId != null){ navigator.geolocation.clearWatch(myWatchId); myWatchId = null; }
   if(myAlertId){ await sb.from('emergency_alerts').update({ active: false }).eq('id', myAlertId); }
-  myAlertId = null; myLastCoords = null;
+  myAlertId = null; myLastCoords = null; lastAcceptedCoords = null;
   closeHelpMap();
   hideDangerBanner();
   setEmergencyDisabled(false);
