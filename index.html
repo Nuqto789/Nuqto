@@ -5445,6 +5445,7 @@ let trackRouteLayer = null, trackHelperMarker = null, lastRouteTs = 0, trackDone
 let activeAlerts = [], trackVictimMarkers = {}; // semua alert darurat AKTIF (bukan milik sendiri) + marker per korban
 // gate identitas: hanya muncul saat penolong sudah dekat korban
 let trackHelperLatLng = null, victimPopup = null, victimIdentityShown = false;
+let respondLastCoords = null; // posisi penolong terakhir yang lolos filter (anti-jitter)
 const SOS_REVEAL_M = 150; // radius "dekat" (meter) untuk membuka identitas korban
 
 function openLiveTrack(){
@@ -5481,6 +5482,9 @@ async function drawTrackRoute(){
   let origin;
   try{ origin = await getUserLatLng(); }
   catch(e){ const st = document.getElementById('track-status'); if(st && st.className.indexOf('done') < 0){ st.textContent = 'Aktifkan izin lokasi untuk melihat rute'; } return; }
+  // guard: fix GPS penolong jelas meleset (>500 km dari korban) → jangan gambar rute / fitBounds
+  // (cegah peta zoom-out ekstrem yang bikin kedua titik "hilang keluar negara")
+  if(haversineKm(origin[0], origin[1], trackAlert.lat, trackAlert.lng) * 1000 > 500000) return;
   if(!trackHelperMarker){
     trackHelperMarker = makeDotMarker(trackMap, [origin[0], origin[1]], 'helper-dot');
   } else { trackHelperMarker.setLngLat([origin[1], origin[0]]); }
@@ -5696,12 +5700,22 @@ async function toggleRespond(){
   showToast('Kamu menuju lokasi — posisimu dibagikan ke korban');
   if(navigator.geolocation){
     if(respondState.watchId != null) navigator.geolocation.clearWatch(respondState.watchId);
+    respondLastCoords = null;
     respondState.watchId = navigator.geolocation.watchPosition(async (pos) => {
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy || 999;
+      // buang fix akurasi buruk + jitter saat diam (biar titik biru penolong tak loncat)
+      if(respondLastCoords && acc > 100) return;
+      if(respondLastCoords){
+        const movedM = haversineKm(lat, lng, respondLastCoords[0], respondLastCoords[1]) * 1000;
+        if(movedM < Math.max(8, acc * 0.5)) return;
+      }
+      respondLastCoords = [lat, lng];
       const now = Date.now();
       if(now - respondState.lastSent < 6000) return; // throttle ~6 detik
       respondState.lastSent = now;
       await sb.from('emergency_responders').update({
-        lat: pos.coords.latitude, lng: pos.coords.longitude, updated_at: new Date().toISOString()
+        lat: lat, lng: lng, updated_at: new Date().toISOString()
       }).eq('alert_id', respondState.alertId).eq('user_id', currentUser.id);
     }, () => {}, { enableHighAccuracy:true, maximumAge:3000, timeout:20000 });
   }
@@ -5709,6 +5723,7 @@ async function toggleRespond(){
 
 async function stopRespond(){
   if(respondState.watchId != null){ navigator.geolocation.clearWatch(respondState.watchId); respondState.watchId = null; }
+  respondLastCoords = null;
   const aid = respondState.alertId;
   respondState.active = false; respondState.alertId = null;
   setRespondBtn(false);
